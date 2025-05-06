@@ -1,0 +1,13 @@
+This is a placeholder for the Open Graph image.
+
+Please replace this text file with an actual image file named "og-image.png" with dimensions of 1200x630 pixels.
+
+This image will be displayed when your site is shared on social media platforms like Facebook, Twitter, and LinkedIn.
+
+The image should:
+1. Include your logo
+2. Have a clean, visually appealing design
+3. Include a brief tagline like "Write it Once. Echo it Forever."
+4. Use your brand colors
+
+Once created, make sure to update the meta tags in the Layout.tsx file if you use a different filename or format.

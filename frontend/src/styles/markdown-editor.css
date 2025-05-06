@@ -1,0 +1,329 @@
+/* Custom styles for the Markdown editor */
+
+.markdown-editor {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  overflow: visible; /* Changed from hidden to allow page break labels to be visible */
+}
+
+.markdown-editor .rc-md-editor {
+  border: none !important;
+  font-family: inherit;
+}
+
+/* Fix for split view */
+.markdown-editor .rc-md-navigation {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dark .markdown-editor .rc-md-navigation {
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+/* Ensure the editor takes full width */
+.markdown-editor .editor-container {
+  display: flex;
+  width: 100% !important;
+}
+
+/* Fix for the editor content area */
+.markdown-editor .sec-md, 
+.markdown-editor .sec-html {
+  flex: 1;
+  height: 100%;
+  min-height: 400px;
+  overflow: visible; /* Changed from auto to prevent double scrollbars */
+}
+
+/* Ensure the text area takes full width */
+.markdown-editor .input {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 400px;
+  padding: 1rem;
+  font-family: inherit;
+  line-height: 1.5;
+  overflow: auto; /* Keep this as auto to allow scrolling in the textarea */
+}
+
+/* Custom styles for the HTML preview */
+.markdown-editor .custom-html-style {
+  padding: 1rem;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* Dark mode support */
+.dark .markdown-editor {
+  border-color: #334155;
+}
+
+.dark .markdown-editor .rc-md-editor {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+.dark .markdown-editor .input {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .markdown-editor .custom-html-style {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+/* Fix for toolbar buttons in dark mode */
+.dark .markdown-editor .button {
+  color: #e2e8f0;
+}
+
+.dark .markdown-editor .button:hover {
+  background-color: #334155;
+}
+
+/* Fix for dropdown menus */
+.markdown-editor .drop-wrap {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.dark .markdown-editor .drop-wrap {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+}
+
+/* Fix for table dropdown */
+.markdown-editor .rc-md-editor .table-list {
+  background-color: #ffffff;
+}
+
+.dark .markdown-editor .rc-md-editor .table-list {
+  background-color: #1e293b;
+}
+
+.markdown-editor .rc-md-editor .table-list .list-item {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dark .markdown-editor .rc-md-editor .table-list .list-item {
+  border-bottom: 1px solid #334155;
+}
+
+/* Fix for table cells */
+.markdown-editor .rc-md-editor table th,
+.markdown-editor .rc-md-editor table td {
+  border: 1px solid #e2e8f0;
+}
+
+.dark .markdown-editor .rc-md-editor table th,
+.dark .markdown-editor .rc-md-editor table td {
+  border: 1px solid #334155;
+}
+
+/* Improve line break button icon */
+.markdown-editor .button.rmel-iconfont.rmel-icon-enter::before {
+  content: "↵";
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Improve ordered list button icon */
+.markdown-editor .button.rmel-iconfont.rmel-icon-list-ol::before {
+  content: "1.";
+  font-size: 16px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+}
+
+/* Page break indicator styling */
+.page-break-indicator {
+  border-top: 1px dashed #999;
+  margin: 20px 0;
+  position: relative;
+  height: 1px;
+}
+
+/* Visible page break line for view mode */
+.markdown-viewer {
+  position: relative;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent calc(22cm - 1px),
+    rgba(255, 0, 0, 0.3) calc(22cm - 1px),
+    rgba(255, 0, 0, 0.3) 22cm,
+    transparent 22cm,
+    transparent 29.7cm
+  );
+  background-size: 100% 29.7cm;
+  background-repeat: repeat-y;
+  /* Adjust the background position to account for the title */
+  background-position: 0 4.5rem;
+  /* Set line height to match PDF export */
+  line-height: 1.8;
+}
+
+/* Hide page break lines on mobile */
+@media (max-width: 640px) {
+  .markdown-viewer {
+    background-image: none;
+  }
+}
+
+/* Page break line for HTML preview in editor */
+.markdown-editor .rc-md-editor .section-container .custom-html-style {
+  position: relative;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent calc(22cm - 1px),
+    rgba(255, 0, 0, 0.3) calc(22cm - 1px),
+    rgba(255, 0, 0, 0.3) 22cm,
+    transparent 22cm,
+    transparent 29.7cm
+  );
+  background-size: 100% 29.7cm;
+  background-repeat: repeat-y;
+  /* Adjust the background position to account for the title */
+  background-position: 0 4.5rem;
+  /* Set line height to match PDF export */
+  line-height: 1.8;
+}
+
+/* Hide page break lines on mobile */
+@media (max-width: 640px) {
+  .markdown-editor .rc-md-editor .section-container .custom-html-style {
+    background-image: none;
+  }
+}
+
+/* Direct page break styling for the textarea */
+.markdown-editor .rc-md-editor .section.sec-md .section-container.input {
+  background-image: linear-gradient(
+    to bottom,
+    transparent,
+    transparent 830px, /* Adjusted to account for title and margins */
+    #ff0000 830px,
+    #ff0000 832px,
+    transparent 832px,
+    transparent 1660px, /* Adjusted to account for title and margins */
+    #ff0000 1660px,
+    #ff0000 1662px,
+    transparent 1662px
+  ) !important;
+  background-attachment: local !important;
+  background-repeat: no-repeat !important;
+  /* Set line height to match PDF export */
+  line-height: 1.8 !important;
+}
+
+/* Hide page break lines on mobile */
+@media (max-width: 640px) {
+  .markdown-editor .rc-md-editor .section.sec-md .section-container.input {
+    background-image: none !important;
+  }
+}
+
+/* Make sure the editor container has proper positioning */
+.markdown-editor .rc-md-editor .section.sec-md {
+  position: relative !important;
+  overflow: visible !important; /* Ensure the section doesn't add a scrollbar */
+}
+
+/* Ensure the editor is tall enough */
+.markdown-editor .rc-md-editor .section.sec-md .section-container.input {
+  min-height: 400px !important;
+}
+
+/* Fix editor container overflow */
+.markdown-editor .editor-container {
+  overflow: visible !important;
+}
+
+.markdown-editor .rc-md-editor {
+  overflow: visible !important;
+}
+
+
+.dark .markdown-editor::before {
+  color: #ff6b6b;
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+/* Hide page break note on mobile */
+@media (max-width: 640px) {
+  .markdown-editor::before {
+    display: none;
+  }
+}
+
+/* Add page break labels */
+.markdown-editor .rc-md-editor .section.sec-md::before {
+  content: "PAGE 1 BREAK";
+  position: absolute;
+  right: 10px;
+  top: 820px; /* Adjusted to account for title and margins */
+  font-size: 10px;
+  background-color: white;
+  color: #ff0000;
+  padding: 0 4px;
+  border-radius: 2px;
+  border: 1px solid #ff0000;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.markdown-editor .rc-md-editor .section.sec-md::after {
+  content: "PAGE 2 BREAK";
+  position: absolute;
+  right: 10px;
+  top: 1650px; /* Adjusted to account for title and margins */
+  font-size: 10px;
+  background-color: white;
+  color: #ff0000;
+  padding: 0 4px;
+  border-radius: 2px;
+  border: 1px solid #ff0000;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.dark .markdown-editor .rc-md-editor .section.sec-md::before,
+.dark .markdown-editor .rc-md-editor .section.sec-md::after {
+  background-color: #1e293b;
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+/* Hide page break labels on mobile */
+@media (max-width: 640px) {
+  .markdown-editor .rc-md-editor .section.sec-md::before,
+  .markdown-editor .rc-md-editor .section.sec-md::after {
+    display: none;
+  }
+}
+
+/* Mobile-specific styles for full width */
+@media (max-width: 640px) {
+  .markdown-editor {
+    border: none;
+    border-radius: 0;
+  }
+  
+  .markdown-editor .rc-md-editor {
+    padding: 0;
+  }
+  
+  .markdown-editor .input {
+    padding: 0.5rem;
+  }
+  
+  .markdown-editor .custom-html-style {
+    padding: 0.5rem;
+  }
+}

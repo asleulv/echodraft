@@ -1,0 +1,739 @@
+/* TipTap Editor and Viewer Styles */
+
+/* Document title styles */
+.tiptap-editor-content .ProseMirror h1.document-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.dark .tiptap-editor-content .ProseMirror h1.document-title {
+  border-bottom-color: #2c2c2c;
+}
+
+/* Style for the first paragraph after the title */
+.tiptap-editor-content .ProseMirror h1.document-title + p {
+  margin-top: 1rem;
+  min-height: 1.5rem; /* Ensure there's enough space to click */
+}
+
+.tiptap-editor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  overflow: visible;
+  background-color: #ffffff;
+  min-height: 800px; /* Ensure minimum height */
+  height: 800px !important; /* Force height */
+}
+
+.dark .tiptap-editor {
+  border-color: #2c2c2c;
+  background-color: #1a1a1a; /* Slightly lighter gray from theme */
+  color: #fcf8fb;
+}
+
+/* Fullscreen styles */
+.tiptap-editor-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh !important;
+  z-index: 9999;
+  border-radius: 0;
+  border: none;
+}
+
+.tiptap-editor-fullscreen .tiptap-editor-content {
+  height: calc(100vh - 100px) !important; /* Adjust based on toolbar and footer height */
+}
+
+/* Title styles */
+.tiptap-editor-title {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tiptap-editor-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.dark .tiptap-editor-title {
+  border-bottom-color: #2c2c2c;
+  color: #959595 !important;
+  background-color: #1a1a1a; /* Slightly lighter gray from theme */
+}
+
+.dark .tiptap-editor-title h1 {
+  color: #959595 !important;
+}
+
+/* Toolbar styles */
+.tiptap-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Ensure it stays above other content */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: add shadow for better distinction */
+}
+
+.tiptap-editor-toolbar button {
+  margin: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  background-color: #ffffff;
+  color: #1e293b;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tiptap-editor-toolbar button:hover {
+  background-color: #f1f5f9;
+}
+
+.tiptap-editor-toolbar button.is-active {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.dark .tiptap-editor-toolbar {
+  border-bottom-color: #2c2c2c;
+  background-color: #1a1a1a; /* Slightly lighter gray from theme */
+}
+
+.dark .tiptap-editor-toolbar button {
+  border-color: #2c2c2c;
+  background-color: #1a1a1a;
+  color: #f8fafc;
+}
+
+.dark .tiptap-editor-toolbar button:hover {
+  background-color: #2c2c2c;
+}
+
+.dark .tiptap-editor-toolbar button.is-active {
+  background-color: #2c2c2c;
+  color: #f8fafc;
+}
+
+/* Link and Image input styles */
+.tiptap-editor-link-input,
+.tiptap-editor-image-input {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  margin: 0.25rem;
+  width: 100%;
+}
+
+.tiptap-editor-link-input-fields,
+.tiptap-editor-image-input-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tiptap-editor-link-input input,
+.tiptap-editor-image-input input {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.tiptap-editor-link-input-buttons,
+.tiptap-editor-image-input-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tiptap-editor-link-input button,
+.tiptap-editor-image-input button {
+  padding: 0.25rem 0.5rem;
+  margin: 0;
+}
+
+.dark .tiptap-editor-link-input,
+.dark .tiptap-editor-image-input {
+  background-color: #1a1a1a;
+  border-color: #2c2c2c;
+}
+
+.dark .tiptap-editor-link-input input,
+.dark .tiptap-editor-image-input input {
+  background-color: #121212;
+  border-color: #2c2c2c;
+  color: #f8fafc;
+}
+
+/* Table controls styles */
+.tiptap-editor-table-controls {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f1f5f9;
+  gap: 1rem;
+}
+
+.tiptap-editor-table-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tiptap-editor-table-controls-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.tiptap-editor-table-controls button {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  background-color: #ffffff;
+  color: #1e293b;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tiptap-editor-table-controls button:hover {
+  background-color: #f1f5f9;
+}
+
+.dark .tiptap-editor-table-controls {
+  border-bottom-color: #2c2c2c;
+  background-color: #1a1a1a;
+}
+
+.dark .tiptap-editor-table-controls-label {
+  color: #a3a3a3;
+}
+
+.dark .tiptap-editor-table-controls button {
+  border-color: #2c2c2c;
+  background-color: #1a1a1a;
+  color: #f8fafc;
+}
+
+.dark .tiptap-editor-table-controls button:hover {
+  background-color: #2c2c2c;
+}
+
+/* Default top value for desktop and larger screens */
+.tiptap-editor-table-controls-container {
+  position: sticky;
+  background-color: #fff;
+  z-index: 2;
+  padding: 0px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Media Query for mobile screens (max-width: 768px or whatever suits your needs) */
+@media (max-width: 768px) {
+  .tiptap-editor-table-controls-container {
+    top: 76px; /* Apply only on mobile */
+  }
+}
+
+/* Content styles */
+.tiptap-editor-content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  line-height: 1.5; /* Match PDF export line height */
+  min-height: 700px !important; /* Ensure the content area is tall */
+  height: 700px !important; /* Force height */
+  background-color: #ffffff;
+  word-break: keep-all; /* Prevent words from breaking across lines */
+  overflow-wrap: break-word; /* Allow long words to break if necessary */
+  cursor: text; /* Show text cursor to indicate editable area */
+  
+  /* A4 page guides - adjusted to account for title in PDF export */
+  position: relative;
+  background-size: 100% 22cm;
+  background-repeat: repeat-y;
+  background-position: 0 0;
+  padding-bottom: 2rem; /* Add padding to the bottom to avoid content being cut off */
+}
+
+
+
+.dark .tiptap-editor-content {
+  background-color: #1a1a1a; /* Almost black for dark mode */
+  color: #959595;
+}
+
+.dark .tiptap-editor-content::before {
+  color: #ff6b6b;
+  background-color: rgba(26, 26, 26, 0.8);
+}
+
+/* ProseMirror specific styles */
+.tiptap-editor-content .ProseMirror {
+  outline: none;
+  min-height: 100%;
+  cursor: text; /* Show text cursor to indicate editable area */
+  caret-color: #000; /* Ensure the caret is visible */
+  -webkit-user-select: text; /* Enable text selection on iOS */
+  user-select: text;
+}
+
+.dark .tiptap-editor-content .ProseMirror {
+  caret-color: #fff; /* Ensure the caret is visible in dark mode */
+}
+
+.tiptap-editor-content .ProseMirror p {
+  margin-bottom: 0.75rem;
+  color: var(--primary-text-600); 
+}
+
+.tiptap-editor-content .ProseMirror h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem;
+  color: var(--primary-text-600); 
+}
+
+.tiptap-editor-content .ProseMirror h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem;
+  color: var(--primary-text-600); 
+}
+
+.tiptap-editor-content .ProseMirror h3 {
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem;
+  color: var(--primary-text-600); 
+}
+
+.tiptap-editor-content .ProseMirror ul,
+.tiptap-editor-content .ProseMirror ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tiptap-editor-content .ProseMirror ul {
+  list-style-type: disc;
+}
+
+.tiptap-editor-content .ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.tiptap-editor-content .ProseMirror ul li,
+.tiptap-editor-content .ProseMirror ol li {
+  margin-bottom: 0.25rem;
+}
+
+.tiptap-editor-content .ProseMirror blockquote {
+  border-left: 3px solid #e2e8f0;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+}
+
+.dark .tiptap-editor-content .ProseMirror blockquote {
+  border-left-color: #2c2c2c;
+}
+
+.tiptap-editor-content .ProseMirror pre {
+  background-color: #f2f2f2;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.dark .tiptap-editor-content .ProseMirror pre {
+  background-color: #313131 !important;
+}
+
+.tiptap-editor-content .ProseMirror code {
+  background-color: #e0e0e0 !important;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+}
+
+.dark .tiptap-editor-content .ProseMirror code {
+  background-color: #474747 !important;
+}
+
+/* Image styles */
+.tiptap-editor-content .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem 0;
+  border-radius: 0.25rem;
+}
+
+/* Table styles */
+.tiptap-editor-content .ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.tiptap-editor-content .ProseMirror table td,
+.tiptap-editor-content .ProseMirror table th {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  position: relative;
+  vertical-align: top;
+}
+
+.tiptap-editor-content .ProseMirror table th {
+  background-color: #f8fafc;
+  font-weight: bold;
+}
+
+.dark .tiptap-editor-content .ProseMirror table td,
+.dark .tiptap-editor-content .ProseMirror table th {
+  border-color: #2c2c2c;
+}
+
+.dark .tiptap-editor-content .ProseMirror table th {
+  background-color: #2c2c2c;
+}
+
+/* Apply the same table styles to the viewer */
+.tiptap-viewer-content .ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.dark .tiptap-viewer-content {
+  color: #959595 !important;
+}
+
+.dark .tiptap-viewer-content .ProseMirror p,
+.dark .tiptap-viewer-content .ProseMirror h1,
+.dark .tiptap-viewer-content .ProseMirror h2,
+.dark .tiptap-viewer-content .ProseMirror h3,
+.dark .tiptap-viewer-content .ProseMirror ul,
+.dark .tiptap-viewer-content .ProseMirror ol,
+.dark .tiptap-viewer-content .ProseMirror li,
+.dark .tiptap-viewer-content .ProseMirror blockquote,
+.dark .tiptap-viewer-content .ProseMirror pre,
+.dark .tiptap-viewer-content .ProseMirror code {
+  color: #989898 !important; /* Ensure text color is gray in dark mode */
+}
+
+/* Override global border color for <hr> in dark mode */
+.dark .tiptap-viewer-content .ProseMirror hr {
+  border-color: #2c2c2c; /* Dark border color for <hr> */
+  background-color: #2c2c2c; /* Dark background color for <hr> */
+}
+
+.dark .tiptap-editor-content .ProseMirror hr {
+  border-color: #2c2c2c; /* Dark border color for <hr> */
+  background-color: #2c2c2c; /* Dark background color for <hr> */
+}
+
+.tiptap-viewer-content .ProseMirror table td,
+.tiptap-viewer-content .ProseMirror table th {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  position: relative;
+  vertical-align: top;
+}
+
+.tiptap-viewer-content .ProseMirror table th {
+  background-color: #f8fafc;
+  font-weight: bold;
+}
+
+.dark .tiptap-viewer-content .ProseMirror table td,
+.dark .tiptap-viewer-content .ProseMirror table th {
+  border-color: #2c2c2c;
+}
+
+.dark .tiptap-viewer-content .ProseMirror table th {
+  background-color: #2c2c2c;
+}
+
+/* Footer styles */
+.tiptap-editor-footer {
+  padding: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  font-size: 0.75rem;
+  color: #ff0000;
+  text-align: right;
+}
+
+.dark .tiptap-editor-footer {
+  border-top-color: #2c2c2c;
+  background-color: #1a1a1a; /* Slightly lighter gray from theme */
+  color: #ff6b6b;
+}
+
+/* Hide footer on mobile */
+@media (max-width: 640px) {
+  .tiptap-editor-footer {
+    display: none;
+  }
+}
+
+/* TipTap Viewer Styles */
+.tiptap-viewer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  overflow: visible;
+  background-color: #ffffff;
+}
+
+/* Mobile-specific styles for full width */
+@media (max-width: 640px) {
+  .tiptap-viewer {
+    border: none;
+    border-radius: 0;
+  }
+  
+  .tiptap-viewer-content {
+    padding: 0.5rem;
+  }
+}
+
+.dark .tiptap-viewer {
+  border-color: #2c2c2c;
+  background-color: #1a1a1a; /* Slightly lighter gray from theme */
+  color: #f8fafc;
+}
+
+/* Viewer title styles */
+.tiptap-viewer-title {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tiptap-viewer-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.dark .tiptap-viewer-title {
+  border-bottom-color: #2c2c2c;
+  background-color: #1a1a1a; /* Slightly lighter gray from theme */
+}
+
+.dark .tiptap-viewer-title h1 {
+  color: #e2e8f0;
+}
+
+/* Viewer content styles with A4 page guides */
+.tiptap-viewer-content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  line-height: 1.5; /* Match PDF export line height */
+  position: relative;
+  background-color: #ffffff;
+  padding-bottom: 2rem; /* Add padding to the bottom to avoid content being cut off */
+  word-break: keep-all; /* Prevent words from breaking across lines */
+  overflow-wrap: break-word; /* Allow long words to break if necessary */
+  background-size: 100% 22cm;
+  background-repeat: repeat-y;
+  background-position: 0 0;
+}
+
+.dark .tiptap-viewer-content {
+  background-color: #121212; /* Almost black for dark mode */
+  color: #f8fafc;
+}
+
+.dark .tiptap-viewer-content::before {
+  color: #ff6b6b;
+  background-color: rgba(26, 26, 26, 0.8);
+}
+
+/* Hide page break lines and notes on mobile */
+@media (max-width: 640px) {
+  .tiptap-viewer-content {
+    background-image: none;
+  }
+  
+  .tiptap-viewer-content::before {
+    display: none;
+  }
+}
+
+/* Apply the same ProseMirror styles to the viewer */
+.tiptap-viewer-content .ProseMirror {
+  outline: none;
+}
+
+.tiptap-viewer-content .ProseMirror p {
+  margin-bottom: 0.75rem;
+}
+
+.tiptap-viewer-content .ProseMirror h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem;
+}
+
+.tiptap-viewer-content .ProseMirror h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem;
+}
+
+.tiptap-viewer-content .ProseMirror h3 {
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem;
+}
+
+
+
+.tiptap-viewer-content .ProseMirror ul,
+.tiptap-viewer-content .ProseMirror ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tiptap-viewer-content .ProseMirror ul {
+  list-style-type: disc;
+}
+
+.tiptap-viewer-content .ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.tiptap-viewer-content .ProseMirror ul li,
+.tiptap-viewer-content .ProseMirror ol li {
+  margin-bottom: 0.25rem;
+}
+
+.tiptap-viewer-content .ProseMirror blockquote {
+  border-left: 3px solid #e2e8f0;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+}
+
+.dark .tiptap-viewer-content .ProseMirror blockquote {
+  border-left-color: #2c2c2c;
+}
+
+.tiptap-viewer-content .ProseMirror pre {
+  background-color: #f1f5f9;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.dark .tiptap-viewer-content .ProseMirror pre {
+  background-color: #272727;
+}
+
+.tiptap-viewer-content .ProseMirror code {
+  background-color: #f1f5f9;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+}
+
+.dark .tiptap-viewer-content .ProseMirror code {
+  background-color: #272727;
+}
+
+/* Image styles for viewer */
+.tiptap-viewer-content .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem 0;
+  border-radius: 0.25rem;
+}
+
+/* Add specific styles to prevent page breaks in the middle of lines for PDF export */
+@media print {
+  p, h1, h2, h3, h4, h5, h6, li, td, th {
+    page-break-inside: avoid; /* Prevent page breaks inside these elements */
+  }
+  
+  table, figure, img {
+    page-break-inside: avoid; /* Prevent page breaks inside tables and images */
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid; /* Prevent page breaks after headings */
+  }
+  
+  /* Force page breaks only at specified locations */
+  div.page-break {
+    page-break-before: always;
+  }
+}
+
+/* Mobile-specific styles for editor */
+@media (max-width: 640px) {
+  .tiptap-editor {
+    border: none;
+    border-radius: 0;
+    min-height: auto;
+    height: auto !important; /* Override the fixed height */
+  }
+  
+  .tiptap-editor-title {
+    padding: 0.5rem;
+  }
+  
+  .tiptap-editor-toolbar {
+    padding: 0.25rem;
+  }
+  
+  .tiptap-editor-content {
+    padding: 0.5rem;
+    min-height: auto !important;
+    height: auto !important; /* Override the fixed height */
+    touch-action: auto; /* Enable standard touch behavior */
+  }
+  
+  /* Improve touch interaction with the editor */
+  .tiptap-editor-content .ProseMirror {
+    -webkit-user-select: text; /* Enable text selection on iOS */
+    user-select: text;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1); /* Subtle highlight on tap */
+    touch-action: auto; /* Enable standard touch behavior */
+  }
+}

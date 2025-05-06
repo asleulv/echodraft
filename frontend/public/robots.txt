@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /dashboard
+Disallow: /documents
+Disallow: /categories
+Disallow: /settings
+Disallow: /profile
+Disallow: /subscription
+
+# Sitemap location
+Sitemap: https://echodraft.app/sitemap.xml

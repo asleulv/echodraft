@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_urls %}
+
+{% block content %}
+<div class="content-main">
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <p>{% blocktrans %}How many bonus AI generation credits would you like to add to the selected organizations?{% endblocktrans %}</p>
+            
+            <div class="form-row">
+                <label for="id_credits">{% trans "Number of credits:" %}</label>
+                <input type="number" id="id_credits" name="credits" min="1" value="10" required>
+            </div>
+            
+            <h2>{% trans "Selected Organizations" %}</h2>
+            <ul>
+                {% for obj in queryset %}
+                <li>{{ obj.name }} (Current bonus credits: {{ obj.bonus_ai_generation_credits }})</li>
+                {% endfor %}
+            </ul>
+            
+            <div class="submit-row">
+                <input type="hidden" name="action" value="add_bonus_credits">
+                <input type="submit" name="apply" value="{% trans 'Add Credits' %}" class="default">
+                <a href="{% url opts|admin_urlname:'changelist' %}" class="button cancel-link">{% trans "Cancel" %}</a>
+            </div>
+            
+            {% for obj in queryset %}
+            <input type="hidden" name="_selected_action" value="{{ obj.pk|unlocalize }}">
+            {% endfor %}
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Quicksand:wght@300..700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities */
+@layer utilities {
+  /* Basic text alignment classes */
+  .text-justify {
+    text-align: justify;
+  }
+  
+  /* Extreme justify class that forces text to fill the width */
+  .extreme-justify {
+    text-align: justify;
+    text-justify: distribute;
+    text-align-last: left; /* Last line should be left-aligned */
+    -moz-text-align-last: left;
+    text-justify: newspaper;
+    word-spacing: normal;
+  }
+  
+  /* Container for justified text */
+  .justify-container {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Force justified text to fill the container width */
+  .justify-container > * {
+    text-align: justify !important;
+    text-justify: distribute !important;
+    text-align-last: left !important; /* Last line should be left-aligned */
+    -moz-text-align-last: left !important;
+    text-justify: newspaper !important;
+  }
+  
+  /* Custom list alignment utilities */
+  .list-align-left {
+    padding-left: 1.25rem;
+    text-align: left;
+  }
+  
+  .list-align-center {
+    padding-left: 0;
+    list-style-position: inside;
+    text-align: center;
+  }
+  
+  .list-align-right {
+    padding-left: 0;
+    list-style-position: inside;
+    text-align: right;
+  }
+  
+  .list-align-justify {
+    padding-left: 1.25rem;
+    text-align: justify;
+    text-justify: distribute;
+    text-align-last: left; /* Last line should be left-aligned */
+    -moz-text-align-last: left;
+    text-justify: newspaper;
+  }
+  
+  /* Wrap list items in justify container */
+  .list-align-justify li {
+    text-align: justify !important;
+    text-justify: distribute !important;
+    text-align-last: left !important; /* Last line should be left-aligned */
+    -moz-text-align-last: left !important;
+    text-justify: newspaper !important;
+  }
+}
+
+@layer base {
+  :root {
+    /* Light theme variables (default) */
+    --color-text-primary: theme('colors.gray.900');
+    --color-text-secondary: theme('colors.gray.600');
+    --color-text-muted: theme('colors.gray.500');
+    
+    --color-bg-primary: theme('colors.white');
+    --color-bg-secondary: theme('colors.gray.50');
+    --color-bg-tertiary: theme('colors.gray.100');
+    
+    /* UI element colors are handled by Tailwind's color system */
+  }
+  
+  .dark {
+    /* Dark theme variables */
+    --color-text-primary: theme('colors.gray.50');
+    --color-text-secondary: theme('colors.gray.300');
+    --color-text-muted: theme('colors.gray.400');
+    
+    /* Updated to use more black/gray tones instead of blue-gray */
+    --color-bg-primary: #121212;
+    --color-bg-secondary: #1a1a1a;
+    --color-bg-tertiary: #2c2c2c;
+  }
+  
+  /* Base styles using semantic color variables */
+  html {
+    @apply text-text-primary;
+    @apply transition-colors duration-200;
+  }
+  
+  body {
+    @apply bg-bg-primary transition-colors duration-200;
+  }
+  
+  h1 {
+    @apply text-3xl font-bold mb-4 text-text-primary;
+  }
+  
+  h2 {
+    @apply text-2xl font-bold mb-3 text-text-primary;
+  }
+  
+  h3 {
+    @apply text-xl font-bold mb-2 text-text-primary;
+  }
+  
+  a {
+    @apply transition-colors;
+  }
+  
+  p {
+    @apply mb-4 text-text-secondary;
+  }
+}
+
+
+
+@layer components {
+  .document-title {
+    font-family: 'Quicksand', sans-serif;
+    @apply text-primary-600 dark:text-primary-500 tracking-wide;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
+  }
+
+  .main-logo {
+    font-family: 'Quicksand', sans-serif;
+    @apply tracking-wide;
+
+  }
+  
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-400;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-secondary-200 text-secondary-800 hover:bg-secondary-300 focus:ring-secondary-500 dark:bg-secondary-400 dark:text-secondary-100 dark:hover:bg-secondary-300;
+  }
+  
+  .btn-success {
+    @apply btn bg-success-600 text-white hover:bg-success-700 focus:ring-success-500 dark:bg-success-500 dark:hover:bg-success-400;
+  }
+  
+  .btn-danger {
+    @apply btn bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500 dark:bg-danger-500 dark:hover:bg-danger-400;
+  }
+  
+  .card {
+    @apply bg-bg-secondary rounded-lg shadow-md p-6 dark:border dark:border-secondary-300;
+  }
+  
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-bg-tertiary dark:border-gray-700 dark:text-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-text-secondary mb-1;
+  }
+  
+  .form-error {
+    @apply mt-1 text-sm text-danger-600 dark:text-danger-400;
+  }
+  
+  /* Theme toggle button */
+  .theme-toggle {
+    @apply p-2 rounded-full text-white hover:text-gray-200 dark:text-secondary-500 dark:hover:text-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-secondary-200;
+  }
+}
+

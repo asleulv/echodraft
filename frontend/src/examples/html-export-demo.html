@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Example Document</title>
+  <style>
+    /* Base styles */
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      color: #111;
+    }
+    
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.3em; }
+    
+    p { margin-bottom: 1em; }
+    
+    /* Tables */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    /* Images */
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    /* Lists */
+    ul, ol {
+      padding-left: 2em;
+      margin-bottom: 1em;
+    }
+    
+    /* Document metadata */
+    .document-metadata {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 2em;
+      padding-bottom: 1em;
+      border-bottom: 1px solid #eee;
+    }
+    
+    /* Footer */
+    .document-footer {
+      margin-top: 3em;
+      padding-top: 1em;
+      border-top: 1px solid #eee;
+      font-size: 0.8em;
+      color: #666;
+    }
+    
+    /* Print-specific styles */
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      
+      /* Ensure page breaks don't occur in the middle of elements */
+      h1, h2, h3, h4, h5, h6, img, table {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+      
+      /* Ensure tables have borders when printed */
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      
+      th, td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Example Document</h1>
+  
+  <div class="document-metadata">
+    <p><strong>Created by:</strong> John Doe</p>
+    <p><strong>Created:</strong> 3/25/2025</p>
+    <p><strong>Last updated:</strong> 3/25/2025</p>
+    <p><strong>Version:</strong> 1.0</p>
+    <p><strong>Status:</strong> Published</p>
+    <p><strong>Tags:</strong> example, documentation, html-export</p>
+  </div>
+  
+  <div class="document-content">
+    <h2>Introduction</h2>
+    <p>This is an example document that demonstrates HTML export functionality. The HTML format provides several advantages over PDF:</p>
+    
+    <h3>Benefits of HTML Export</h3>
+    <ul>
+      <li>Better handling of page breaks when printing</li>
+      <li>Consistent styling across different devices</li>
+      <li>Easier to view on mobile devices</li>
+      <li>Can be saved locally and viewed offline</li>
+      <li>Users can still print to PDF if needed</li>
+    </ul>
+    
+    <h3>Example Table</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>HTML Export</th>
+          <th>PDF Export</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Page break control</td>
+          <td>Better</td>
+          <td>Limited</td>
+        </tr>
+        <tr>
+          <td>Mobile viewing</td>
+          <td>Excellent</td>
+          <td>Good</td>
+        </tr>
+        <tr>
+          <td>Print quality</td>
+          <td>Good</td>
+          <td>Good</td>
+        </tr>
+        <tr>
+          <td>File size</td>
+          <td>Smaller</td>
+          <td>Larger</td>
+        </tr>
+        <tr>
+          <td>Implementation complexity</td>
+          <td>Low</td>
+          <td>High</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <h2>Implementation Details</h2>
+    <p>The HTML export functionality is implemented using a simple utility that generates a downloadable HTML file from the document data. The utility handles:</p>
+    
+    <ol>
+      <li>Creating a properly formatted HTML document</li>
+      <li>Adding document metadata</li>
+      <li>Including the document content</li>
+      <li>Adding print-specific styles</li>
+      <li>Triggering the download</li>
+    </ol>
+    
+    <h3>Code Example</h3>
+    <pre><code>
+// Generate and download HTML document
+generateHtmlDocument(documentData, htmlContent);
+    </code></pre>
+    
+    <h2>Conclusion</h2>
+    <p>HTML export provides a simpler, more reliable way to export documents from TextVault. Users can still print to PDF if needed, but the HTML format offers more flexibility and better compatibility across devices.</p>
+  </div>
+  
+  <div class="document-footer">
+    <p>This document was exported from TextVault. &copy; 2025 TextVault.</p>
+  </div>
+</body>
+</html>

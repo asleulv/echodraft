@@ -1,0 +1,48 @@
+/* Mobile-specific overrides for TextVault */
+
+/* Hide dotted line containers on mobile */
+@media (max-width: 640px) {
+  /* Target all dotted line containers across the application */
+  .border-4.border-dashed.border-primary-200 {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Ensure content uses full width */
+  .px-4.py-6.sm\:px-0 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  
+  /* Adjust main container padding */
+  .max-w-7xl.mx-auto.py-6.sm\:px-6.lg\:px-8 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  
+  /* Hide the section between header and content area on all pages except document view */
+  body:not([data-page="document-view"]) header + .max-w-7xl.mx-auto.py-6.sm\:px-6.lg\:px-8 > .px-4.py-6.sm\:px-0 > div:first-child:not(.border-4):not(.generation-progress-container) {
+    display: none !important;
+  }
+  
+  /* Ensure generation progress is always visible on mobile */
+  .generation-progress-container {
+    display: block !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Remove the "Create new document" button from pages since it's now in the header */
+  button[aria-label="Create new document"]:not([class*="rounded-full"]) {
+    display: none !important;
+  }
+  
+  /* Remove extra space in headers */
+  header .py-4.sm\:py-6 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+}
