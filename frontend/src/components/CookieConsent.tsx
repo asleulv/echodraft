@@ -46,7 +46,7 @@ const CookieConsent = ({ onAccept, onDecline }: CookieConsentProps) => {
             <h3 className="text-lg font-medium text-primary-900">Cookie Consent</h3>
             <p className="mt-1 text-sm text-primary-600">
               We use cookies and Google Analytics to analyze site usage and improve your experience. 
-              By accepting, you consent to the use of Google Analytics tracking (G-7D9TCG1MSV).
+              By accepting, you consent to the use of Google Analytics tracking.
               See our <Link href="/privacy" className="text-secondary-600 underline hover:text-primary-800">Privacy Policy</Link> for more information.
             </p>
           </div>
