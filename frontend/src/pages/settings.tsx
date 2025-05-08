@@ -152,7 +152,7 @@ export default function Settings() {
                   onClick={() => setActiveTab('password')}
                   className={`py-4 px-6 text-sm font-medium flex items-center ${
                     activeTab === 'password'
-                      ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400'
+                      ? 'border-b-2 border-primary-500 text-primary-600 dark:text-secondary-400'
                       : 'text-primary-500 hover:text-primary-700 hover:border-primary-300 dark:text-primary-400 dark:hover:text-primary-300'
                   }`}
                 >
@@ -163,7 +163,7 @@ export default function Settings() {
                   onClick={() => setActiveTab('appearance')}
                   className={`py-4 px-6 text-sm font-medium flex items-center ${
                     activeTab === 'appearance'
-                      ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400'
+                      ? 'border-b-2 border-primary-500 text-primary-600 dark:text-secondary-400'
                       : 'text-primary-500 hover:text-primary-700 hover:border-primary-300 dark:text-primary-400 dark:hover:text-primary-300'
                   }`}
                 >
@@ -178,7 +178,7 @@ export default function Settings() {
                   onClick={() => setActiveTab('general')}
                   className={`py-4 px-6 text-sm font-medium flex items-center ${
                     activeTab === 'general'
-                      ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400'
+                      ? 'border-b-2 border-primary-500 text-primary-600 dark:text-secondary-400'
                       : 'text-primary-500 hover:text-primary-700 hover:border-primary-300 dark:text-primary-400 dark:hover:text-primary-300'
                   }`}
                 >
@@ -315,12 +315,15 @@ export default function Settings() {
               {/* General tab */}
               {activeTab === 'general' && (
                 <div>
-                  <h3 className="text-lg leading-6 font-medium text-primary-600 dark:text-primary-400 mb-4">
+                  <h3 className="text-lg leading-6 font-medium text-primary-500 mb-4">
                     General Settings
                   </h3>
                   <div className="space-y-6">
                     <div>
-                      <h4 className="text-md font-medium text-primary-700 dark:text-primary-300 mb-2">
+                    <p className="text-sm text-danger-500">
+                        English is the only available language at the moment.
+                      </p>
+                      <h4 className="text-md font-medium text-primary-500 mb-2">
                         Language
                       </h4>
                       <select
@@ -328,10 +331,7 @@ export default function Settings() {
                         defaultValue="en"
                       >
                         <option value="en">English</option>
-                        <option value="no">Norwegian</option>
-                        <option value="es">Spanish</option>
-                        <option value="fr">French</option>
-                        <option value="de">German</option>
+
                       </select>
                       <p className="mt-2 text-sm text-primary-500 dark:text-primary-500">
                         Select your preferred language for the application interface.
@@ -341,18 +341,18 @@ export default function Settings() {
                     {/* Time Zone settings removed as they are not used */}
                     
                     <div className="mt-6 border-t border-gray-200 pt-6">
-                      <h4 className="text-md font-medium text-primary-700 dark:text-primary-300 mb-2 flex items-center">
+                      <h4 className="text-md font-medium text-primary-500 mb-2 flex items-center">
                         <Clock className="w-4 h-4 mr-2" />
                         Session Settings
                       </h4>
                       
                       {/* Inactivity Timeout */}
                       <div className="mt-4">
-                        <label className="block text-sm font-medium text-primary-700 dark:text-primary-300">
+                        <label className="block text-sm font-medium text-primary-500">
                           Auto-logout after inactivity
                         </label>
                         <select 
-                          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                          className="mt-1 block w-full pl-3 pr-10 py-2 text-primary-500 border-secondary-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
                           value={inactivityTimeout}
                           onChange={(e) => setInactivityTimeout(e.target.value)}
                         >
@@ -381,7 +381,7 @@ export default function Settings() {
                             />
                           </div>
                           <div className="ml-3 text-sm">
-                            <label htmlFor="stayLoggedIn" className="font-medium text-primary-700 dark:text-primary-300">
+                            <label htmlFor="stayLoggedIn" className="font-medium text-primary-500">
                               Stay logged in
                             </label>
                             <p className="text-primary-500 dark:text-primary-500">

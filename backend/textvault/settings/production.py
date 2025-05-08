@@ -8,6 +8,8 @@ import dj_database_url
 from dotenv import load_dotenv
 from .base import *
 
+print("Starting to load production settings...")
+
 # Load environment variables from .env.production file
 env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env.production')
 load_dotenv(env_file)
@@ -56,6 +58,7 @@ else:
     # For testing production settings locally
     print("Running in testing mode - security settings relaxed")
 
+print("Loading database settings...")
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
@@ -64,6 +67,7 @@ DATABASES = {
         conn_max_age=600
     )
 }
+print("Database settings loaded...")
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
@@ -217,3 +221,5 @@ LOGGING = {
 
 # Ensure logs directory exists
 os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
+
+print("Production settings completely loaded!")

@@ -18,6 +18,7 @@ import {
 import WorkFlowDiagram from "@/components/icons/WorkFlowDiagram";
 import EchopenIcon from "@/components/icons/EchopenIcon";
 import ScreenshotShowcase from "@/components/ScreenshotShowcase";
+import WaveDivider from "@/components/WaveDivider";
 
 // FAQ Item Component
 function FaqItem({ question, answer }: { question: string; answer: string }) {
@@ -148,7 +149,7 @@ export default function Home() {
         {/* Diagram Section */}
         <section
           aria-labelledby="workflow-heading"
-          className="bg-primary-50 py-16"
+          className="bg-primary-50 py-16 relative"
         >
           <div className="container mx-auto px-4 text-center">
             <h2
@@ -166,12 +167,24 @@ export default function Home() {
               and relevance.{" "}
             </p>
           </div>
+
+          <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
+            <svg
+              viewBox="0 0 1200 120"
+              preserveAspectRatio="none"
+              className="w-full h-[60px] rotate-180"
+            >
+              <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-primary-100 dark:fill-primary-100" >\</path>
+
+            </svg>
+          </div>
+
         </section>
 
         {/* What Echodraft Does Section */}
         <section
           aria-labelledby="features-heading"
-          className="bg-gradient-to-b from-primary-100 via-primary-50 to-primary-100 py-16"
+          className="bg-gradient-to-b from-primary-100 via-primary-50 to-primary-100 py-16 pb-24 relative"
         >
           <div className="container mx-auto px-4">
             <h2
@@ -235,19 +248,47 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Wave divider at bottom of section */}
+          <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
+            <svg
+              viewBox="0 0 1200 120"
+              preserveAspectRatio="none"
+              className="w-full h-[60px] rotate-180"
+            >
+              <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                className="fill-white dark:fill-primary-50"
+              ></path>
+            </svg>
+          </div>
         </section>
 
         {/* Screenshot Showcase Section */}
         <section
           id="screenshots"
           aria-label="Product Screenshots"
-          className="pt-0"
+          className="pt-0 relative pb-16 bg-primary-50"
         >
           <ScreenshotShowcase />
+          
+          {/* Wave divider at bottom of section */}
+          <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
+            <svg
+              viewBox="0 0 1200 120"
+              preserveAspectRatio="none"
+              className="w-full h-[60px] rotate-180"
+            >
+              <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                className="fill-primary-100 dark:fill-primary-100"
+              ></path>
+            </svg>
+          </div>
         </section>
 
         {/* FAQ Section */}
-        <section aria-labelledby="faq-heading" className="bg-primary-100 py-16">
+        <section aria-labelledby="faq-heading" className="bg-primary-100 py-16 pb-24 relative">
           <div className="container mx-auto px-4">
             <h2
               id="faq-heading"
@@ -285,12 +326,26 @@ export default function Home() {
               </div>
             </div>
           </div>
+          
+          {/* Wave divider at bottom of section */}
+          <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
+            <svg
+              viewBox="0 0 1200 120"
+              preserveAspectRatio="none"
+              className="w-full h-[60px] rotate-180"
+            >
+              <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                className="fill-primary-50 dark:fill-primary-50"
+              ></path>
+            </svg>
+          </div>
         </section>
 
         {/* Use Cases Section */}
         <section
           aria-labelledby="use-cases-heading"
-          className="bg-primary-50 py-16"
+          className="bg-primary-50 py-16 pb-24 relative"
         >
           <div className="container mx-auto px-4">
             <h2
@@ -334,6 +389,20 @@ export default function Home() {
                 </p>
               </div>
             </div>
+          </div>
+          
+          {/* Wave divider at bottom of section */}
+          <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
+            <svg
+              viewBox="0 0 1200 120"
+              preserveAspectRatio="none"
+              className="w-full h-[60px] rotate-180"
+            >
+              <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                className="fill-secondary-100 dark:fill-secondary-100"
+              ></path>
+            </svg>
           </div>
         </section>
 

@@ -8,7 +8,7 @@ const screenshotData = [
     id: 1,
     title: "Organize Your Content",
     description:
-      "Once signed up to echodraft you will create categories and add your documents with tags for better searchability",
+      "Once signed up to echodraft you will create categories and add your texts with tags for better searchability",
   },
   {
     id: 2,
