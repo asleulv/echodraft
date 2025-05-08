@@ -2,7 +2,7 @@ from rest_framework import status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
-import openai
+from openai import OpenAI
 import json
 import re
 import random
@@ -163,10 +163,10 @@ def generate_title_from_content(content, model=None):
             
         # Get OpenAI API key from settings
         from django.conf import settings
-        openai.api_key = settings.OPENAI_API_KEY
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
         
         # Call OpenAI API with a simple prompt for title generation
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that generates concise, descriptive titles."},
@@ -250,7 +250,7 @@ def condense_style_guide(style_guide, model=None, user=None):
     try:
         # Get OpenAI API key from settings
         from django.conf import settings
-        openai.api_key = settings.OPENAI_API_KEY
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
         
         # Get the organization from the user if provided
         organization = user.organization if user else None
@@ -290,7 +290,7 @@ Keep your response under 100 words. Focus only on the most distinctive and impor
         
         # Call OpenAI API for style condensation
         print(f"Using analysis_temperature={analysis_temperature} for style condensation")
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": "You are a professional writing style analyst who specializes in creating concise style instructions from detailed style guides."},
@@ -332,7 +332,7 @@ def analyze_document_style(combined_content, model=None, user=None):
     try:
         # Get OpenAI API key from settings
         from django.conf import settings
-        openai.api_key = settings.OPENAI_API_KEY
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
         
         # Get the organization from the user if provided
         organization = user.organization if user else None
@@ -402,7 +402,7 @@ Format your response as a comprehensive style guide with clear sections and spec
         
         # Call OpenAI API for style analysis
         print(f"Using analysis_temperature={analysis_temperature} for style analysis")
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": "You are a professional writing style analyst. Your task is to analyze the tone, style, and voice of the provided text in a creative and engaging way. Focus on the emotional intensity, passion, and vivid imagery used in the writing. Highlight any use of metaphors, symbolism, or allusions that give the text its unique flair. Describe the energy, mood, and impact of the text without going into overly technical language or breaking down individual sentence structures."},
@@ -1161,7 +1161,7 @@ Your response MUST:
     
     try:
         # Set OpenAI API key from settings
-        openai.api_key = openai_api_key
+        client = OpenAI(api_key=openai_api_key)
         
         # Get system message from database or use default
         system_message = AIPromptTemplate.get_template('system_message', user.organization)
@@ -1252,7 +1252,7 @@ ADDITIONAL CRITICAL INSTRUCTIONS:
         # Call OpenAI API
         print("=" * 80)
         print(f"CALLING OPENAI API with model={model}, temperature={temperature}, max_tokens={api_max_tokens}...")
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_message},
@@ -1260,7 +1260,7 @@ ADDITIONAL CRITICAL INSTRUCTIONS:
             ],
             max_tokens=api_max_tokens,
             temperature=temperature,
-            request_timeout=90  # 90 seconds timeout for the OpenAI API call
+            timeout=90  # 90 seconds timeout for the OpenAI API call
         )
         print("API RESPONSE RECEIVED")
         
