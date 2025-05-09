@@ -210,7 +210,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
         <title>{`${title} | echodraft`}</title>
         <meta
           name="description"
-          content="echodraft uses AI to turn your existing text into polished, reusable content — perfect for marketers, teams, and creators who want to save time and stay on-brand."
+          content="echodraft uses AI to turn your existing text into polished, reusable content — perfect for teams, marketers, and creators who want to save time."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta charSet="utf-8" />
@@ -233,7 +233,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
         <meta property="og:title" content={`${title} | echodraft`} />
         <meta
           property="og:description"
-          content="echodraft uses AI to turn your existing text into polished, reusable content — perfect for marketers, teams, and creators who want to save time and stay on-brand."
+          content="echodraft uses AI to turn your existing text into polished, reusable content — perfect for teams, marketers, and creators who want to save time."
         />
         <meta
           property="og:image"
@@ -246,7 +246,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
         <meta property="twitter:title" content={`${title} | echodraft`} />
         <meta
           property="twitter:description"
-          content="echodraft uses AI to turn your existing text into polished, reusable content — perfect for marketers, teams, and creators who want to save time and stay on-brand."
+          content="echodraft uses AI to turn your existing text into polished, reusable content — perfect for teams, marketers, and creators who want to save time."
         />
         <meta
           property="twitter:image"
