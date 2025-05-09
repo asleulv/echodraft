@@ -48,7 +48,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 
 export default function Home() {
   return (
-    <Layout title="AI Content Generator">
+    <Layout title="AI Text Generator">
       <Head>
         {/* JSON-LD structured data for SaaS product */}
         <script
@@ -66,7 +66,7 @@ export default function Home() {
                 priceCurrency: "USD",
               },
               description:
-                "echodraft turns your best posts into reusable, on-brand content using AI — so you never start from scratch again.",
+                "echodraft turns your best texts into reusable, on-brand content using AI — so you never start from scratch again.",
               aggregateRating: {
                 "@type": "AggregateRating",
                 ratingValue: "5",
@@ -81,7 +81,7 @@ export default function Home() {
         {/* Additional SEO meta tags */}
         <meta
           name="keywords"
-          content="AI content generator, content repurposing, AI writing assistant, content creation tool, brand consistency, AI writing tool"
+          content="AI text generator, content repurposing, AI writing assistant, content creation tool, brand consistency, AI writing tool"
         />
       </Head>
       <div className="min-h-screen">
@@ -163,7 +163,7 @@ export default function Home() {
             </div>
             <p className="text-lg text-primary-600 mt-8 max-w-2xl mx-auto">
               We use AI to analyze successful past content and then generate new
-              content in the same style, tone, and feel, ensuring consistency
+              texts in the same style, tone, and feel, ensuring consistency
               and relevance.{" "}
             </p>
           </div>
@@ -203,7 +203,7 @@ export default function Home() {
                   Save & Organize
                 </h3>
                 <p className="text-primary-500">
-                  Easily archive your past posts. Tag them with custom labels to
+                  Easily archive your past texts. Tag them with custom labels to
                   keep things tidy and searchable.
                 </p>
               </div>
