@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import TextDocument, Comment, DocumentPDFExport, StyleConstraint
+import os
 
 User = get_user_model()
 
@@ -167,30 +168,19 @@ class DocumentPDFExportSerializer(serializers.ModelSerializer):
         return f"{obj.created_by.first_name} {obj.created_by.last_name}".strip() or obj.created_by.username
     
     def get_share_url(self, obj):
-        """Get the shareable URL for the PDF."""
+        """Get the shareable URL for the document (PDF or HTML)."""
         request = self.context.get('request')
         if request is None:
             return None
         
-        # Get the host from the request
-        host = request.get_host()
-        
-        # Determine the protocol (http or https)
+        # Get the protocol (http or https)
         protocol = 'https' if request.is_secure() else 'http'
         
-        # Extract the domain part (without port) for the frontend URL
-        domain = host.split(':')[0]
+        # Get the frontend URL from environment variables
+        frontend_url = os.getenv('FRONTEND_URL', f"{protocol}://localhost:3000")  # Default to local if not set
         
-        # Use the same domain for the frontend, but with the frontend port
-        # In development, this is typically 3000 for Next.js
-        frontend_port = '3000'
-        frontend_host = f"{domain}:{frontend_port}"
-        
-        # Construct the frontend URL
-        frontend_url = f"{protocol}://{frontend_host}"
-        
-        # Construct the URL for the shared PDF using the frontend route
-        return f"{frontend_url}/shared/pdf/{obj.uuid}"
+        # Construct the URL for the shared HTML document
+        return f"{frontend_url}/shared/html/{obj.uuid}"
     
     def get_expiration_display(self, obj):
         """Get a human-readable expiration time."""
