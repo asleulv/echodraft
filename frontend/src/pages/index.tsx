@@ -3,22 +3,13 @@ import Layout from "@/components/Layout";
 import Link from "next/link";
 import Head from "next/head";
 import {
-  Text,
-  Share2,
-  UserCheck,
-  ShieldCheck,
-  MousePointerClick,
   Rocket,
-  Archive,
-  Tag,
-  Sparkles,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
 import WorkFlowDiagram from "@/components/icons/WorkFlowDiagram";
 import EchopenIcon from "@/components/icons/EchopenIcon";
 import ScreenshotShowcase from "@/components/ScreenshotShowcase";
-import WaveDivider from "@/components/WaveDivider";
 
 // FAQ Item Component
 function FaqItem({ question, answer }: { question: string; answer: string }) {

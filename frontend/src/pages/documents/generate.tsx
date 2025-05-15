@@ -858,15 +858,11 @@ export default function GenerateDocument() {
                             Micro (50-160 characters)
                           </option>
                           <option value="very_short">
-                            Very Short (150-400 words)
+                            Short (150-400 words)
                           </option>
-                          <option value="short">Short (500-750 words)</option>
+                          <option value="short">Medium (500-750 words)</option>
                           <option value="medium">
-                            Medium (750-1500 words)
-                          </option>
-                          <option value="long">Long (1500-3000 words)</option>
-                          <option value="very_long">
-                            Very Long (3000+ words)
+                            Long (750-1500 words)
                           </option>
                         </select>
                       </div>
