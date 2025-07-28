@@ -87,7 +87,7 @@ export default function Home() {
                 id="hero-heading"
                 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight 
                           bg-clip-text text-transparent 
-                          bg-gradient-to-r from-primary-400 to-primary-600
+                          bg-gradient-to-r from-secondary-500 to-primary-600
                           opacity-0 animate-fade-in"
               >
                 Write it Once. Echo it Forever.

@@ -736,6 +736,59 @@ def generate_document_with_ai(request):
     # Prepare content from filtered documents using our smart sampling and truncation
     combined_content = prepare_reference_content(queryset)
     print(f"Combined content length: {len(combined_content)} characters, approximately {count_tokens(combined_content)} tokens")
+    # SUGGESTIONS MODE: Generate 5-10 creative openings/snippets instead of a full document
+    if generation_type == "suggestions":
+        try:
+            client = OpenAI(api_key=openai_api_key)
+            model_settings = get_default_model_settings()
+            model = model_settings['model']
+            temperature = model_settings['temperature']
+            style_instructions = ""
+            if style_guide:
+                style_instructions = (
+                    "Match the following writing style as closely as possible:\n"
+                    f"{style_guide}\n"
+                )
+            prompt = (
+                f"{style_instructions}"
+                f"Based on the following concept, generate 5 to 10 creative, diverse, and engaging opening sentences or short paragraphs that could be used to start a new text. "
+                f"Each suggestion should be unique in tone, structure, or perspective, and should inspire the user to continue writing. "
+                f"Do NOT generate a full document, only beginnings. "
+                f"Return the suggestions as a numbered list, each on a new line.\n\n"
+                f"Concept: {concept}\n"
+                f"{'Style reference: ' + combined_content if combined_content else ''}"
+            )
+            print("SUGGESTIONS MODE PROMPT:")
+            print(prompt)
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "You are a creative writing assistant that generates stylistically-matched, inspiring text openings."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=512,
+                temperature=temperature,
+                timeout=60
+            )
+            ai_output = response.choices[0].message.content.strip()
+            # Parse numbered list into suggestions
+            suggestions = []
+            for line in ai_output.splitlines():
+                match = re.match(r"^\s*\d+\.\s*(.+)", line)
+                if match:
+                    suggestions.append(match.group(1).strip())
+            # Fallback: if parsing fails, return non-empty lines
+            if not suggestions:
+                suggestions = [l.strip() for l in ai_output.splitlines() if l.strip()]
+            return Response({
+                "suggestions": suggestions,
+                "raw_output": ai_output,
+                "style_guide_used": bool(style_guide),
+                "model": model,
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"Error in suggestions mode: {str(e)}")
+            return Response({"error": f"Failed to generate suggestions: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     # Validate that we have selected documents for style analysis
     if generation_type == 'new' and analyze_style_only and not selected_document_ids:

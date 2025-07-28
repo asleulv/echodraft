@@ -22,7 +22,7 @@ const stageMessages = {
 const stageDescriptions = {
   analyzing: 'Filtering documents based on your criteria',
   processing: 'Preparing content for the AI model',
-  generating: 'Creating new content with GPT-4',
+  generating: 'Writing new text with AI',
   formatting: 'Applying HTML formatting and saving'
 };
 
