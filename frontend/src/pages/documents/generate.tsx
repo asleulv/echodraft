@@ -8,6 +8,9 @@ import {
   AlertCircle,
   Check,
   TextSearch,
+  Save,
+  RefreshCw,
+  X,
 } from "lucide-react";
 import DocumentPreviewList from "@/components/DocumentPreviewList";
 import GenerationProgress, {
@@ -22,20 +25,30 @@ export default function GenerateDocument() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [aiGenerationsRemaining, setAiGenerationsRemaining] = useState<number | null>(null);
-  const [isLoadingGenerationLimit, setIsLoadingGenerationLimit] = useState(true);
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | undefined>();
-  const [selectedStatus, setSelectedStatus] = useState<string | undefined>("published");
+  const [aiGenerationsRemaining, setAiGenerationsRemaining] = useState<
+    number | null
+  >(null);
+  const [isLoadingGenerationLimit, setIsLoadingGenerationLimit] =
+    useState(true);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<
+    string | undefined
+  >();
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(
+    "published"
+  );
   const [concept, setConcept] = useState("");
-  const [suggestionLength, setSuggestionLength] = useState("medium"); // ✅ Added suggestion length
+  const [suggestionLength, setSuggestionLength] = useState("medium");
   const [suggestions, setSuggestions] = useState<string[] | null>(null);
-  const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(
+    null
+  );
   const [debugMode, setDebugMode] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
-  const [generationStage, setGenerationStage] = useState<GenerationStage>("analyzing");
+  const [generationStage, setGenerationStage] =
+    useState<GenerationStage>("analyzing");
 
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -62,8 +75,8 @@ export default function GenerateDocument() {
     const fetchSubscriptionInfo = async () => {
       try {
         setIsLoadingGenerationLimit(true);
-        const { default: api } = await import('@/utils/api');
-        const response = await api.get('/subscriptions/organization/');
+        const { default: api } = await import("@/utils/api");
+        const response = await api.get("/subscriptions/organization/");
         if (response.data && response.data.length > 0) {
           setAiGenerationsRemaining(response.data[0].ai_generations_remaining);
         }
@@ -116,26 +129,26 @@ export default function GenerateDocument() {
 
     setGenerationStage("analyzing");
 
-    // ✅ Improved validation
     if (!concept.trim()) {
       setError("Please enter a concept for your new document.");
       setIsSubmitting(false);
       return;
     }
     if (selectedDocumentIds.length === 0) {
-      setError("Please select at least one document to use as a style reference.");
+      setError(
+        "Please select at least one document to use as a style reference."
+      );
       setIsSubmitting(false);
       return;
     }
 
     try {
-      // ✅ Updated request body with suggestion length, removed style guide
       const requestBody = {
         generation_type: "suggestions",
         concept: concept.trim(),
         selected_document_ids: selectedDocumentIds,
         debug_mode: debugMode,
-        suggestion_length: suggestionLength, // ✅ Added suggestion length
+        suggestion_length: suggestionLength,
       };
 
       setTimeout(() => setGenerationStage("processing"), 1000);
@@ -149,7 +162,9 @@ export default function GenerateDocument() {
 
       if (data.suggestions) {
         setSuggestions(data.suggestions);
-        setSuccess("Suggestions generated! Click one to use as your document start.");
+        setSuccess(
+          "Suggestions generated! Click one to select it as your document start."
+        );
       } else if (data.debug) {
         setDebugData(data);
         setSuccess("Debug information generated successfully!");
@@ -157,9 +172,10 @@ export default function GenerateDocument() {
         setError("No suggestions returned from the AI.");
       }
     } catch (err: any) {
-      // ✅ Improved error handling
       setError(
-        err.response?.data?.error || err.message || "Failed to generate suggestions. Please try again."
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to generate suggestions. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -168,7 +184,83 @@ export default function GenerateDocument() {
 
   const handleSelectSuggestion = (suggestion: string) => {
     setSelectedSuggestion(suggestion);
-    setSuccess("Suggestion selected! You can now continue writing your document.");
+    setSuccess(
+      "Suggestion selected! Click 'Save to Document' to continue writing your document."
+    );
+  };
+
+  const handleClearSelection = () => {
+    setSelectedSuggestion(null);
+    setSuccess(
+      "Suggestions generated! Click one to select it as your document start."
+    );
+  };
+
+  const handleSaveToDocument = async () => {
+    if (!selectedSuggestion) return;
+
+    // Enhanced null safety checks
+    if (!user || !user.id) {
+      setError("User not properly authenticated. Please log in again.");
+      return;
+    }
+
+    if (!user.organization) {
+      setError("User organization not found. Please contact support.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSuccess("Saving document...");
+
+      const documentData = {
+        title:
+          concept.trim().length > 50
+            ? concept.trim().substring(0, 50) + "..."
+            : concept.trim(),
+        content: selectedSuggestion,
+        status: "draft",
+        category: selectedCategoryFilter
+          ? parseInt(selectedCategoryFilter)
+          : null,
+        tags: selectedTags,
+        organization: (user.organization as any)?.id || user.organization,
+        created_by: user.id,
+      };
+
+      console.log("Creating document with suggestion:", documentData);
+      
+      // Rest of your function...
+      const response = await documentsAPI.createDocument(documentData);
+
+      console.log('API Response:', response);
+      console.log('Response data:', response.data);
+      console.log('Document ID:', response.data?.id);
+
+      if (response.data) {
+        setSuccess("Document saved! Redirecting to editor...");
+        setTimeout(() => {
+          router.push(`/documents/${response.data.id}`);
+        }, 1500);
+      }
+    } catch (err: any) {
+      console.error("Failed to save document:", err);
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to save document. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGenerateNew = () => {
+    setSuggestions(null);
+    setSelectedSuggestion(null);
+    setSuccess(undefined);
   };
 
   return (
@@ -214,18 +306,29 @@ export default function GenerateDocument() {
               documentLength="medium"
             />
           ) : suggestions ? (
-            <div className="bg-primary-100 dark:bg-primary-100 border-4 border-primary-200 rounded-md p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">
-                AI Suggestions for Starting Your Document
-              </h2>
+            <div className="bg-primary-100 dark:bg-primary-100 border-4 border-primary-200 dark:border-primary-300 rounded-md p-6 mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-primary-500">
+                  AI Suggestions for Starting Your Document
+                </h2>
+                <button
+                  type="button"
+                  className="btn-secondary flex items-center gap-2"
+                  onClick={handleGenerateNew}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Generate New Suggestions
+                </button>
+              </div>
+
               <ul className="space-y-3">
                 {suggestions.map((s, idx) => (
                   <li
                     key={idx}
                     className={`cursor-pointer p-3 rounded border transition ${
                       selectedSuggestion === s
-                        ? "bg-success-100 border-success-400"
-                        : "bg-white border-primary-200 hover:bg-primary-50"
+                        ? "bg-success-100 dark:bg-success-900/30 border-success-400 dark:border-success-800 text-success-700 dark:text-success-400"
+                        : "bg-white dark:bg-primary-100 text-primary-600 border-primary-200 dark:border-primary-300 hover:bg-primary-50 dark:hover:bg-primary-200"
                     }`}
                     onClick={() => handleSelectSuggestion(s)}
                   >
@@ -233,36 +336,49 @@ export default function GenerateDocument() {
                   </li>
                 ))}
               </ul>
+
               {selectedSuggestion && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-2">Selected Start:</h3>
-                  <div className="p-4 bg-success-50 border border-success-200 rounded">
-                    {selectedSuggestion}
-                  </div>
-                  <div className="mt-4">
+                <div className="mt-6 p-4 bg-success-50 dark:bg-success-900/30 border border-success-200 dark:border-success-800 rounded">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-semibold text-success-700 dark:text-success-400">
+                      Selected Start:
+                    </h3>
                     <button
                       type="button"
-                      className="btn-primary"
-                      onClick={() => setSuggestions(null)}
+                      onClick={handleClearSelection}
+                      className="text-success-600 dark:text-success-400 hover:text-success-800 dark:hover:text-success-200 p-1"
+                      title="Clear selection"
                     >
-                      Generate New Suggestions
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
+                  <div className="text-success-700 dark:text-success-400 mb-4">
+                    {selectedSuggestion}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-primary flex items-center gap-2"
+                    onClick={handleSaveToDocument}
+                    disabled={isSubmitting}
+                  >
+                    <Save className="h-4 w-4" />
+                    {isSubmitting ? "Saving..." : "Save to Document"}
+                  </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="bg-white dark:bg-primary-100 border border-primary-50 dark:border-primary-100 rounded-md border-4">
+            <div className="bg-white dark:bg-primary-100 border border-primary-200 dark:border-primary-300 rounded-md border-4">
               <form onSubmit={handleSubmit}>
                 <div className="space-y-6">
                   <div>
                     <div className="space-y-2 p-4 bg-primary-50/50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-500">
                       <div className="mb-2 justify-center flex flex-col items-center">
-                        <h3 className="text-lg font-semibold flex items-center text-primary-600">
+                        <h3 className="text-lg font-semibold flex items-center text-primary-600 dark:text-primary-600">
                           <FileCog className="h-5 w-5 mr-2" />
                           AI Suggestions Settings
                         </h3>
-                        <p className="text-sm text-primary-500">
+                        <p className="text-sm text-primary-500 dark:text-primary-500">
                           Configure what you want the AI to generate:
                         </p>
                       </div>
@@ -282,9 +398,11 @@ export default function GenerateDocument() {
                         />
                       </div>
 
-                      {/* ✅ Added suggestion length selector */}
                       <div>
-                        <label htmlFor="suggestionLength" className="form-label">
+                        <label
+                          htmlFor="suggestionLength"
+                          className="form-label"
+                        >
                           Suggestion Length
                         </label>
                         <select
@@ -297,16 +415,20 @@ export default function GenerateDocument() {
                           <option value="short">Short (50-75 words)</option>
                           <option value="medium">Medium (75-125 words)</option>
                           <option value="long">Long (125-200 words)</option>
-                          <option value="detailed">Detailed (200-300 words)</option>
+                          <option value="detailed">
+                            Detailed (200-300 words)
+                          </option>
                         </select>
-                        <p className="mt-1 text-sm text-primary-500">
-                          Choose how detailed you want each opening suggestion to be.
+                        <p className="mt-1 text-sm text-primary-500 dark:text-primary-400">
+                          Choose how detailed you want each opening suggestion
+                          to be.
                         </p>
                       </div>
 
                       {selectedDocumentIds.length === 0 && (
-                        <p className="mt-1 text-sm text-danger-500">
-                          Please select at least one document to use as a style reference.
+                        <p className="mt-1 text-sm text-teal-500">
+                          Please select at least one document to use as a style
+                          reference.
                         </p>
                       )}
                     </div>
@@ -314,12 +436,13 @@ export default function GenerateDocument() {
 
                   <div className="space-y-6 p-4 bg-primary-50/50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-500">
                     <div className="mb-2 justify-center flex flex-col items-center">
-                      <h3 className="text-lg font-semibold flex items-center text-primary-600">
+                      <h3 className="text-lg font-semibold flex items-center text-primary-600 dark:text-primary-600">
                         <TextSearch className="h-5 w-5 mr-2" />
                         Style Sources
                       </h3>
-                      <p className="text-sm text-primary-500">
-                        Filter documents that will influence the AI's writing style:
+                      <p className="text-sm text-primary-500 dark:text-primary-500">
+                        Filter documents that will influence the AI's writing
+                        style:
                       </p>
                     </div>
 
@@ -334,7 +457,9 @@ export default function GenerateDocument() {
                         id="categoryFilter"
                         name="categoryFilter"
                         value={selectedCategoryFilter}
-                        onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                        onChange={(e) =>
+                          setSelectedCategoryFilter(e.target.value)
+                        }
                         className="form-input"
                         disabled={isLoadingCategories}
                       >
@@ -345,8 +470,9 @@ export default function GenerateDocument() {
                           </option>
                         ))}
                       </select>
-                      <p className="mt-1 text-sm text-primary-500">
-                        Only documents from this category will be used for generation.
+                      <p className="mt-1 text-sm text-primary-500 dark:text-primary-400">
+                        Only documents from this category will be used for
+                        generation.
                       </p>
                     </div>
 
@@ -369,8 +495,9 @@ export default function GenerateDocument() {
                         <option value="published">Published</option>
                         <option value="archived">Archived</option>
                       </select>
-                      <p className="mt-1 text-sm text-primary-500">
-                        Only documents with this status will be used for generation.
+                      <p className="mt-1 text-sm text-primary-500 dark:text-primary-400">
+                        Only documents with this status will be used for
+                        generation.
                       </p>
                     </div>
 
@@ -439,8 +566,9 @@ export default function GenerateDocument() {
                           </svg>
                         </button>
                       </div>
-                      <p className="mt-1 text-sm text-primary-500">
-                        Only documents with these tags will be used for generation.
+                      <p className="mt-1 text-sm text-primary-500 dark:text-primary-400">
+                        Only documents with these tags will be used for
+                        generation.
                       </p>
                     </div>
 
@@ -449,12 +577,15 @@ export default function GenerateDocument() {
                         tags={selectedTags}
                         categoryFilter={selectedCategoryFilter}
                         status={selectedStatus}
-                        onSelectedDocumentsChange={handleSelectedDocumentsChange}
+                        onSelectedDocumentsChange={
+                          handleSelectedDocumentsChange
+                        }
                         selectedDocumentIds={selectedDocumentIds}
                       />
                       {selectedDocumentIds.length === 0 && (
-                        <p className="mt-2 text-danger-500 text-sm">
-                          Please select at least one document to use as a style reference.
+                        <p className="mt-2 text-teal-500 text-sm">
+                          Please select at least one document to use as a style
+                          reference.
                         </p>
                       )}
                     </div>
@@ -462,23 +593,28 @@ export default function GenerateDocument() {
 
                   <div className="pt-4 flex flex-col sm:flex-row items-start gap-4 p-6">
                     <div className="flex-grow">
-                      {!isLoadingGenerationLimit && aiGenerationsRemaining !== null && (
-                        <div className="text-hd text-primary-600 mb-4">
-                          <span className="font-semibold">AI Generations Remaining:</span> {aiGenerationsRemaining}
-                          {aiGenerationsRemaining === 0 && (
-                            <div className="mt-1 text-danger-600">
-                              You have reached your monthly AI generation limit. 
-                              <button 
-                                onClick={() => router.push('/subscription')} 
-                                className="ml-1 underline font-semibold text-danger-600 hover:text-danger-400"
-                              >
-                                Upgrade your subscription
-                              </button> 
-                              {" "}to generate more documents.
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      {!isLoadingGenerationLimit &&
+                        aiGenerationsRemaining !== null && (
+                          <div className="text-hd text-primary-600 dark:text-primary-400 mb-4">
+                            <span className="font-semibold">
+                              AI Generations Remaining:
+                            </span>{" "}
+                            {aiGenerationsRemaining}
+                            {aiGenerationsRemaining === 0 && (
+                              <div className="mt-1 text-danger-600 dark:text-danger-400">
+                                You have reached your monthly AI generation
+                                limit.
+                                <button
+                                  onClick={() => router.push("/subscription")}
+                                  className="ml-1 underline font-semibold text-danger-600 hover:text-danger-400 dark:text-danger-400 dark:hover:text-danger-300"
+                                >
+                                  Upgrade your subscription
+                                </button>{" "}
+                                to generate more documents.
+                              </div>
+                            )}
+                          </div>
+                        )}
                     </div>
                     <button
                       type="submit"
@@ -486,14 +622,17 @@ export default function GenerateDocument() {
                       disabled={
                         isSubmitting ||
                         selectedDocumentIds.length === 0 ||
-                        (aiGenerationsRemaining !== null && aiGenerationsRemaining <= 0 && !debugMode)
+                        (aiGenerationsRemaining !== null &&
+                          aiGenerationsRemaining <= 0 &&
+                          !debugMode)
                       }
                     >
                       {isSubmitting
                         ? "Generating..."
                         : debugMode
                         ? "Show Prompt"
-                        : aiGenerationsRemaining !== null && aiGenerationsRemaining <= 0
+                        : aiGenerationsRemaining !== null &&
+                          aiGenerationsRemaining <= 0
                         ? "Limit Reached"
                         : "Generate Suggestions"}
                     </button>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import TextDocument, Comment, DocumentPDFExport, AIPromptTemplate, AIModelSettings, DocumentLengthSettings, StyleConstraint
+from .models import TextDocument, Comment, DocumentPDFExport, AIPromptTemplate, AIModelSettings, StyleConstraint
 
 @admin.register(TextDocument)
 class TextDocumentAdmin(admin.ModelAdmin):
@@ -101,26 +101,6 @@ class AIModelSettingsAdmin(admin.ModelAdmin):
         }),
         (_('Status'), {
             'fields': ('is_active', 'is_default')
-        }),
-        (_('Timestamps'), {
-            'fields': ('created_at', 'updated_at')
-        }),
-    )
-
-
-@admin.register(DocumentLengthSettings)
-class DocumentLengthSettingsAdmin(admin.ModelAdmin):
-    list_display = ('length_name', 'description', 'target_tokens', 'organization', 'is_active')
-    list_filter = ('is_active', 'organization')
-    search_fields = ('length_name', 'description')
-    readonly_fields = ('created_at', 'updated_at')
-    fieldsets = (
-        (None, {
-            'fields': ('length_name', 'description', 'target_tokens', 'is_active')
-        }),
-        (_('Organization'), {
-            'fields': ('organization',),
-            'description': _('If set, these settings will only apply to this organization. Leave blank for global settings.')
         }),
         (_('Timestamps'), {
             'fields': ('created_at', 'updated_at')

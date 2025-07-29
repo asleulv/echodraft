@@ -101,7 +101,7 @@ class TextDocumentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TextDocument
         fields = [
-            'title', 'content', 'organization', 'category', 'tags', 'status'
+            'id','title', 'content', 'organization', 'category', 'tags', 'status'
         ]
     
     def create(self, validated_data):
