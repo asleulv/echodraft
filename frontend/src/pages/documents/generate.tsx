@@ -27,25 +27,15 @@ export default function GenerateDocument() {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | undefined>();
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>("published");
   const [concept, setConcept] = useState("");
+  const [suggestionLength, setSuggestionLength] = useState("medium"); // ✅ Added suggestion length
   const [suggestions, setSuggestions] = useState<string[] | null>(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
   const [debugMode, setDebugMode] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
   const [generationStage, setGenerationStage] = useState<GenerationStage>("analyzing");
-  const [styleGuide, setStyleGuide] = useState<string | null>(null);
-  const [styleConstraintId, setStyleConstraintId] = useState<number | null>(() => {
-    if (typeof window !== 'undefined') {
-      const savedId = localStorage.getItem('styleConstraintId');
-      if (savedId) {
-        return parseInt(savedId, 10);
-      }
-    }
-    return null;
-  });
-  const [isAnalyzingStyle, setIsAnalyzingStyle] = useState(false);
 
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -88,18 +78,6 @@ export default function GenerateDocument() {
     }
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    if (styleConstraintId !== null) {
-      localStorage.setItem('styleConstraintId', styleConstraintId.toString());
-    }
-  }, [styleConstraintId]);
-
-  const clearStyleConstraint = () => {
-    setStyleConstraintId(null);
-    localStorage.removeItem('styleConstraintId');
-    setStyleGuide(null);
-  };
-
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTagInput(e.target.value);
   };
@@ -114,58 +92,17 @@ export default function GenerateDocument() {
   const addTag = () => {
     const trimmedTag = tagInput.trim();
     if (trimmedTag && !selectedTags.includes(trimmedTag)) {
-      clearStyleConstraint();
       setSelectedTags([...selectedTags, trimmedTag]);
       setTagInput("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    clearStyleConstraint();
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleSelectedDocumentsChange = (docIds: number[]) => {
-    if (JSON.stringify(docIds) !== JSON.stringify(selectedDocumentIds)) {
-      setStyleConstraintId(null);
-      localStorage.removeItem('styleConstraintId');
-      setStyleGuide(null);
-    }
     setSelectedDocumentIds(docIds);
-  };
-
-  const analyzeDocumentStyle = async () => {
-    if (selectedDocumentIds.length === 0) {
-      setError("Please select at least one document to use as a style reference.");
-      return;
-    }
-    if (styleConstraintId) {
-      setSuccess("Style constraint already exists. Ready to generate content.");
-      return;
-    }
-    setIsAnalyzingStyle(true);
-    setError(undefined);
-    setSuccess(undefined);
-
-    try {
-      setGenerationStage("analyzing");
-      const requestBody = {
-        selected_document_ids: selectedDocumentIds,
-        style_constraint_id: styleConstraintId
-      };
-      const response = await documentsAPI.analyzeDocumentStyle(requestBody);
-      setStyleGuide(response.data.style_guide);
-      if (response.data.style_constraint_id) {
-        setStyleConstraintId(response.data.style_constraint_id);
-      }
-      setSuccess("Style analysis complete. Ready to generate content.");
-    } catch (err: any) {
-      setError(
-        err.message || "Failed to analyze document style. Please try again."
-      );
-    } finally {
-      setIsAnalyzingStyle(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -179,6 +116,7 @@ export default function GenerateDocument() {
 
     setGenerationStage("analyzing");
 
+    // ✅ Improved validation
     if (!concept.trim()) {
       setError("Please enter a concept for your new document.");
       setIsSubmitting(false);
@@ -191,42 +129,14 @@ export default function GenerateDocument() {
     }
 
     try {
-      if (!styleGuide && !styleConstraintId && selectedDocumentIds.length > 0) {
-        try {
-          const styleAnalysisRequestBody = {
-            selected_document_ids: selectedDocumentIds
-          };
-          const styleResponse = await documentsAPI.analyzeDocumentStyle(styleAnalysisRequestBody);
-          setStyleGuide(styleResponse.data.style_guide);
-          if (styleResponse.data.style_constraint_id) {
-            setStyleConstraintId(styleResponse.data.style_constraint_id);
-          }
-        } catch (styleErr: any) {
-          setError(
-            styleErr.message || "Failed to analyze document style. Please try again."
-          );
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
+      // ✅ Updated request body with suggestion length, removed style guide
       const requestBody = {
-        tags: selectedTags,
-        category_filter: selectedCategoryFilter,
-        status: selectedStatus,
         generation_type: "suggestions",
+        concept: concept.trim(),
+        selected_document_ids: selectedDocumentIds,
         debug_mode: debugMode,
-        selected_document_ids: selectedDocumentIds.length > 0 ? selectedDocumentIds : undefined,
-        concept,
-        style_guide: styleGuide ?? undefined,
-        style_constraint_id: styleConstraintId,
+        suggestion_length: suggestionLength, // ✅ Added suggestion length
       };
-
-      if (!selectedDocumentIds || selectedDocumentIds.length === 0) {
-        setError("Please select at least one document to use as a style reference.");
-        setIsSubmitting(false);
-        return;
-      }
 
       setTimeout(() => setGenerationStage("processing"), 1000);
       setTimeout(() => setGenerationStage("generating"), 2000);
@@ -234,9 +144,7 @@ export default function GenerateDocument() {
       const response = await documentsAPI.generateDocumentWithAI(requestBody);
 
       setGenerationStage("formatting");
-
       const data = response.data;
-
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (data.suggestions) {
@@ -244,13 +152,14 @@ export default function GenerateDocument() {
         setSuccess("Suggestions generated! Click one to use as your document start.");
       } else if (data.debug) {
         setDebugData(data);
-        setSuccess("Prompt generated successfully!");
+        setSuccess("Debug information generated successfully!");
       } else {
         setError("No suggestions returned from the AI.");
       }
     } catch (err: any) {
+      // ✅ Improved error handling
       setError(
-        err.message || "Failed to generate suggestions. Please try again."
+        err.response?.data?.error || err.message || "Failed to generate suggestions. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -354,12 +263,13 @@ export default function GenerateDocument() {
                           AI Suggestions Settings
                         </h3>
                         <p className="text-sm text-primary-500">
-                          Filter documents that will influence the AI's writing style:
+                          Configure what you want the AI to generate:
                         </p>
                       </div>
+
                       <div>
                         <label htmlFor="concept" className="form-label mt-6">
-                          Concept
+                          Concept *
                         </label>
                         <textarea
                           id="concept"
@@ -367,26 +277,41 @@ export default function GenerateDocument() {
                           value={concept}
                           onChange={(e) => setConcept(e.target.value)}
                           className="form-input h-32"
-                          placeholder="Describe what you want the AI to write about. The style will be based on the filtered documents."
+                          placeholder="Describe what you want the AI to write about..."
+                          required
                         />
-                        <div className="mt-4">
-                          <p className="text-sm text-primary-500">
-                            Style will be automatically analyzed when you generate suggestions.
-                          </p>
-                          {styleGuide && (
-                            <div className="mt-2 p-2 bg-success-50 dark:bg-success-900/30 border border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 rounded">
-                              <p className="text-sm">Style analysis complete! The AI will use this style guide when generating your suggestions.</p>
-                            </div>
-                          )}
-                          {selectedDocumentIds.length === 0 && (
-                            <p className="mt-1 text-sm text-danger-500">
-                              Please select at least one document below to use as a style reference.
-                            </p>
-                          )}
-                        </div>
                       </div>
+
+                      {/* ✅ Added suggestion length selector */}
+                      <div>
+                        <label htmlFor="suggestionLength" className="form-label">
+                          Suggestion Length
+                        </label>
+                        <select
+                          id="suggestionLength"
+                          name="suggestionLength"
+                          value={suggestionLength}
+                          onChange={(e) => setSuggestionLength(e.target.value)}
+                          className="form-input"
+                        >
+                          <option value="short">Short (50-75 words)</option>
+                          <option value="medium">Medium (75-125 words)</option>
+                          <option value="long">Long (125-200 words)</option>
+                          <option value="detailed">Detailed (200-300 words)</option>
+                        </select>
+                        <p className="mt-1 text-sm text-primary-500">
+                          Choose how detailed you want each opening suggestion to be.
+                        </p>
+                      </div>
+
+                      {selectedDocumentIds.length === 0 && (
+                        <p className="mt-1 text-sm text-danger-500">
+                          Please select at least one document to use as a style reference.
+                        </p>
+                      )}
                     </div>
                   </div>
+
                   <div className="space-y-6 p-4 bg-primary-50/50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-500">
                     <div className="mb-2 justify-center flex flex-col items-center">
                       <h3 className="text-lg font-semibold flex items-center text-primary-600">
@@ -397,6 +322,7 @@ export default function GenerateDocument() {
                         Filter documents that will influence the AI's writing style:
                       </p>
                     </div>
+
                     <div>
                       <label
                         htmlFor="categoryFilter"
@@ -408,10 +334,7 @@ export default function GenerateDocument() {
                         id="categoryFilter"
                         name="categoryFilter"
                         value={selectedCategoryFilter}
-                        onChange={(e) => {
-                          clearStyleConstraint();
-                          setSelectedCategoryFilter(e.target.value);
-                        }}
+                        onChange={(e) => setSelectedCategoryFilter(e.target.value)}
                         className="form-input"
                         disabled={isLoadingCategories}
                       >
@@ -426,6 +349,7 @@ export default function GenerateDocument() {
                         Only documents from this category will be used for generation.
                       </p>
                     </div>
+
                     <div>
                       <label
                         htmlFor="status"
@@ -437,10 +361,7 @@ export default function GenerateDocument() {
                         id="status"
                         name="status"
                         value={selectedStatus}
-                        onChange={(e) => {
-                          clearStyleConstraint();
-                          setSelectedStatus(e.target.value);
-                        }}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
                         className="form-input"
                       >
                         <option value="">All Statuses</option>
@@ -452,6 +373,7 @@ export default function GenerateDocument() {
                         Only documents with this status will be used for generation.
                       </p>
                     </div>
+
                     <div>
                       <label
                         htmlFor="tags"
@@ -521,7 +443,23 @@ export default function GenerateDocument() {
                         Only documents with these tags will be used for generation.
                       </p>
                     </div>
+
+                    <div className="mt-6">
+                      <DocumentPreviewList
+                        tags={selectedTags}
+                        categoryFilter={selectedCategoryFilter}
+                        status={selectedStatus}
+                        onSelectedDocumentsChange={handleSelectedDocumentsChange}
+                        selectedDocumentIds={selectedDocumentIds}
+                      />
+                      {selectedDocumentIds.length === 0 && (
+                        <p className="mt-2 text-danger-500 text-sm">
+                          Please select at least one document to use as a style reference.
+                        </p>
+                      )}
+                    </div>
                   </div>
+
                   <div className="pt-4 flex flex-col sm:flex-row items-start gap-4 p-6">
                     <div className="flex-grow">
                       {!isLoadingGenerationLimit && aiGenerationsRemaining !== null && (

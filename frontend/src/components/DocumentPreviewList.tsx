@@ -10,6 +10,7 @@ interface DocumentPreviewListProps {
   categoryFilter?: string;
   status?: string;
   onSelectedDocumentsChange?: (selectedDocIds: number[]) => void;
+  selectedDocumentIds?: number[]; 
 }
 
 const MAX_SELECTED_DOCS = 3;
