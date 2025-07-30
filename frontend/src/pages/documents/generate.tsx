@@ -12,6 +12,9 @@ import SaveSelectionActions from "./generate/SaveSelectionActions";
 import StatusAlerts from "./generate/StatusAlerts";
 
 export default function GenerateDocument() {
+  // Progressive form stage
+  const [formStage, setFormStage] = useState<'concept' | 'sources' | 'ready'>('concept');
+  
   // State declarations (all your state from original code)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | React.ReactNode | undefined>();
@@ -95,7 +98,22 @@ export default function GenerateDocument() {
   const removeTag = (tagToRemove: string) => setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   const handleSelectedDocumentsChange = (docIds: number[]) => setSelectedDocumentIds(docIds);
 
-  // Form submission logic unchanged
+  // Progressive form handlers
+  const handleConceptComplete = () => {
+    if (concept.trim()) {
+      setFormStage('sources');
+      setError(undefined); // Clear any previous errors
+    }
+  };
+
+  const handleEditConcept = () => {
+    setFormStage('concept');
+    setSuggestions(null);
+    setSelectedSuggestions([]);
+    setSuccess(undefined);
+  };
+
+  // Form submission logic - moves to ready stage on success
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -139,6 +157,7 @@ export default function GenerateDocument() {
       if (data.suggestions) {
         setSuggestions(data.suggestions);
         setSuccess("Suggestions generated! Select one or more paragraphs to add to your new document.");
+        setFormStage('ready'); // Move to suggestions stage
       } else if (data.debug) {
         setDebugData(data);
         setSuccess("Debug information generated successfully!");
@@ -204,9 +223,9 @@ export default function GenerateDocument() {
     } catch (err: any) {
       setError(
         err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to save document. Please try again."
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to save document. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -217,6 +236,7 @@ export default function GenerateDocument() {
     setSuggestions(null);
     setSelectedSuggestions([]);
     setSuccess(undefined);
+    setFormStage('concept');
   };
 
   return (
@@ -225,28 +245,11 @@ export default function GenerateDocument() {
         <div className="px-4 py-6 sm:px-0">
           <StatusAlerts error={error} success={success} debugData={debugData} clearDebugData={() => setDebugData(null)} />
 
-          {isSubmitting ? (
-            <GenerationProgress stage={generationStage} documentLength="medium" />
-          ) : suggestions ? (
-            <>
-              <SuggestionsList
-                suggestions={suggestions}
-                selectedSuggestions={selectedSuggestions}
-                toggleSuggestionSelection={toggleSuggestionSelection}
-                handleClearSelection={handleClearSelection}
-                handleGenerateNew={handleGenerateNew}
-              />
-              {selectedSuggestions.length > 0 && (
-                <SaveSelectionActions
-                  selectedCount={selectedSuggestions.length}
-                  handleClearSelection={handleClearSelection}
-                  handleSaveToDocument={handleSaveToDocument}
-                  isSubmitting={isSubmitting}
-                />
-              )}
-            </>
-          ) : (
+          {/* Only show form when not generating and no suggestions yet */}
+          {!isSubmitting && formStage !== 'ready' && (
             <AISettingsForm
+              stage={formStage}
+              onConceptComplete={handleConceptComplete}
               concept={concept}
               setConcept={setConcept}
               suggestionLength={suggestionLength}
@@ -275,9 +278,40 @@ export default function GenerateDocument() {
               setDebugMode={setDebugMode}
             />
           )}
+
+          {isSubmitting && (
+            <GenerationProgress stage={generationStage} documentLength="medium" />
+          )}
+
+          {formStage === 'ready' && suggestions && (
+            <>
+              <button 
+                onClick={handleEditConcept} 
+                className="btn-secondary mb-4"
+              >
+                ← Edit Concept & Sources
+              </button>
+              
+              <SuggestionsList
+                suggestions={suggestions}
+                selectedSuggestions={selectedSuggestions}
+                toggleSuggestionSelection={toggleSuggestionSelection}
+                handleClearSelection={handleClearSelection}
+                handleGenerateNew={handleGenerateNew}
+              />
+
+              {selectedSuggestions.length > 0 && (
+                <SaveSelectionActions
+                  selectedCount={selectedSuggestions.length}
+                  handleClearSelection={handleClearSelection}
+                  handleSaveToDocument={handleSaveToDocument}
+                  isSubmitting={isSubmitting}
+                />
+              )}
+            </>
+          )}
         </div>
       </main>
     </Layout>
   );
 }
-
