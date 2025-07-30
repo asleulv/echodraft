@@ -39,9 +39,8 @@ export default function GenerateDocument() {
   const [concept, setConcept] = useState("");
   const [suggestionLength, setSuggestionLength] = useState("medium");
   const [suggestions, setSuggestions] = useState<string[] | null>(null);
-  const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(
-    null
-  );
+  // Changed from single selection to multiple selections:
+  const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [debugMode, setDebugMode] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
@@ -124,7 +123,7 @@ export default function GenerateDocument() {
     setError(undefined);
     setSuccess(undefined);
     setSuggestions(null);
-    setSelectedSuggestion(null);
+    setSelectedSuggestions([]);
     setDebugData(null);
 
     setGenerationStage("analyzing");
@@ -163,7 +162,7 @@ export default function GenerateDocument() {
       if (data.suggestions) {
         setSuggestions(data.suggestions);
         setSuccess(
-          "Suggestions generated! Click one to select it as your document start."
+          "Suggestions generated! Select one or more paragraphs to add to your new document."
         );
       } else if (data.debug) {
         setDebugData(data);
@@ -182,24 +181,29 @@ export default function GenerateDocument() {
     }
   };
 
-  const handleSelectSuggestion = (suggestion: string) => {
-    setSelectedSuggestion(suggestion);
-    setSuccess(
-      "Suggestion selected! Click 'Save to Document' to continue writing your document."
+  // Toggle function for multi-selection of suggestions:
+  const toggleSuggestionSelection = (suggestion: string) => {
+    setSelectedSuggestions((prev) =>
+      prev.includes(suggestion)
+        ? prev.filter((s) => s !== suggestion)
+        : [...prev, suggestion]
     );
   };
 
+  // Clear all selections:
   const handleClearSelection = () => {
-    setSelectedSuggestion(null);
+    setSelectedSuggestions([]);
     setSuccess(
-      "Suggestions generated! Click one to select it as your document start."
+      "Suggestions generated! Select one or more paragraphs to add to your new document."
     );
   };
 
   const handleSaveToDocument = async () => {
-    if (!selectedSuggestion) return;
+    if (selectedSuggestions.length === 0) {
+      setError("Please select at least one suggestion to save.");
+      return;
+    }
 
-    // Enhanced null safety checks
     if (!user || !user.id) {
       setError("User not properly authenticated. Please log in again.");
       return;
@@ -214,12 +218,16 @@ export default function GenerateDocument() {
       setIsSubmitting(true);
       setSuccess("Saving document...");
 
+      const combinedContent = selectedSuggestions
+        .map((paragraph) => `<p>${paragraph.trim()}</p>`)
+        .join("\n");
+
       const documentData = {
         title:
           concept.trim().length > 50
             ? concept.trim().substring(0, 50) + "..."
             : concept.trim(),
-        content: selectedSuggestion,
+        content: combinedContent,
         status: "draft",
         category: selectedCategoryFilter
           ? parseInt(selectedCategoryFilter)
@@ -229,14 +237,13 @@ export default function GenerateDocument() {
         created_by: user.id,
       };
 
-      console.log("Creating document with suggestion:", documentData);
-      
-      // Rest of your function...
+      console.log("Creating document with combined suggestions:", documentData);
+
       const response = await documentsAPI.createDocument(documentData);
 
-      console.log('API Response:', response);
-      console.log('Response data:', response.data);
-      console.log('Document ID:', response.data?.id);
+      console.log("API Response:", response);
+      console.log("Response data:", response.data);
+      console.log("Document ID:", response.data?.id);
 
       if (response.data) {
         setSuccess("Document saved! Redirecting to editor...");
@@ -259,7 +266,7 @@ export default function GenerateDocument() {
 
   const handleGenerateNew = () => {
     setSuggestions(null);
-    setSelectedSuggestion(null);
+    setSelectedSuggestions([]);
     setSuccess(undefined);
   };
 
@@ -284,7 +291,9 @@ export default function GenerateDocument() {
           {debugData && (
             <div className="bg-white dark:bg-primary-100 border border-primary-200 dark:border-primary-300 rounded-md p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Debug Information</h2>
-              <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(debugData, null, 2)}</pre>
+              <pre className="text-sm whitespace-pre-wrap">
+                {JSON.stringify(debugData, null, 2)}
+              </pre>
               <div className="flex space-x-4 mt-4">
                 <button
                   type="button"
@@ -325,23 +334,30 @@ export default function GenerateDocument() {
                 {suggestions.map((s, idx) => (
                   <li
                     key={idx}
-                    className={`cursor-pointer p-3 rounded border transition ${
-                      selectedSuggestion === s
+                    className={`rounded border transition ${
+                      selectedSuggestions.includes(s)
                         ? "bg-success-100 dark:bg-success-900/30 border-success-400 dark:border-success-800 text-success-700 dark:text-success-400"
                         : "bg-white dark:bg-primary-100 text-primary-600 border-primary-200 dark:border-primary-300 hover:bg-primary-50 dark:hover:bg-primary-200"
                     }`}
-                    onClick={() => handleSelectSuggestion(s)}
                   >
-                    {s}
+                    <label className="flex items-start cursor-pointer p-3 select-none">
+                      <input
+                        type="checkbox"
+                        checked={selectedSuggestions.includes(s)}
+                        onChange={() => toggleSuggestionSelection(s)}
+                        className="mt-1"
+                      />
+                      <span className="ml-3 whitespace-pre-wrap">{s}</span>
+                    </label>
                   </li>
                 ))}
               </ul>
 
-              {selectedSuggestion && (
+              {selectedSuggestions.length > 0 && (
                 <div className="mt-6 p-4 bg-success-50 dark:bg-success-900/30 border border-success-200 dark:border-success-800 rounded">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-semibold text-success-700 dark:text-success-400">
-                      Selected Start:
+                      Selected Paragraphs: {selectedSuggestions.length}
                     </h3>
                     <button
                       type="button"
@@ -352,9 +368,6 @@ export default function GenerateDocument() {
                       <X className="h-4 w-4" />
                     </button>
                   </div>
-                  <div className="text-success-700 dark:text-success-400 mb-4">
-                    {selectedSuggestion}
-                  </div>
                   <button
                     type="button"
                     className="btn-primary flex items-center gap-2"
@@ -362,7 +375,7 @@ export default function GenerateDocument() {
                     disabled={isSubmitting}
                   >
                     <Save className="h-4 w-4" />
-                    {isSubmitting ? "Saving..." : "Save to Document"}
+                    {isSubmitting ? "Saving..." : "Save Selected to Document"}
                   </button>
                 </div>
               )}
