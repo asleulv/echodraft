@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { documentsAPI } from '@/utils/api';
 import { Document } from '@/types/api';
-import { FileText, ChevronDown, ChevronUp, ExternalLink, CheckCircle, Circle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp, ExternalLink, Check, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { formatDate } from '@/utils/dateUtils';
 
@@ -243,13 +243,20 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
                     >
                       <div className="flex justify-between items-start">
                         <div className="flex items-center">
-                          <button
-                            onClick={() => toggleDocSelection(doc.id)}
-                            className="mr-2 text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-                            aria-label="Deselect document"
-                          >
-                            <CheckCircle className="h-5 w-5" />
-                          </button>
+                          <label className="flex items-center cursor-pointer mr-2">
+                            <input
+                              type="checkbox"
+                              className="hidden"
+                              checked={selectedDocs.includes(doc.id)}
+                              onChange={() => toggleDocSelection(doc.id)}
+                              aria-label="Deselect document"
+                            />
+                            <span className="relative flex items-center justify-center w-5 h-5 border-2 border-primary-300 rounded-full transition-colors duration-200 bg-primary-200 dark:bg-primary-200 hover:bg-primary-300 dark:hover:bg-primary-50">
+                              {selectedDocs.includes(doc.id) && (
+                                <Check className="w-3 h-3 text-primary-600" />
+                              )}
+                            </span>
+                          </label>
                           <h4 
                             className="text-md font-medium text-primary-600 dark:text-primary-500 cursor-pointer hover:text-primary-800 dark:hover:text-primary-300"
                             onClick={() => viewDocument(doc.slug)}
@@ -327,14 +334,21 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center">
-                      <button
-                        onClick={() => toggleDocSelection(doc.id)}
-                        className="mr-2 text-primary-300 hover:text-primary-500 dark:text-primary-600 dark:hover:text-primary-400"
-                        aria-label="Select document"
-                        disabled={selectedDocs.length >= MAX_SELECTED_DOCS}
-                      >
-                        <Circle className="h-5 w-5" />
-                      </button>
+                      <label className="flex items-center cursor-pointer mr-2">
+                        <input
+                          type="checkbox"
+                          className="hidden"
+                          checked={selectedDocs.includes(doc.id)}
+                          onChange={() => toggleDocSelection(doc.id)}
+                          disabled={selectedDocs.length >= MAX_SELECTED_DOCS}
+                          aria-label="Select document"
+                        />
+                        <span className={`relative flex items-center justify-center w-5 h-5 border-2 border-primary-300 rounded-full transition-colors duration-200 bg-primary-200 dark:bg-primary-200 hover:bg-primary-300 dark:hover:bg-primary-50 ${selectedDocs.length >= MAX_SELECTED_DOCS ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                          {selectedDocs.includes(doc.id) && (
+                            <Check className="w-3 h-3 text-primary-600" />
+                          )}
+                        </span>
+                      </label>
                       <h4 
                         className="text-md font-medium text-primary-600 dark:text-primary-500 cursor-pointer hover:text-primary-800 dark:hover:text-primary-300"
                         onClick={() => viewDocument(doc.slug)}

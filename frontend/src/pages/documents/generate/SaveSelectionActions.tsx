@@ -15,8 +15,8 @@ export default function SaveSelectionActions({
   isSubmitting,
 }: SaveSelectionActionsProps) {
   return (
-    <div className="mt-6 p-4 bg-success-50 dark:bg-success-900/30 border border-success-200 dark:border-success-800 rounded flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div className="text-success-700 dark:text-success-400 font-semibold">
+    <div className="mt-6 p-4 bg-secondary-100 border border-secondary-200  rounded flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="text-secondary-600 font-semibold">
         You have selected {selectedCount} paragraph{selectedCount > 1 ? "s" : ""}.
       </div>
       <div className="flex gap-4">

@@ -106,6 +106,16 @@ export default function GenerateDocument() {
     }
   };
 
+  // NEW: Allow skipping style sources and generate directly
+  const handleSkipStyleSources = async () => {
+    if (concept.trim()) {
+      // Clear any selected documents since we're skipping
+      setSelectedDocumentIds([]);
+      // Generate directly without style sources
+      await handleSubmit(new Event('submit') as any);
+    }
+  };
+
   const handleEditConcept = () => {
     setFormStage('concept');
     setSuggestions(null);
@@ -113,7 +123,7 @@ export default function GenerateDocument() {
     setSuccess(undefined);
   };
 
-  // Form submission logic - moves to ready stage on success
+  // Form submission logic - UPDATED to allow empty selectedDocumentIds
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -130,17 +140,19 @@ export default function GenerateDocument() {
       setIsSubmitting(false);
       return;
     }
-    if (selectedDocumentIds.length === 0) {
-      setError("Please select at least one document to use as a style reference.");
-      setIsSubmitting(false);
-      return;
-    }
+
+    // REMOVED: No longer require selectedDocumentIds to have items
+    // if (selectedDocumentIds.length === 0) {
+    //   setError("Please select at least one document to use as a style reference.");
+    //   setIsSubmitting(false);
+    //   return;
+    // }
 
     try {
       const requestBody = {
         generation_type: "suggestions",
         concept: concept.trim(),
-        selected_document_ids: selectedDocumentIds,
+        selected_document_ids: selectedDocumentIds, // Can be empty array now
         debug_mode: debugMode,
         suggestion_length: suggestionLength,
       };
@@ -156,7 +168,10 @@ export default function GenerateDocument() {
 
       if (data.suggestions) {
         setSuggestions(data.suggestions);
-        setSuccess("Suggestions generated! Select one or more paragraphs to add to your new document.");
+        const styleMessage = selectedDocumentIds.length > 0 
+          ? "Suggestions generated using your style references!" 
+          : "Suggestions generated! (No specific style applied)";
+        setSuccess(`${styleMessage} Select one or more paragraphs to add to your new document.`);
         setFormStage('ready'); // Move to suggestions stage
       } else if (data.debug) {
         setDebugData(data);
@@ -250,6 +265,7 @@ export default function GenerateDocument() {
             <AISettingsForm
               stage={formStage}
               onConceptComplete={handleConceptComplete}
+              onSkipStyleSources={handleSkipStyleSources} // NEW PROP
               concept={concept}
               setConcept={setConcept}
               suggestionLength={suggestionLength}
@@ -258,6 +274,7 @@ export default function GenerateDocument() {
               setSelectedTags={setSelectedTags}
               tagInput={tagInput}
               setTagInput={setTagInput}
+              onEditConcept={handleEditConcept}
               handleTagInputChange={handleTagInputChange}
               handleTagInputKeyDown={handleTagInputKeyDown}
               addTag={addTag}

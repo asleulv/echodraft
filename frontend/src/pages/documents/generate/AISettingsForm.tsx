@@ -1,10 +1,20 @@
 import React from "react";
 import DocumentPreviewList from "@/components/DocumentPreviewList";
-import { FileCog, TextSearch } from "lucide-react";
+import {
+  Heart,
+  TextSearch,
+  Sparkles,
+  Lightbulb,
+  ArrowRight,
+  Edit3,
+  FileText,
+} from "lucide-react";
 
 interface AISettingsFormProps {
-  stage: 'concept' | 'sources' | 'ready';
+  stage: "concept" | "sources" | "ready";
   onConceptComplete: () => void;
+  onSkipStyleSources: () => void;
+  onEditConcept: () => void;
   concept: string;
   setConcept: (val: string) => void;
   suggestionLength: string;
@@ -36,10 +46,12 @@ interface AISettingsFormProps {
 export default function AISettingsForm({
   stage,
   onConceptComplete,
+  onSkipStyleSources,
   concept,
   setConcept,
   suggestionLength,
   setSuggestionLength,
+  onEditConcept,
   selectedTags,
   setSelectedTags,
   tagInput,
@@ -63,181 +75,301 @@ export default function AISettingsForm({
   debugMode,
   setDebugMode,
 }: AISettingsFormProps) {
-  
   const conceptFilled = concept.trim().length > 0;
+  const hasStyleSources = selectedDocumentIds.length > 0;
 
   return (
-    <div className="bg-white dark:bg-primary-100 border border-primary-200 dark:border-primary-300 rounded-md border-4">
-      
+    <div className="bg-white dark:bg-neutral-900 border-2 border-primary-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+      {/* Progress indicator at top */}
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl h-2">
+        <div
+          className={`bg-gradient-to-r from-secondary-500 to-secondary-600 h-2 rounded-tl-xl transition-all duration-700 ease-out ${
+            stage === "concept" ? "w-1/2" : "w-full"
+          }`}
+        ></div>
+      </div>
+
       {/* Stage 1: Concept Input */}
-      {stage === 'concept' && (
-        <div className="p-8 space-y-6">
+      {stage === "concept" && (
+        <div className="p-8 space-y-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-primary-600 mb-2">What do you want to write about?</h2>
-            <p className="text-lg text-primary-500">Describe your concept and we'll help you get started</p>
+            <div className="mb-4">
+              <Sparkles className="h-16 w-16 text-secondary-500 mx-auto animate-pulse" />
+            </div>
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-3">
+              What do you want to write about?
+            </h2>
           </div>
 
-          <div>
-            <label htmlFor="concept" className="form-label text-lg font-medium">
-              Your Concept *
-            </label>
-            <textarea
-              id="concept"
-              value={concept}
-              onChange={(e) => setConcept(e.target.value)}
-              className="form-input h-40 text-lg"
-              placeholder="e.g., 'A blog post about sustainable living tips for busy professionals' or 'An email campaign for our new product launch'"
-              autoFocus
-              required
-            />
-            <div className="flex justify-between items-center mt-2">
-              <p className="text-xs text-gray-500">{concept.length} characters</p>
-              {conceptFilled && (
-                <p className="text-xs text-success-600">✓ Concept ready</p>
+          <div className="space-y-4">
+            <div className="relative">
+              <div className="relative">
+                <div className="absolute top-3 left-3 pointer-events-none">
+                  <Sparkles className="h-5 w-5 text-secondary-800" />
+                </div>
+                <textarea
+                  id="concept"
+                  value={concept}
+                  onChange={(e) => setConcept(e.target.value)}
+                  className="form-input h-48 text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg resize-none pl-10"
+                  placeholder="e.g., 'A comprehensive guide to remote work productivity for distributed teams' or 'An engaging email series introducing our innovative sustainability platform'"
+                  autoFocus
+                  required
+                />
+              </div>
+              {/* Removed the bouncing Zap icon completely */}
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                {concept.length} characters
+              </p>
+              {/* Aligned thresholds: both button and message activate at 50 characters */}
+              {concept.length >= 50 && (
+                <div className="flex items-center text-sm text-secondary-600 font-semibold animate-fade-in">
+                  <Heart className="h-4 w-4 mr-1" />
+                  Perfect! Concept ready
+                </div>
               )}
+              {/* Show encouraging message for shorter concepts */}
+              {concept.length > 0 && concept.length < 50 && (
+                <div className="flex items-center text-sm text-secondary-600 dark:text-secondary-400 font-semibold">
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  Keep going...
+                </div>
+              )}
+            </div>
+
+            {/* Tip with consistent styling - Updated with Lucide lightbulb */}
+            {concept.length > 0 && concept.length < 50 && (
+              <div className="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 rounded-lg p-4 animate-fade-in">
+                <p className="text-secondary-600 text-sm flex items-center">
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  <span className="font-semibold">Tip:</span>
+                  <span className="ml-1">
+                    Try adding more detail for better AI suggestions!
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {/* Simplified heading without icon */}
+            <h2 className="text-2xl font-bold bg-gradient-to-r text-center from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-3">
+  How long should the suggestions be?
+</h2>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <FileText className="h-5 w-5 text-secondary-400" />
+              </div>
+              <select
+                id="suggestionLength"
+                value={suggestionLength}
+                onChange={(e) => setSuggestionLength(e.target.value)}
+                className="form-input text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg pl-10"
+              >
+                <option value="short">Short paragraphs (50-75 words)</option>
+                <option value="medium">Medium paragraphs (75-125 words)</option>
+                <option value="long">Long paragraphs (125-200 words)</option>
+                <option value="detailed">
+                  Detailed paragraphs (200-300 words)
+                </option>
+              </select>
+            </div>
+
+            {/* Made the second tip consistent with the first one - Updated with Lucide lightbulb */}
+            <div className="bg-secondary-50  border border-secondary-200 rounded-lg p-4">
+              <p className="text-secondary-600 text-sm flex items-center">
+                <Lightbulb className="h-4 w-4 mr-2" />
+                <span className="font-semibold">Tip:</span>
+                <span className="ml-1">
+                  This determines how much detail each AI suggestion will
+                  contain. Medium works great for most content!
+                </span>
+              </p>
             </div>
           </div>
 
-          <div>
-            <label htmlFor="suggestionLength" className="form-label text-lg font-medium">
-              How detailed should suggestions be?
-            </label>
-            <select
-              id="suggestionLength"
-              value={suggestionLength}
-              onChange={(e) => setSuggestionLength(e.target.value)}
-              className="form-input text-lg"
-            >
-              <option value="short">Short paragraphs (50-75 words)</option>
-              <option value="medium">Medium paragraphs (75-125 words)</option>
-              <option value="long">Long paragraphs (125-200 words)</option>
-              <option value="detailed">Detailed paragraphs (200-300 words)</option>
-            </select>
-            <p className="mt-1 text-sm text-primary-500">
-              This determines how much detail each AI suggestion will contain
-            </p>
-          </div>
-
+          {/* Aligned button threshold with message threshold */}
           <button
             type="button"
             onClick={onConceptComplete}
-            disabled={!conceptFilled}
-            className={`btn-primary w-full py-4 text-lg font-semibold ${
-              !conceptFilled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-700'
+            disabled={concept.length < 50} // Now matches the "Perfect! Concept ready" threshold
+            className={`btn-primary w-full py-6 text-xl font-bold shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center ${
+              concept.length < 50
+                ? "opacity-50 cursor-not-allowed scale-95"
+                : "bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-400 hover:to-secondary-600"
             }`}
           >
-            Continue to Style Sources →
+            {concept.length >= 50 ? (
+              <>
+                Continue to Style Sources
+                <ArrowRight className="h-6 w-6 ml-3" />
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-6 w-6 mr-3 opacity-50" />
+                Enter your concept to continue
+              </>
+            )}
           </button>
         </div>
       )}
 
       {/* Stage 2: Style Sources */}
-      {stage === 'sources' && (
+      {stage === "sources" && (
         <form onSubmit={handleSubmit}>
-          <div className="p-6 space-y-6">
-            {/* Show condensed concept */}
-            <div className="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-lg border border-primary-200">
+          <div className="p-8 space-y-8">
+            {/* Show condensed concept with cleaner styling */}
+            <div className="bg-gradient-to-r from-primary-50 to-primary-200 p-5 rounded-xl border-2 border-primary-200  shadow-md">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <span className="text-sm font-semibold text-primary-600 uppercase tracking-wide">Your Concept:</span>
-                  <p className="text-primary-800 dark:text-primary-200 mt-1 font-medium">
-                    {concept.length > 150 ? concept.substring(0, 150) + '...' : concept}
+                  <span className="text-sm font-bold text-primary-600  uppercase tracking-wider flex items-center">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Your Concept:
+                  </span>
+                  <p className="text-primary-600 mt-2 font-medium text-lg leading-relaxed">
+                    {concept.length > 150
+                      ? concept.substring(0, 150) + "..."
+                      : concept}
                   </p>
                 </div>
-                <button 
-                  type="button" 
-                  onClick={() => onConceptComplete()} // This will be called but stage is already 'sources', need to go back
-                  className="text-primary-600 hover:text-primary-800 text-sm underline ml-4"
+                <button
+                  type="button"
+                  onClick={onEditConcept}
+                  className="text-secondary-600 dark:text-secondary-400 hover:text-secondary-800 dark:hover:text-secondary-200 text-sm font-semibold ml-4 flex items-center hover:bg-white dark:hover:bg-gray-700 px-3 py-2 rounded-lg transition-all duration-200"
                 >
+                  <Edit3 className="h-4 w-4 mr-1" />
                   Edit
                 </button>
               </div>
             </div>
 
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-primary-600 mb-2">Choose Your Writing Style</h2>
-              <p className="text-primary-500">Select documents that match the style you want AI to emulate</p>
-            </div>
-
-            {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="categoryFilter" className="form-label font-medium">Category</label>
-                <select
-                  id="categoryFilter"
-                  value={selectedCategoryFilter || ''}
-                  onChange={(e) => setSelectedCategoryFilter(e.target.value || undefined)}
-                  className="form-input"
-                  disabled={isLoadingCategories}
-                >
-                  <option value="">All Categories</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+            {/* Centered header section matching Stage 1 */}
+            <div className="text-center mb-8">
+              <div className="mb-4">
+                <TextSearch className="h-16 w-16 text-secondary-500 mx-auto animate-pulse" />
               </div>
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-3">
+                Choose Your Writing Style
+              </h2>
+              <p className="text-xl text-primary-500">
+                Select documents that match the style you want AI to emulate
+              </p>
 
-              <div>
-                <label htmlFor="status" className="form-label font-medium">Status</label>
-                <select
-                  id="status"
-                  value={selectedStatus || ''}
-                  onChange={(e) => setSelectedStatus(e.target.value || undefined)}
-                  className="form-input"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="tags" className="form-label font-medium">Filter by Tags</label>
-                <input
-                  id="tags"
-                  type="text"
-                  value={tagInput}
-                  onChange={handleTagInputChange}
-                  onKeyDown={handleTagInputKeyDown}
-                  className="form-input"
-                  placeholder="Add tags..."
-                />
+              {/* Updated optional notice with consistent styling - Updated with Lucide lightbulb */}
+              <div className="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 rounded-lg p-4">
+                <p className="text-secondary-700 dark:text-secondary-300 text-sm flex items-center">
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  <span className="font-semibold">Tip:</span>
+                  <span className="ml-1">
+                    You can skip this step for generic AI suggestions
+                  </span>
+                </p>
               </div>
             </div>
 
-            {/* Selected tags */}
-            {selectedTags.length > 0 && (
-              <div>
-                <span className="text-sm font-medium text-primary-600 block mb-2">Active tag filters:</span>
-                <div className="flex flex-wrap gap-2">
-                  {selectedTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/70 dark:text-primary-400"
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="ml-2 text-primary-600 hover:text-primary-800 font-bold"
-                        aria-label={`Remove tag ${tag}`}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
+            {/* Simplified filters section */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="categoryFilter"
+                    className="form-label font-semibold text-primary-700 dark:text-primary-300"
+                  >
+                    Category
+                  </label>
+                  <select
+                    id="categoryFilter"
+                    value={selectedCategoryFilter || ""}
+                    onChange={(e) =>
+                      setSelectedCategoryFilter(e.target.value || undefined)
+                    }
+                    className="form-input text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg"
+                    disabled={isLoadingCategories}
+                  >
+                    <option value="">All Categories</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor="status"
+                    className="form-label font-semibold text-primary-700 dark:text-primary-300"
+                  >
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    value={selectedStatus || ""}
+                    onChange={(e) =>
+                      setSelectedStatus(e.target.value || undefined)
+                    }
+                    className="form-input text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg"
+                  >
+                    <option value="">All Statuses</option>
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor="tags"
+                    className="form-label font-semibold text-primary-700 dark:text-primary-300"
+                  >
+                    Tags
+                  </label>
+                  <input
+                    id="tags"
+                    type="text"
+                    value={tagInput}
+                    onChange={handleTagInputChange}
+                    onKeyDown={handleTagInputKeyDown}
+                    className="form-input text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg"
+                    placeholder="Add tags..."
+                  />
                 </div>
               </div>
-            )}
 
-            {/* Document selection */}
-            <div>
-              <h3 className="text-lg font-semibold text-primary-600 mb-3 flex items-center">
-                <TextSearch className="h-5 w-5 mr-2" />
-                Select Style Reference Documents
+              {/* Selected tags with consistent styling */}
+              {selectedTags.length > 0 && (
+                <div className="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 dark:border-secondary-700 rounded-lg p-4">
+                  <span className="text-sm font-bold text-secondary-700 dark:text-secondary-300 block mb-3">
+                    Active filters:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 dark:bg-secondary-900/30 text-secondary-800 dark:text-secondary-200"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="ml-2 text-secondary-600 dark:text-secondary-400 hover:text-secondary-800 dark:hover:text-secondary-200 font-bold"
+                          aria-label={`Remove tag ${tag}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Document selection with simplified styling */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-primary-600">
+                Select Documents
               </h3>
               <DocumentPreviewList
                 tags={selectedTags}
@@ -248,64 +380,115 @@ export default function AISettingsForm({
               />
             </div>
 
-            {selectedDocumentIds.length === 0 ? (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
-                  ⚠️ Please select at least one document to use as a style reference.
-                </p>
-                <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
-                  The AI will learn from these documents to match your writing style.
+            {/* Status messaging with consistent tip styling - Updated with Lucide lightbulb */}
+            {!hasStyleSources ? (
+              <div className="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 rounded-lg p-4">
+                <p className="text-secondary-700 dark:text-secondary-300 text-sm flex items-center">
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  <span className="font-semibold">Tip:</span>
+                  <span className="ml-1">
+                    Select documents above to generate with a specific writing
+                    style, or use the "Skip" button for generic AI suggestions.
+                  </span>
                 </p>
               </div>
             ) : (
-              <div className="bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg p-4">
-                <p className="text-success-800 dark:text-success-200 font-medium">
-                  ✓ {selectedDocumentIds.length} document{selectedDocumentIds.length > 1 ? 's' : ''} selected as style reference
+              <div className="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 dark:border-secondary-700 rounded-lg p-4">
+                <p className="text-secondary-700 dark:text-secondary-300 text-sm flex items-center">
+                  ✨ <span className="font-semibold ml-2">Ready:</span>
+                  <span className="ml-1">
+                    {selectedDocumentIds.length} document
+                    {selectedDocumentIds.length > 1 ? "s" : ""} selected as
+                    style reference. AI will emulate the writing style from
+                    these documents.
+                  </span>
                 </p>
               </div>
             )}
 
-            {/* Subscription info and submit */}
-            <div className="pt-4 border-t border-primary-200">
-              {!isLoadingGenerationLimit && aiGenerationsRemaining !== null && (
-                <div className="text-center mb-4">
-                  <span className="text-sm font-medium text-primary-600">
-                    AI Generations Remaining: 
+            {/* Subscription info */}
+            {!isLoadingGenerationLimit && aiGenerationsRemaining !== null && (
+              <div className="text-center bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4">
+                <div className="flex items-center justify-center">
+                  <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
+                    AI Generations Remaining:
                   </span>
-                  <span className="ml-1 font-bold text-primary-800">
+                  <span className="ml-2 text-2xl font-bold text-secondary-600 dark:text-secondary-400">
                     {aiGenerationsRemaining}
                   </span>
-                  {aiGenerationsRemaining === 0 && (
-                    <div className="mt-2 text-danger-600 dark:text-danger-400">
-                      You have reached your monthly AI generation limit.
-                      <button
-                        onClick={() => window.location.assign("/subscription")}
-                        className="ml-1 underline font-semibold text-danger-600 hover:text-danger-400 dark:text-danger-400 dark:hover:text-danger-300"
-                      >
-                        Upgrade your subscription
-                      </button>
-                    </div>
-                  )}
                 </div>
-              )}
+                {aiGenerationsRemaining === 0 && (
+                  <div className="mt-3 text-danger-600 dark:text-danger-400 bg-danger-50 dark:bg-danger-900/20 rounded-lg p-3">
+                    You have reached your monthly AI generation limit.
+                    <button
+                      onClick={() => window.location.assign("/subscription")}
+                      className="ml-2 underline font-bold text-danger-700 dark:text-danger-300 hover:text-danger-900 dark:hover:text-danger-100 transition-colors duration-200"
+                    >
+                      Upgrade your subscription →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Buttons matching Stage 1 style */}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={onSkipStyleSources}
+                disabled={
+                  isSubmitting ||
+                  (aiGenerationsRemaining !== null &&
+                    aiGenerationsRemaining <= 0 &&
+                    !debugMode)
+                }
+                className={`btn-secondary flex-1 py-6 text-xl font-bold shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center ${
+                  isSubmitting ||
+                  (aiGenerationsRemaining !== null &&
+                    aiGenerationsRemaining <= 0 &&
+                    !debugMode)
+                    ? "opacity-50 cursor-not-allowed scale-95"
+                    : "hover:scale-105 hover:-translate-y-1"
+                }`}
+              >
+                Skip & Use Generic AI
+              </button>
 
               <button
                 type="submit"
-                disabled={isSubmitting || selectedDocumentIds.length === 0 || (aiGenerationsRemaining !== null && aiGenerationsRemaining <= 0 && !debugMode)}
-                className={`btn-primary w-full py-4 text-lg font-semibold ${
-                  isSubmitting || selectedDocumentIds.length === 0 || (aiGenerationsRemaining !== null && aiGenerationsRemaining <= 0 && !debugMode)
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:bg-primary-700'
+                disabled={
+                  isSubmitting ||
+                  !hasStyleSources ||
+                  (aiGenerationsRemaining !== null &&
+                    aiGenerationsRemaining <= 0 &&
+                    !debugMode)
+                }
+                className={`btn-primary flex-1 py-6 text-xl font-bold shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center ${
+                  isSubmitting ||
+                  !hasStyleSources ||
+                  (aiGenerationsRemaining !== null &&
+                    aiGenerationsRemaining <= 0 &&
+                    !debugMode)
+                    ? "opacity-50 cursor-not-allowed scale-95"
+                    : "hover:scale-105 hover:-translate-y-1 bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700"
                 }`}
               >
-                {isSubmitting 
-                  ? 'Generating AI Suggestions...' 
-                  : debugMode
-                  ? 'Show Debug Info'
-                  : aiGenerationsRemaining !== null && aiGenerationsRemaining <= 0
-                  ? 'Generation Limit Reached'
-                  : '✨ Generate AI Suggestions'
-                }
+                {isSubmitting ? (
+                  <>
+                    <Sparkles className="h-6 w-6 mr-3 animate-spin" />
+                    Generating AI Suggestions...
+                  </>
+                ) : debugMode ? (
+                  "Show Debug Info"
+                ) : aiGenerationsRemaining !== null &&
+                  aiGenerationsRemaining <= 0 ? (
+                  "Generation Limit Reached"
+                ) : (
+                  <>
+                    <Sparkles className="h-6 w-6 mr-3" />
+                    Generate with Style References
+                  </>
+                )}
               </button>
             </div>
           </div>
