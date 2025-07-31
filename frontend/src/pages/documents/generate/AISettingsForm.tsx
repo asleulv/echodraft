@@ -156,8 +156,8 @@ export default function AISettingsForm({
           <div className="space-y-4">
             {/* Simplified heading without icon */}
             <h2 className="text-2xl font-bold bg-gradient-to-r text-center from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-3">
-  How long should the suggestions be?
-</h2>
+              How long should the suggestions be?
+            </h2>
             <div className="relative">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <FileText className="h-5 w-5 text-secondary-400" />
