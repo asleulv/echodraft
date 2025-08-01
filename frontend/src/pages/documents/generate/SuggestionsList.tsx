@@ -17,8 +17,8 @@ interface SuggestionsListProps {
 }
 
 export default function SuggestionsList({
-  suggestions,
-  selectedSuggestions,
+  suggestions = [],
+  selectedSuggestions = [],
   toggleSuggestionSelection,
   handleClearSelection,
   onGenerateMore,
@@ -27,7 +27,13 @@ export default function SuggestionsList({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [moreCount, setMoreCount] = useState(5);
 
+  // Safe variables with fallbacks
+  const safeSuggestions = suggestions || [];
+  const safeSelectedSuggestions = selectedSuggestions || [];
+
   const handleGenerateMoreClick = async () => {
+    if (!onGenerateMore) return;
+    
     setIsLoadingMore(true);
     try {
       await onGenerateMore(moreCount);
@@ -83,11 +89,11 @@ export default function SuggestionsList({
       </div>
 
       <ul className="space-y-3">
-        {suggestions.map((s, idx) => (
+        {safeSuggestions?.map((s, idx) => (
           <li
-            key={idx}
+            key={`suggestion-${idx}-${s?.substring(0, 20) || 'empty'}`}
             className={`rounded border transition ${
-              selectedSuggestions.includes(s)
+              safeSelectedSuggestions.includes(s)
                 ? "bg-secondary-200 dark:bg-secondary-50 border-secondary-500 text-primary-600"
                 : "bg-primary-200 text-primary-600 border-primary-200 hover:bg-primary-50"
             }`}
@@ -96,16 +102,16 @@ export default function SuggestionsList({
               <input
                 type="checkbox"
                 className="hidden"
-                checked={selectedSuggestions.includes(s)}
-                onChange={() => toggleSuggestionSelection(s)}
+                checked={safeSelectedSuggestions.includes(s)}
+                onChange={() => toggleSuggestionSelection?.(s)}
                 aria-label={`Select suggestion ${idx + 1}`}
               />
               <span className="relative flex items-center justify-center w-5 h-5 border-2 border-primary-300 rounded-full transition-colors duration-200 bg-primary-200 dark:bg-primary-200 hover:bg-primary-300 dark:hover:bg-primary-50 mt-1 flex-shrink-0">
-                {selectedSuggestions.includes(s) && (
+                {safeSelectedSuggestions.includes(s) && (
                   <CircleCheck className="absolute w-5 h-5 text-primary-600" />
                 )}
               </span>
-              <span className="ml-3 whitespace-pre-wrap break-words">{s}</span>
+              <span className="ml-3 whitespace-pre-wrap break-words">{s || ''}</span>
             </label>
           </li>
         ))}
@@ -114,7 +120,7 @@ export default function SuggestionsList({
       {/* Total count indicator */}
       <div className="text-center mt-4 pt-4 border-t border-primary-300">
         <p className="text-sm text-primary-600 opacity-70">
-          Showing {suggestions.length} suggestions total
+          Showing {safeSuggestions.length} suggestions total
         </p>
       </div>
     </div>

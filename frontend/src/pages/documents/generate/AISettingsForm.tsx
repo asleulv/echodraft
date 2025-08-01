@@ -47,14 +47,14 @@ export default function AISettingsForm({
   stage,
   onConceptComplete,
   onSkipStyleSources,
-  concept,
+  concept = '',
   setConcept,
-  suggestionLength,
+  suggestionLength = 'medium',
   setSuggestionLength,
   onEditConcept,
-  selectedTags,
+  selectedTags = [],
   setSelectedTags,
-  tagInput,
+  tagInput = '',
   setTagInput,
   handleTagInputChange,
   handleTagInputKeyDown,
@@ -64,19 +64,26 @@ export default function AISettingsForm({
   setSelectedCategoryFilter,
   selectedStatus,
   setSelectedStatus,
-  categories,
-  isLoadingCategories,
-  selectedDocumentIds,
+  categories = [],
+  isLoadingCategories = false,
+  selectedDocumentIds = [],
   onSelectedDocumentsChange,
-  isSubmitting,
+  isSubmitting = false,
   handleSubmit,
   aiGenerationsRemaining,
-  isLoadingGenerationLimit,
-  debugMode,
+  isLoadingGenerationLimit = false,
+  debugMode = false,
   setDebugMode,
 }: AISettingsFormProps) {
-  const conceptFilled = concept.trim().length > 0;
-  const hasStyleSources = selectedDocumentIds.length > 0;
+  // Safe variables with fallbacks
+  const safeConcept = concept || '';
+  const safeCategories = categories || [];
+  const safeSelectedTags = selectedTags || [];
+  const safeSelectedDocumentIds = selectedDocumentIds || [];
+  
+  const conceptFilled = safeConcept.trim().length > 0;
+  const hasStyleSources = safeSelectedDocumentIds.length > 0;
+  const conceptLength = safeConcept.length || 0;
 
   return (
     <div className="bg-white dark:bg-neutral-900 border-2 border-primary-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
@@ -109,29 +116,28 @@ export default function AISettingsForm({
                 </div>
                 <textarea
                   id="concept"
-                  value={concept}
-                  onChange={(e) => setConcept(e.target.value)}
+                  value={safeConcept}
+                  onChange={(e) => setConcept?.(e.target.value)}
                   className="form-input h-48 text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg resize-none pl-10"
                   placeholder="e.g., 'A comprehensive guide to remote work productivity for distributed teams' or 'An engaging email series introducing our innovative sustainability platform'"
                   autoFocus
                   required
                 />
               </div>
-              {/* Removed the bouncing Zap icon completely */}
             </div>
             <div className="flex justify-between items-center">
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                {concept.length} characters
+                {conceptLength} characters
               </p>
               {/* Aligned thresholds: both button and message activate at 50 characters */}
-              {concept.length >= 50 && (
+              {conceptLength >= 50 && (
                 <div className="flex items-center text-sm text-secondary-600 font-semibold animate-fade-in">
                   <Heart className="h-4 w-4 mr-1" />
                   Perfect! Concept ready
                 </div>
               )}
               {/* Show encouraging message for shorter concepts */}
-              {concept.length > 0 && concept.length < 50 && (
+              {conceptLength > 0 && conceptLength < 50 && (
                 <div className="flex items-center text-sm text-secondary-600 dark:text-secondary-400 font-semibold">
                   <Sparkles className="h-4 w-4 mr-1" />
                   Keep going...
@@ -140,7 +146,7 @@ export default function AISettingsForm({
             </div>
 
             {/* Tip with consistent styling - Updated with Lucide lightbulb */}
-            {concept.length > 0 && concept.length < 50 && (
+            {conceptLength > 0 && conceptLength < 50 && (
               <div className="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 rounded-lg p-4 animate-fade-in">
                 <p className="text-secondary-600 text-sm flex items-center">
                   <Lightbulb className="h-4 w-4 mr-2" />
@@ -165,7 +171,7 @@ export default function AISettingsForm({
               <select
                 id="suggestionLength"
                 value={suggestionLength}
-                onChange={(e) => setSuggestionLength(e.target.value)}
+                onChange={(e) => setSuggestionLength?.(e.target.value)}
                 className="form-input text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg pl-10"
               >
                 <option value="short">Short paragraphs (50-75 words)</option>
@@ -178,7 +184,7 @@ export default function AISettingsForm({
             </div>
 
             {/* Made the second tip consistent with the first one - Updated with Lucide lightbulb */}
-            <div className="bg-secondary-50  border border-secondary-200 rounded-lg p-4">
+            <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-4">
               <p className="text-secondary-600 text-sm flex items-center">
                 <Lightbulb className="h-4 w-4 mr-2" />
                 <span className="font-semibold">Tip:</span>
@@ -194,14 +200,14 @@ export default function AISettingsForm({
           <button
             type="button"
             onClick={onConceptComplete}
-            disabled={concept.length < 50} // Now matches the "Perfect! Concept ready" threshold
+            disabled={conceptLength < 50}
             className={`btn-primary w-full py-6 text-xl font-bold shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center ${
-              concept.length < 50
+              conceptLength < 50
                 ? "opacity-50 cursor-not-allowed scale-95"
                 : "bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-400 hover:to-secondary-600"
             }`}
           >
-            {concept.length >= 50 ? (
+            {conceptLength >= 50 ? (
               <>
                 Continue to Style Sources
                 <ArrowRight className="h-6 w-6 ml-3" />
@@ -221,17 +227,17 @@ export default function AISettingsForm({
         <form onSubmit={handleSubmit}>
           <div className="p-8 space-y-8">
             {/* Show condensed concept with cleaner styling */}
-            <div className="bg-gradient-to-r from-primary-50 to-primary-200 p-5 rounded-xl border-2 border-primary-200  shadow-md">
+            <div className="bg-gradient-to-r from-primary-50 to-primary-200 p-5 rounded-xl border-2 border-primary-200 shadow-md">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <span className="text-sm font-bold text-primary-600  uppercase tracking-wider flex items-center">
+                  <span className="text-sm font-bold text-primary-600 uppercase tracking-wider flex items-center">
                     <Sparkles className="h-4 w-4 mr-2" />
                     Your Concept:
                   </span>
                   <p className="text-primary-600 mt-2 font-medium text-lg leading-relaxed">
-                    {concept.length > 150
-                      ? concept.substring(0, 150) + "..."
-                      : concept}
+                    {conceptLength > 150
+                      ? safeConcept.substring(0, 150) + "..."
+                      : safeConcept}
                   </p>
                 </div>
                 <button
@@ -283,15 +289,15 @@ export default function AISettingsForm({
                     id="categoryFilter"
                     value={selectedCategoryFilter || ""}
                     onChange={(e) =>
-                      setSelectedCategoryFilter(e.target.value || undefined)
+                      setSelectedCategoryFilter?.(e.target.value || undefined)
                     }
                     className="form-input text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg"
                     disabled={isLoadingCategories}
                   >
                     <option value="">All Categories</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
+                    {safeCategories?.map((category) => (
+                      <option key={category?.id || Math.random()} value={category?.id}>
+                        {category?.name || 'Unknown Category'}
                       </option>
                     ))}
                   </select>
@@ -308,7 +314,7 @@ export default function AISettingsForm({
                     id="status"
                     value={selectedStatus || ""}
                     onChange={(e) =>
-                      setSelectedStatus(e.target.value || undefined)
+                      setSelectedStatus?.(e.target.value || undefined)
                     }
                     className="form-input text-lg shadow-md hover:shadow-lg focus:shadow-xl transition-all duration-300 border-2 focus:border-secondary-400 dark:focus:border-secondary-500 rounded-lg"
                   >
@@ -339,21 +345,21 @@ export default function AISettingsForm({
               </div>
 
               {/* Selected tags with consistent styling */}
-              {selectedTags.length > 0 && (
+              {safeSelectedTags.length > 0 && (
                 <div className="bg-secondary-50 dark:bg-secondary-900/20 border border-secondary-200 dark:border-secondary-700 rounded-lg p-4">
                   <span className="text-sm font-bold text-secondary-700 dark:text-secondary-300 block mb-3">
                     Active filters:
                   </span>
                   <div className="flex flex-wrap gap-2">
-                    {selectedTags.map((tag) => (
+                    {safeSelectedTags?.map((tag, index) => (
                       <span
-                        key={tag}
+                        key={`tag-${tag}-${index}`}
                         className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary-100 dark:bg-secondary-900/30 text-secondary-800 dark:text-secondary-200"
                       >
                         {tag}
                         <button
                           type="button"
-                          onClick={() => removeTag(tag)}
+                          onClick={() => removeTag?.(tag)}
                           className="ml-2 text-secondary-600 dark:text-secondary-400 hover:text-secondary-800 dark:hover:text-secondary-200 font-bold"
                           aria-label={`Remove tag ${tag}`}
                         >
@@ -372,11 +378,11 @@ export default function AISettingsForm({
                 Select Documents
               </h3>
               <DocumentPreviewList
-                tags={selectedTags}
+                tags={safeSelectedTags}
                 categoryFilter={selectedCategoryFilter}
                 status={selectedStatus}
                 onSelectedDocumentsChange={onSelectedDocumentsChange}
-                selectedDocumentIds={selectedDocumentIds}
+                selectedDocumentIds={safeSelectedDocumentIds}
               />
             </div>
 
@@ -397,8 +403,8 @@ export default function AISettingsForm({
                 <p className="text-secondary-700 dark:text-secondary-300 text-sm flex items-center">
                   ✨ <span className="font-semibold ml-2">Ready:</span>
                   <span className="ml-1">
-                    {selectedDocumentIds.length} document
-                    {selectedDocumentIds.length > 1 ? "s" : ""} selected as
+                    {safeSelectedDocumentIds.length} document
+                    {safeSelectedDocumentIds.length > 1 ? "s" : ""} selected as
                     style reference. AI will emulate the writing style from
                     these documents.
                   </span>
