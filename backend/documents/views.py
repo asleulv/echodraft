@@ -144,7 +144,7 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(
                     Q(title__icontains=search) | 
                     Q(plain_text__icontains=search) |
-                    Q(tags__contains=[search])
+                    Q(tags__icontains=search)  # ← FIXED: Use icontains instead of contains
                 )
             except Exception as e:
                 print(f"Error with standard search: {e}")
@@ -153,7 +153,7 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
                     Q(title__icontains=search) | 
                     Q(plain_text__icontains=search)
                 )
-        
+                
         # Handle custom search parameter for title and content only (more compatible)
         elif title_content_search:
             print(f"Using custom title_content_search parameter: {title_content_search}")

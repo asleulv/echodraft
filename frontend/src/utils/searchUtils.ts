@@ -25,16 +25,17 @@ export async function searchDocuments(params: SearchParams): Promise<SearchResul
   try {
     console.log(`Searching for: "${query}"`, { page, limit, filters });
 
+    // Parse the search query for advanced features
+    const parsedQuery = parseSearchQuery(query);
+    console.log('Parsed search query:', parsedQuery);
+
     // Prepare search parameters
     const searchParams: Record<string, any> = {
       page,
       limit,
     };
 
-    // Add filters to search
-    if (filters.tags) {
-      searchParams.tags = filters.tags;
-    }
+    // Add existing filters to search
     if (filters.category) {
       searchParams.category = filters.category;
     }
@@ -42,8 +43,30 @@ export async function searchDocuments(params: SearchParams): Promise<SearchResul
       searchParams.status = filters.status;
     }
 
-    // Execute search
-    const response = await documentsAPI.searchDocuments(query.trim(), searchParams);
+    // Handle tags - combine existing tag filters with parsed hashtags
+    const existingTags = filters.tags ? filters.tags.split(',') : [];
+    const parsedTags = parsedQuery.tags || [];
+    const allTags = [...existingTags, ...parsedTags];
+    
+    if (allTags.length > 0) {
+      searchParams.tags = allTags.join(',');
+      console.log(`🏷️ Including tags: ${allTags.join(', ')}`);
+    }
+
+    // Build the cleaned search query (without hashtags)
+    let cleanQuery = '';
+    if (parsedQuery.exactPhrase) {
+      cleanQuery = `"${parsedQuery.exactPhrase}"`;
+    }
+    if (parsedQuery.terms.length > 0) {
+      cleanQuery += (cleanQuery ? ' ' : '') + parsedQuery.terms.join(' ');
+    }
+
+    // Use cleaned query or wildcard if only searching by tags
+    const finalQuery = cleanQuery.trim() || (parsedTags.length > 0 ? '*' : query.trim());
+
+    // Execute search with cleaned query
+    const response = await documentsAPI.searchDocuments(finalQuery, searchParams);
     const documents = response.data.results || [];
     const totalCount = response.data.count || 0;
 

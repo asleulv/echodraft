@@ -2,11 +2,7 @@
 import React, { useState, useEffect } from "react";
 import type { Document } from "@/types/api";
 import { formatDate } from "@/utils/dateUtils";
-import {
-  ChevronRight,
-  CircleCheck,
-  Pencil,
-} from "lucide-react";
+import { ChevronRight, CircleCheck, Pencil } from "lucide-react";
 import type { NextRouter } from "next/router";
 
 interface DocumentListProps {
@@ -18,7 +14,9 @@ interface DocumentListProps {
   hasActiveFilters: boolean;
   viewMode: "grid" | "list";
   selectedDocuments: number[];
-  setSelectedDocuments: (docs: number[] | ((prev: number[]) => number[])) => void;
+  setSelectedDocuments: (
+    docs: number[] | ((prev: number[]) => number[])
+  ) => void;
   onTagClick: (tag: string) => void;
   onCategoryClick: (categoryId: string | null) => void;
   clearFilters: () => void;
@@ -38,7 +36,7 @@ export default function DocumentList({
   onTagClick,
   onCategoryClick,
   clearFilters,
-  router
+  router,
 }: DocumentListProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
@@ -105,9 +103,7 @@ export default function DocumentList({
     <div
       key={doc.id}
       className={`relative border border-primary-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer ${
-        selectedDocuments.includes(doc.id)
-          ? "bg-primary-200"
-          : "bg-white"
+        selectedDocuments.includes(doc.id) ? "bg-primary-200" : "bg-primary-50"
       }`}
       style={{
         borderLeftWidth: "4px",
@@ -165,7 +161,7 @@ export default function DocumentList({
           </span>
         ) : (
           <span
-            className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 whitespace-nowrap flex items-center cursor-pointer hover:bg-primary-300"
+            className="text-xs px-2 py-0.5 rounded-full bg-primary-200 text-primary-600 whitespace-nowrap flex items-center cursor-pointer hover:bg-primary-300"
             onClick={(e) => {
               e.stopPropagation();
               onCategoryClick("null");
@@ -207,9 +203,7 @@ export default function DocumentList({
     <tr
       key={doc.id}
       className={`transition-colors cursor-pointer ${
-        selectedDocuments.includes(doc.id)
-          ? "bg-primary-200"
-          : "bg-primary-50"
+        selectedDocuments.includes(doc.id) ? "bg-primary-200" : "bg-primary-50"
       } hover:bg-primary-100`}
     >
       <td className="relative whitespace-nowrap py-4 pl-4 pr-3 text-sm">
@@ -236,7 +230,9 @@ export default function DocumentList({
           <ChevronRight
             className="h-4 w-4 flex-shrink-0 mr-2"
             style={{
-              color: doc.category_color ? `${doc.category_color}80` : "#9CA3AF80",
+              color: doc.category_color
+                ? `${doc.category_color}80`
+                : "#9CA3AF80",
             }}
           />
           <span
@@ -270,7 +266,7 @@ export default function DocumentList({
           </span>
         ) : (
           <span
-            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-600 hover:bg-primary-300 cursor-pointer"
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-600 hover:bg-primary-300 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               onCategoryClick("null");

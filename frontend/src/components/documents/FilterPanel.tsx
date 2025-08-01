@@ -52,7 +52,7 @@ export default function FilterPanel({
 
   return (
     <div className="mb-6">
-      <div className="bg-white dark:bg-primary-50 border border-primary-200 dark:border-primary-300 rounded-lg shadow-sm mb-4">
+      <div className="bg-primary-50 border border-primary-200 rounded-lg shadow-sm mb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3">
           <div className="flex items-center justify-center sm:justify-start mb-3 sm:mb-0">
             <button
@@ -97,7 +97,7 @@ export default function FilterPanel({
         </div>
         
         {showFilters && (
-          <div className="border-t border-primary-200 dark:border-primary-300 p-5 bg-primary-50 dark:bg-primary-100 rounded-b-lg">
+          <div className="border-t border-primary-200 p-5 bg-primary-100 rounded-b-lg">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Category Filter */}
               <div className="filter-section">
@@ -167,7 +167,7 @@ export default function FilterPanel({
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                 />
-                <div className="mt-2 flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-white dark:bg-black rounded-md border border-primary-200">
+                <div className="mt-2 flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-primary-50 rounded-md border border-primary-200">
                   {getFilteredTags().length > 0 ? (
                     getFilteredTags().map((tag) => (
                       <button
