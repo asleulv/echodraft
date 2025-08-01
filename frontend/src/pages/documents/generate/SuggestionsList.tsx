@@ -1,12 +1,19 @@
-import React from "react";
-import { RefreshCw, X, CircleCheck } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, X, CircleCheck, Loader2 } from "lucide-react";
 
 interface SuggestionsListProps {
   suggestions: string[];
   selectedSuggestions: string[];
   toggleSuggestionSelection: (suggestion: string) => void;
   handleClearSelection: () => void;
-  handleGenerateNew: () => void;
+  onGenerateMore: (count: number) => Promise<void>;
+  originalRequestData?: {
+    concept: string;
+    style_guide?: string;
+    suggestion_length: string;
+    selected_document_ids: number[];
+    num_suggestions: number;
+  };
 }
 
 export default function SuggestionsList({
@@ -14,22 +21,65 @@ export default function SuggestionsList({
   selectedSuggestions,
   toggleSuggestionSelection,
   handleClearSelection,
-  handleGenerateNew,
+  onGenerateMore,
+  originalRequestData,
 }: SuggestionsListProps) {
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [moreCount, setMoreCount] = useState(5);
+
+  const handleGenerateMoreClick = async () => {
+    setIsLoadingMore(true);
+    try {
+      await onGenerateMore(moreCount);
+    } catch (error) {
+      console.error('Error generating more suggestions:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
   return (
     <div className="bg-primary-100 dark:bg-primary-100 border-4 border-primary-200 dark:border-primary-300 rounded-md p-6 mb-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-primary-500">
           AI Suggestions for Starting Your Document
         </h2>
-        <button
-          type="button"
-          className="btn-secondary flex items-center gap-2"
-          onClick={handleGenerateNew}
-        >
-          <RefreshCw className="h-4 w-4" />
-          Generate New Suggestions
-        </button>
+        
+        {/* Generate More Controls */}
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-primary-600">Generate:</label>
+            <select 
+              value={moreCount} 
+              onChange={(e) => setMoreCount(Number(e.target.value))}
+              className="px-3 py-1 border border-primary-300 rounded bg-white text-primary-600 text-sm"
+              disabled={isLoadingMore}
+            >
+              <option value={3}>3 more</option>
+              <option value={5}>5 more</option>
+              <option value={10}>10 more</option>
+            </select>
+          </div>
+          
+          <button
+            type="button"
+            className="btn-secondary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleGenerateMoreClick}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Generate More
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <ul className="space-y-3">
@@ -60,6 +110,13 @@ export default function SuggestionsList({
           </li>
         ))}
       </ul>
+
+      {/* Total count indicator */}
+      <div className="text-center mt-4 pt-4 border-t border-primary-300">
+        <p className="text-sm text-primary-600 opacity-70">
+          Showing {suggestions.length} suggestions total
+        </p>
+      </div>
     </div>
   );
 }

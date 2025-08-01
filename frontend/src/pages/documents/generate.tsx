@@ -36,6 +36,20 @@ export default function GenerateDocument() {
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
   const [generationStage, setGenerationStage] = useState<GenerationStage>("analyzing");
 
+  // NEW: State for storing original request data for "Generate More" functionality
+  const [originalRequestData, setOriginalRequestData] = useState<{
+    concept: string;
+    style_guide?: string;
+    suggestion_length: string;
+    selected_document_ids: number[];
+    num_suggestions: number;
+  }>({
+    concept: '',
+    suggestion_length: 'medium',
+    selected_document_ids: [],
+    num_suggestions: 5
+  });
+
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
 
@@ -141,13 +155,6 @@ export default function GenerateDocument() {
       return;
     }
 
-    // REMOVED: No longer require selectedDocumentIds to have items
-    // if (selectedDocumentIds.length === 0) {
-    //   setError("Please select at least one document to use as a style reference.");
-    //   setIsSubmitting(false);
-    //   return;
-    // }
-
     try {
       const requestBody = {
         generation_type: "suggestions",
@@ -156,6 +163,14 @@ export default function GenerateDocument() {
         debug_mode: debugMode,
         suggestion_length: suggestionLength,
       };
+
+      // Store the original request data for "Generate More" functionality
+      setOriginalRequestData({
+        concept: concept.trim(),
+        suggestion_length: suggestionLength,
+        selected_document_ids: selectedDocumentIds,
+        num_suggestions: 5 // Default number of suggestions
+      });
 
       setTimeout(() => setGenerationStage("processing"), 1000);
       setTimeout(() => setGenerationStage("generating"), 2000);
@@ -181,6 +196,47 @@ export default function GenerateDocument() {
       }
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || "Failed to generate suggestions. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // NEW: Generate More handler to replace handleGenerateNew
+  const handleGenerateMore = async (count: number) => {
+    setIsSubmitting(true);
+    setError(undefined);
+    
+    try {
+      setGenerationStage("analyzing");
+      
+      const requestBody = {
+        generation_type: "suggestions",
+        concept: originalRequestData.concept,
+        selected_document_ids: originalRequestData.selected_document_ids,
+        debug_mode: debugMode,
+        suggestion_length: originalRequestData.suggestion_length,
+        num_suggestions: count, // Use the count parameter
+      };
+
+      // Progress stages
+      setTimeout(() => setGenerationStage("processing"), 1000);
+      setTimeout(() => setGenerationStage("generating"), 2000);
+
+      const response = await documentsAPI.generateDocumentWithAI(requestBody);
+      
+      setGenerationStage("formatting");
+      const data = response.data;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (data.suggestions) {
+        // Append new suggestions to existing ones
+        setSuggestions(prev => prev ? [...prev, ...data.suggestions] : data.suggestions);
+        setSuccess(`Generated ${count} more suggestions! Select paragraphs to add to your document.`);
+      } else {
+        setError("No additional suggestions returned from the AI.");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || "Failed to generate more suggestions. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -247,13 +303,6 @@ export default function GenerateDocument() {
     }
   };
 
-  const handleGenerateNew = () => {
-    setSuggestions(null);
-    setSelectedSuggestions([]);
-    setSuccess(undefined);
-    setFormStage('concept');
-  };
-
   return (
     <Layout title="Generate Document with AI">
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -314,7 +363,8 @@ export default function GenerateDocument() {
                 selectedSuggestions={selectedSuggestions}
                 toggleSuggestionSelection={toggleSuggestionSelection}
                 handleClearSelection={handleClearSelection}
-                handleGenerateNew={handleGenerateNew}
+                onGenerateMore={handleGenerateMore} // Changed from handleGenerateNew
+                originalRequestData={originalRequestData} // Add this prop
               />
 
               {selectedSuggestions.length > 0 && (

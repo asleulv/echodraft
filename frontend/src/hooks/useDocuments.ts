@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { documentsAPI } from "@/utils/api";
+import { searchDocuments as searchDocsUtil, parseSearchQuery } from "@/utils/searchUtils";
 import type { Document } from "@/types/api";
 
 export function useDocuments() {
@@ -21,6 +22,9 @@ export function useDocuments() {
   const router = useRouter();
   const pageSize = 100;
 
+  // Store previous query to detect changes
+  const prevQuery = useRef(router.query);
+
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -38,49 +42,75 @@ export function useDocuments() {
       setIsLoading(true);
       setError("");
 
-      const requestParams = {
-        limit: pageSize,
-        page: currentPage,
-        ...params
-      };
-
       // Get filters from URL
       const { tags, category, status } = router.query;
       
-      if (tags && typeof tags === "string") {
-        requestParams.tags = tags;
-      }
-      
-      if (category && typeof category === "string") {
-        requestParams.category = category;
-      }
-      
-      if (status && typeof status === "string") {
-        requestParams.status = status;
-      }
+      if (debouncedSearchTerm.trim()) {
+        // SEARCH MODE: Search across all documents
+        console.log(`🔍 SEARCH MODE: "${debouncedSearchTerm}"`);
+        
+        // Parse search query for advanced features
+        const parsedQuery = parseSearchQuery(debouncedSearchTerm);
+        console.log('Parsed search query:', parsedQuery);
 
-      let response;
-      
-      if (debouncedSearchTerm) {
-        // Use search API
-        response = await documentsAPI.searchDocuments(debouncedSearchTerm, requestParams);
+        const searchResult = await searchDocsUtil({
+          query: debouncedSearchTerm,
+          page: currentPage,
+          limit: pageSize,
+          // Include current filters in search
+          ...(tags && typeof tags === "string" && { tags }),
+          ...(category && typeof category === "string" && { category }),
+          ...(status && typeof status === "string" && { status })
+        });
+
+        setDocuments(searchResult.documents);
+        setTotalResults(searchResult.totalCount);
+        setHasMoreResults(searchResult.hasMore);
         setIsSearching(true);
+
+        console.log(`✅ Search completed: ${searchResult.documents.length} results`);
+
       } else {
-        // Use regular documents API
-        response = await documentsAPI.getDocuments(requestParams);
+        // BROWSE MODE: Regular document listing with filters
+        console.log(`📋 BROWSE MODE: Page ${currentPage}`);
+        
+        const requestParams: Record<string, any> = {
+          limit: pageSize,
+          page: currentPage,
+          ...params
+        };
+
+        // Apply filters from URL
+        if (tags && typeof tags === "string") {
+          requestParams.tags = tags;
+          console.log(`🏷️  Filtering by tags: ${tags}`);
+        }
+        
+        if (category && typeof category === "string") {
+          requestParams.category = category;
+          console.log(`📁 Filtering by category: ${category}`);
+        }
+        
+        if (status && typeof status === "string") {
+          requestParams.status = status;
+          console.log(`📊 Filtering by status: ${status}`);
+        }
+
+        const response = await documentsAPI.getDocuments(requestParams);
+        const fetchedDocs = response.data.results || [];
+        const totalCount = response.data.count || 0;
+
+        setDocuments(fetchedDocs);
+        setTotalResults(totalCount);
+        setHasMoreResults(totalCount > currentPage * pageSize);
         setIsSearching(false);
+
+        console.log(`✅ Browse completed: ${fetchedDocs.length} documents (total: ${totalCount})`);
       }
-
-      const fetchedDocs = response.data.results || [];
-      const totalCount = response.data.count || 0;
-
-      setDocuments(fetchedDocs);
-      setTotalResults(totalCount);
-      setHasMoreResults(totalCount > currentPage * pageSize);
 
     } catch (err: any) {
-      console.error("Failed to fetch documents:", err);
-      setError("Failed to load documents");
+      console.error("❌ Failed to fetch documents:", err);
+      setError(err.message || "Failed to load documents. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -97,18 +127,26 @@ export function useDocuments() {
     router.query
   ]);
 
-  // Reset to page 1 when search term changes
+  // Reset to page 1 when search term changes or filters change
   useEffect(() => {
-    if (searchTerm !== debouncedSearchTerm) {
+    const queryChanged = JSON.stringify(router.query) !== JSON.stringify(prevQuery.current);
+    const searchChanged = searchTerm !== debouncedSearchTerm;
+    
+    if (searchChanged || queryChanged) {
+      console.log(`🔄 Resetting to page 1 (search: ${searchChanged}, filters: ${queryChanged})`);
       setCurrentPage(1);
     }
-  }, [searchTerm, debouncedSearchTerm]);
+    
+    prevQuery.current = router.query;
+  }, [searchTerm, debouncedSearchTerm, router.query]);
 
   const triggerRefresh = () => {
+    console.log("🔄 Triggering refresh");
     setRefreshTrigger(prev => prev + 1);
   };
 
   const clearSearch = () => {
+    console.log("🧹 Clearing search");
     setSearchTerm("");
     setDebouncedSearchTerm("");
     setIsSearching(false);
