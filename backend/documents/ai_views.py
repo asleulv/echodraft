@@ -8,6 +8,7 @@ import tiktoken
 from .models import TextDocument, AIModelSettings, AIPromptTemplate
 
 
+
 # Constants for document processing
 MAX_REFERENCE_DOCS = 3
 MAX_CHARS_PER_DOC = 600
@@ -16,8 +17,10 @@ DEFAULT_MODEL = "gpt-3.5-turbo-0125"
 DEFAULT_TEMPERATURE = 0.7
 
 
+
 # Fixed number of suggestions as per your request
 FIXED_NUM_SUGGESTIONS = "10"
+
 
 
 # Length settings that exactly mirror the dropdown in the frontend
@@ -28,13 +31,6 @@ LENGTH_SETTINGS = {
     'detailed': {'min': 200, 'max': 300},  # Detailed (200-300 words)
 }
 
-
-def get_model_for_length(suggestion_length):
-    """Select optimal model based on suggestion length."""
-    if suggestion_length in ["detailed", "long"]:
-        return "gpt-4o-mini"  # Use GPT-4o-mini for long and detailed requests
-    else:
-        return "gpt-3.5-turbo"  # Use GPT-3.5-turbo for short/medium
 
 
 def get_default_model_settings():
@@ -55,6 +51,7 @@ def get_default_model_settings():
         return {'model': DEFAULT_MODEL, 'temperature': DEFAULT_TEMPERATURE, 'max_tokens': 4000}
 
 
+
 def count_tokens(text, model=DEFAULT_MODEL):
     """Count the number of tokens in a text string."""
     try:
@@ -71,9 +68,11 @@ def count_tokens(text, model=DEFAULT_MODEL):
     return len(encoding.encode(text))
 
 
+
 def truncate_document(text, max_chars=MAX_CHARS_PER_DOC):
     """Truncate a document to a maximum character count."""
     return text[:max_chars] if len(text) > max_chars else text
+
 
 
 def prepare_reference_content(queryset):
@@ -84,8 +83,10 @@ def prepare_reference_content(queryset):
         sampled_docs = queryset[:MAX_REFERENCE_DOCS]
 
 
+
     document_contents = []
     total_tokens = 0
+
 
 
     for doc in sampled_docs:
@@ -100,7 +101,9 @@ def prepare_reference_content(queryset):
             break
 
 
+
     return "\n---\n".join(document_contents)
+
 
 
 def get_prompt_from_template(template_type, organization, concept, style_guide, combined_content, suggestion_length="medium", num_suggestions=5):
@@ -112,11 +115,13 @@ def get_prompt_from_template(template_type, organization, concept, style_guide, 
     if not template:
         raise ValueError(f"Missing required template: {template_type} for organization {organization}")
 
+
     # Get numeric min/max values from LENGTH_SETTINGS
     settings = LENGTH_SETTINGS.get(suggestion_length, LENGTH_SETTINGS['medium'])
     min_words = settings['min']
     max_words = settings['max']
     length_description = f"{min_words}-{max_words} words"
+
 
     template_vars = {
         'concept': concept,
@@ -135,6 +140,7 @@ def get_prompt_from_template(template_type, organization, concept, style_guide, 
         raise ValueError(f"Missing template variable: {e}")
 
 
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
@@ -146,7 +152,8 @@ def generate_document_with_ai(request):
     selected_document_ids = request.data.get('selected_document_ids', [])
     debug_mode = request.data.get('debug_mode', False)
     suggestion_length = request.data.get('suggestion_length', 'medium')
-    num_suggestions = request.data.get('num_suggestions', 5)  # Add this line
+    num_suggestions = request.data.get('num_suggestions', 5)
+
 
     # Validate num_suggestions
     try:
@@ -156,6 +163,7 @@ def generate_document_with_ai(request):
     except (ValueError, TypeError):
         num_suggestions = 5
 
+
     # Validate input
     if not concept:
         return Response(
@@ -163,7 +171,9 @@ def generate_document_with_ai(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
     user = request.user
+
 
     # Check OpenAI API key
     from django.conf import settings
@@ -174,29 +184,31 @@ def generate_document_with_ai(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+
     # Get documents
     queryset = TextDocument.objects.filter(
         organization=user.organization,
         is_latest=True
     ).exclude(status='deleted')
 
+
     if selected_document_ids:
         queryset = queryset.filter(id__in=selected_document_ids)
 
+
     combined_content = prepare_reference_content(queryset)
+
 
     if generation_type == "suggestions":
         try:
             client = OpenAI(api_key=openai_api_key)
             
-            # HYBRID MODEL SELECTION: Use optimal model based on suggestion length
-            selected_model = get_model_for_length(suggestion_length)
-            
-            # Get model settings from database but override model selection
+            # Use model settings from Django admin dashboard for ALL lengths
             model_settings = get_default_model_settings()
-            model = selected_model  # Override with our hybrid selection
+            model = model_settings['model']  # Always use admin default
             temperature = model_settings['temperature']
             max_tokens = model_settings['max_tokens']
+
 
             # Always require a template from the admin dashboard. No fallback.
             system_message_template = AIPromptTemplate.get_template('system_message', user.organization)
@@ -207,6 +219,7 @@ def generate_document_with_ai(request):
                 )
             system_message = system_message_template
 
+
             try:
                 prompt = get_prompt_from_template('new_content', user.organization, concept, style_guide, combined_content, suggestion_length, num_suggestions)
             except Exception as e:
@@ -215,11 +228,13 @@ def generate_document_with_ai(request):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
 
+
             # Calculate length targets for debugging
             settings = LENGTH_SETTINGS.get(suggestion_length, LENGTH_SETTINGS['medium'])
             min_words_target = settings['min']
             max_words_target = settings['max']
             total_words_target = min_words_target * num_suggestions  # Use dynamic num_suggestions
+
 
             system_tokens = count_tokens(system_message, model)
             prompt_tokens = count_tokens(prompt, model)
@@ -227,13 +242,14 @@ def generate_document_with_ai(request):
             available_for_generation = max_tokens - total_input_tokens
             reference_content_tokens = count_tokens(combined_content, model) if combined_content else 0
 
+
             if debug_mode:
                 return Response({
                     'debug': True,
                     'prompt': prompt,
                     'system_message': system_message,
                     'suggestion_length': suggestion_length,
-                    'num_suggestions': num_suggestions,  # Add this to debug info
+                    'num_suggestions': num_suggestions,
                     'token_usage': {
                         'model': model,
                         'max_tokens_setting': max_tokens,
@@ -255,6 +271,7 @@ def generate_document_with_ai(request):
                     'combined_content_length': len(combined_content) if combined_content else 0
                 }, status=status.HTTP_200_OK)
 
+
             response = client.chat.completions.create(
                 model=model,
                 messages=[
@@ -266,8 +283,10 @@ def generate_document_with_ai(request):
                 timeout=60
             )
 
+
             ai_output = response.choices[0].message.content.strip()
             response_tokens = count_tokens(ai_output, model)
+
 
             suggestions = []
             for line in ai_output.splitlines():
@@ -277,12 +296,13 @@ def generate_document_with_ai(request):
             if not suggestions:
                 suggestions = [l.strip() for l in ai_output.splitlines() if l.strip()]
 
+
             return Response({
                 "suggestions": suggestions,
                 "raw_output": ai_output,
                 "style_guide_used": bool(style_guide),
                 "suggestion_length": suggestion_length,
-                "num_suggestions": num_suggestions,  # Add this to response
+                "num_suggestions": num_suggestions,
                 "model": model,
                 "debug_info": {
                     "response_tokens": response_tokens,
@@ -291,11 +311,12 @@ def generate_document_with_ai(request):
                 }
             }, status=status.HTTP_200_OK)
 
+
         except Exception as e:
             return Response({"error": f"Failed to generate suggestions: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     return Response(
         {"detail": "Invalid generation_type. Only 'suggestions' is supported."},
         status=status.HTTP_400_BAD_REQUEST
     )
-
