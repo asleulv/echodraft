@@ -31,7 +31,7 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'plain_text', 'tags']
     ordering_fields = ['title', 'created_at', 'updated_at']
     ordering = ['-updated_at']
-    lookup_field = 'slug'
+    # lookup_field = 'slug' #
     
     def destroy(self, request, *args, **kwargs):
         """Override destroy to perform a soft delete."""
