@@ -42,7 +42,7 @@ def shared_pdf_view(request, uuid):
 
 
 @csrf_exempt 
-@require_http_methods(["GET"])
+@require_http_methods(["GET", "POST"])  # Allow both GET and POST
 def shared_html_view(request, uuid):
     """Return a shared HTML document."""
     try:
@@ -54,13 +54,32 @@ def shared_html_view(request, uuid):
         
         # Check PIN protection
         if export.pin_protected:
-            provided_pin = request.GET.get('pin')
-            if not provided_pin or provided_pin != export.pin_code:
-                return render(request, 'documents/pin_required.html', {
+            # Check if PIN was already verified in this session
+            session_key = f'verified_pin_{uuid}'
+            
+            if request.method == 'POST':
+                # Handle PIN form submission
+                provided_pin = request.POST.get('pin')
+                if provided_pin == export.pin_code:
+                    # PIN is correct - store in session
+                    request.session[session_key] = True
+                    # Continue to show document below...
+                else:
+                    # PIN is wrong - show form with error
+                    return render(request, 'documents/shared_pin_required.html', {
+                        'uuid': uuid,
+                        'document_title': export.document.title,
+                        'error': 'Invalid PIN code. Please try again.'
+                    })
+            
+            elif not request.session.get(session_key):
+                # GET request and PIN not verified - show PIN form
+                return render(request, 'documents/shared_pin_required.html', {
                     'uuid': uuid,
                     'document_title': export.document.title
                 })
         
+        # Show the document (either not PIN protected, or PIN was verified)
         document = export.document
         html_content = ContentConverter.slate_to_html(document.content)
         
@@ -72,3 +91,4 @@ def shared_html_view(request, uuid):
         
     except DocumentPDFExport.DoesNotExist:
         raise Http404("Document not found.")
+
