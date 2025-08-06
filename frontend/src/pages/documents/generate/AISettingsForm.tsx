@@ -130,14 +130,14 @@ export default function AISettingsForm({
                 {conceptLength} characters
               </p>
               {/* Aligned thresholds: both button and message activate at 50 characters */}
-              {conceptLength >= 50 && (
+              {conceptLength >= 20 && (
                 <div className="flex items-center text-sm text-secondary-600 font-semibold animate-fade-in">
                   <Heart className="h-4 w-4 mr-1" />
                   Perfect! Concept ready
                 </div>
               )}
               {/* Show encouraging message for shorter concepts */}
-              {conceptLength > 0 && conceptLength < 50 && (
+              {conceptLength > 0 && conceptLength < 20 && (
                 <div className="flex items-center text-sm text-secondary-600 dark:text-secondary-400 font-semibold">
                   <Sparkles className="h-4 w-4 mr-1" />
                   Keep going...
@@ -200,9 +200,9 @@ export default function AISettingsForm({
           <button
             type="button"
             onClick={onConceptComplete}
-            disabled={conceptLength < 50}
+            disabled={conceptLength < 20}
             className={`btn-primary w-full py-6 text-xl font-bold shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center ${
-              conceptLength < 50
+              conceptLength < 20
                 ? "opacity-50 cursor-not-allowed scale-95"
                 : "bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-400 hover:to-secondary-600"
             }`}

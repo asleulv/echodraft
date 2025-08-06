@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
-import { documentsAPI } from '@/utils/api';
+import { documentsAPI, exportAPI } from '@/utils/api'; // Add exportAPI import
 import type { DocumentDetail, Document } from '@/types/api';
 import Layout from '@/components/Layout';
 import TipTapViewer from '@/components/TipTapViewer';
@@ -96,7 +96,6 @@ export default function DocumentDetail() {
     try {
       setIsLoadingVersions(true);
       const response = await documentsAPI.getDocumentVersions(slug);
-      console.log('Document versions fetched successfully:', response.data);
       
       // Handle both paginated and non-paginated responses
       const versionData = Array.isArray(response.data) 
@@ -130,29 +129,24 @@ export default function DocumentDetail() {
       
       // Check if slug is valid
       if (!slug || typeof slug !== 'string') {
-        console.error('Invalid slug:', slug);
         setError('Invalid document ID');
         setIsLoading(false);
         return;
       }
       
       try {
-        console.log('Fetching document with slug:', slug);
         setIsLoading(true);
         
         // Get version from URL query if provided
         const version = router.query.version ? String(router.query.version) : undefined;
-        console.log('Version from URL query:', version);
         
         // Try to fetch the document using the slug
         try {
           const response = await documentsAPI.getDocument(slug, version);
-          console.log('Document fetched successfully:', response.data);
           setDocData(response.data);
           setIsLoading(false);
           return;
         } catch (slugError) {
-          console.error('Failed to fetch document by slug, trying to fetch by ID:', slugError);
           
           // If the slug is numeric, it might be an ID
           if (/^\d+$/.test(slug)) {
@@ -163,10 +157,8 @@ export default function DocumentDetail() {
               const foundDocument = documents.find((doc: any) => doc.id === parseInt(slug, 10));
               
               if (foundDocument) {
-                console.log('Found document by ID:', foundDocument);
                 // Fetch the full document details
                 const detailResponse = await documentsAPI.getDocument(foundDocument.slug);
-                console.log('Document fetched successfully by ID:', detailResponse.data);
                 setDocData(detailResponse.data);
                 setIsLoading(false);
                 return;
@@ -180,7 +172,6 @@ export default function DocumentDetail() {
           throw slugError;
         }
       } catch (err: any) {
-        console.error('Failed to load document:', err);
         setError('Failed to load document');
       } finally {
         setIsLoading(false);
@@ -190,7 +181,7 @@ export default function DocumentDetail() {
     fetchDocument();
   }, [isAuthenticated, slug, router.query]);
 
-  // Download document as HTML
+  // UPDATED: Download document using proper export architecture
   const downloadDocument = async () => {
     if (!docData) return;
     
@@ -201,9 +192,14 @@ export default function DocumentDetail() {
       button.innerHTML = '<div class="animate-spin h-4 w-4 border-2 border-primary-500 border-t-transparent rounded-full"></div>';
       button.disabled = true;
       
-      // Get document data for HTML generation
-      const response = await documentsAPI.exportHTML(docData.slug);
-      const { document: htmlDocData, html_content } = response.data;
+      // Use proper export architecture
+      const exportData = await exportAPI.createFromDocument(docData.slug, {
+        expiration_type: 'never',
+        pin_protected: false
+      });
+      
+      // Extract the data we need for HTML generation
+      const { document: htmlDocData, html_content } = exportData;
       
       // Generate and download HTML document
       generateHtmlDocument(htmlDocData, html_content);
@@ -215,6 +211,13 @@ export default function DocumentDetail() {
       console.error('Error downloading document:', error);
       setError('Failed to download document. Please try again.');
       setTimeout(() => setError(''), 3000);
+      
+      // Reset button on error
+      const button = window.document.activeElement as HTMLButtonElement;
+      if (button) {
+        button.innerHTML = '<svg>...</svg>'; // Reset to original icon
+        button.disabled = false;
+      }
     }
   };
 
@@ -389,25 +392,27 @@ export default function DocumentDetail() {
     }
   };
   
+  // UPDATED: Share functionality using proper export architecture
   const handleShareSubmit = async () => {
     if (!docData) return;
     
     try {
       setIsCreatingShare(true);
       
-      const response = await documentsAPI.createHTMLShare(docData.slug, {
+      // Use proper export architecture for sharing
+      const exportData = await exportAPI.createFromDocument(docData.slug, {
         expiration_type: expirationOption,
         pin_protected: pinProtected
       });
       
       // Set the share URL and PIN code for display first
-      setShareUrl(response.data.share_url);
-      if (pinProtected && response.data.pin_code) {
-        setPinCode(response.data.pin_code);
+      setShareUrl(exportData.export_details.share_url);
+      if (pinProtected && exportData.export_details.pin_code) {
+        setPinCode(exportData.export_details.pin_code);
       }
       
       // Try to copy the share URL to clipboard
-      await copyToClipboard(response.data.share_url);
+      await copyToClipboard(exportData.export_details.share_url);
       
       setIsCreatingShare(false);
     } catch (error) {
@@ -479,8 +484,6 @@ export default function DocumentDetail() {
   
   return (
     <Layout title={docData.title}>
-  
-
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -807,7 +810,6 @@ export default function DocumentDetail() {
                   </div>
                 )}
 
-                
                 {/* Document versions dropdown */}
                 {showVersions && (
                   <div className="mt-3 border border-primary-200 rounded-md p-2">

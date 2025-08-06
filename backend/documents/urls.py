@@ -1,7 +1,16 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from django.views.decorators.csrf import csrf_exempt
-from .views import TextDocumentViewSet, CommentViewSet, format_document_with_ai, DocumentPDFExportViewSet, shared_pdf_view, shared_html_view, StyleConstraintViewSet
+
+from .views import (
+    TextDocumentViewSet, 
+    CommentViewSet, 
+    DocumentPDFExportViewSet, 
+    StyleConstraintViewSet,
+    shared_pdf_view, 
+    shared_html_view,
+    format_document_with_ai
+)
 from .ai_views import generate_document_with_ai
 
 # Create a router and register our viewsets with it
@@ -15,7 +24,7 @@ router.register(r'style-constraints', StyleConstraintViewSet, basename='style-co
 urlpatterns = [
     path('', include(router.urls)),
     path('format-with-ai/', format_document_with_ai, name='format-with-ai'),
+    path('generate-with-ai/', generate_document_with_ai, name='generate-with-ai'),
     path('shared-pdf/<uuid:uuid>/', shared_pdf_view, name='shared-pdf'),
     path('shared-html/<uuid:uuid>/', shared_html_view, name='shared-html'),
-    # AI document generation endpoint is now defined in the main urls.py file
 ]

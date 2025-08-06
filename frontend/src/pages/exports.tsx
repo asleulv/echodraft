@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { documentsAPI } from '@/utils/api';
+import { exportAPI } from '@/utils/api';
 import type { PDFExport } from '@/types/api';
 import Layout from '@/components/Layout';
-import { Download, Trash, ExternalLink, Calendar, ChevronRight, ArrowLeft, Trash2, Copy, Check, X } from 'lucide-react';
+import { Download, Trash, ExternalLink, Calendar, ChevronRight, Trash2, Copy, Check } from 'lucide-react';
 
 // Improved copy to clipboard function with fallback
 const copyToClipboard = async (text: string, setCopySuccess: (success: boolean) => void, setCopyError: (error: boolean) => void) => {
@@ -20,7 +20,6 @@ const copyToClipboard = async (text: string, setCopySuccess: (success: boolean) 
       setCopySuccess(true);
       return true;
     } catch (clipboardApiError) {
-      console.error('Clipboard API failed:', clipboardApiError);
       // Continue to fallback methods
     }
     
@@ -63,7 +62,6 @@ const copyToClipboard = async (text: string, setCopySuccess: (success: boolean) 
         throw new Error('execCommand returned false');
       }
     } catch (execCommandError) {
-      console.error('execCommand fallback failed:', execCommandError);
       // Continue to next fallback
     }
     
@@ -71,7 +69,6 @@ const copyToClipboard = async (text: string, setCopySuccess: (success: boolean) 
     setCopyError(true);
     return false;
   } catch (error) {
-    console.error('Could not copy to clipboard:', error);
     setCopyError(true);
     return false;
   }
@@ -122,24 +119,30 @@ export default function ExportsPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // Fetch exports
+  // Fetch exports using the proper export API
   useEffect(() => {
     const fetchExports = async () => {
       if (!isAuthenticated) return;
       
       try {
         setIsLoading(true);
-        const response = await documentsAPI.getPDFExports();
-        console.log('Exports fetched successfully:', response.data);
+        const response = await exportAPI.listExports();
         
-        // Handle both paginated and non-paginated responses
-        const exportsData = Array.isArray(response.data) 
-          ? response.data 
-          : (response.data.results || []);
+        // Handle different response structures defensively
+        let exports = [];
+        if (response.results) {
+          // Paginated response structure
+          exports = response.results;
+        } else if (Array.isArray(response)) {
+          // Direct array response
+          exports = response;
+        } else {
+          // Fallback to empty array
+          exports = [];
+        }
         
-        setPDFExports(exportsData);
+        setPDFExports(exports);
       } catch (err: any) {
-        console.error('Failed to load exports:', err);
         setError('Failed to load exports');
       } finally {
         setIsLoading(false);
@@ -207,19 +210,17 @@ export default function ExportsPage() {
     return expirationDate.toLocaleDateString();
   };
 
-  // Handle delete export
+  // Handle delete export using proper export API
   const handleDeleteExport = async () => {
     if (!selectedExport) return;
     
     try {
       setIsDeleting(true);
-      await documentsAPI.deletePDFExport(selectedExport.id);
+      await exportAPI.deleteExport(selectedExport.id);
       setPDFExports(pdfExports.filter((export_) => export_.id !== selectedExport.id));
       setShowDeleteModal(false);
       setSelectedExport(null);
     } catch (error: any) {
-      console.error("Failed to delete export:", error);
-      
       if (error.response?.data?.detail?.includes("permission")) {
         setError("You do not have permission to delete this export.");
       } else {
@@ -316,7 +317,7 @@ export default function ExportsPage() {
               <div className="bg-primary-100 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-primary-200 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rimary-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-primary-200 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={closeCopyModal}
                 >
                   Done

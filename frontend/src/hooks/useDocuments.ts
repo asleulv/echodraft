@@ -3,7 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { documentsAPI } from "@/utils/api";
-import { searchDocuments as searchDocsUtil, parseSearchQuery } from "@/utils/searchUtils";
+import {
+  searchDocuments as searchDocsUtil,
+  parseSearchQuery,
+} from "@/utils/searchUtils";
 import type { Document } from "@/types/api";
 
 export function useDocuments() {
@@ -17,7 +20,7 @@ export function useDocuments() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreResults, setHasMoreResults] = useState(false);
   const [totalResults, setTotalResults] = useState(0);
-  
+
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const pageSize = 100;
@@ -44,14 +47,14 @@ export function useDocuments() {
 
       // Get filters from URL
       const { tags, category, status } = router.query;
-      
+
       if (debouncedSearchTerm.trim()) {
         // SEARCH MODE: Search across all documents
         console.log(`🔍 SEARCH MODE: "${debouncedSearchTerm}"`);
-        
+
         // Parse search query for advanced features
         const parsedQuery = parseSearchQuery(debouncedSearchTerm);
-        console.log('Parsed search query:', parsedQuery);
+        console.log("Parsed search query:", parsedQuery);
 
         const searchResult = await searchDocsUtil({
           query: debouncedSearchTerm,
@@ -60,40 +63,33 @@ export function useDocuments() {
           // Include current filters in search
           ...(tags && typeof tags === "string" && { tags }),
           ...(category && typeof category === "string" && { category }),
-          ...(status && typeof status === "string" && { status })
+          ...(status && typeof status === "string" && { status }),
         });
 
         setDocuments(searchResult.documents);
         setTotalResults(searchResult.totalCount);
         setHasMoreResults(searchResult.hasMore);
         setIsSearching(true);
-
-        console.log(`✅ Search completed: ${searchResult.documents.length} results`);
-
       } else {
         // BROWSE MODE: Regular document listing with filters
-        console.log(`📋 BROWSE MODE: Page ${currentPage}`);
-        
+
         const requestParams: Record<string, any> = {
           limit: pageSize,
           page: currentPage,
-          ...params
+          ...params,
         };
 
         // Apply filters from URL
         if (tags && typeof tags === "string") {
           requestParams.tags = tags;
-          console.log(`🏷️  Filtering by tags: ${tags}`);
         }
-        
+
         if (category && typeof category === "string") {
           requestParams.category = category;
-          console.log(`📁 Filtering by category: ${category}`);
         }
-        
+
         if (status && typeof status === "string") {
           requestParams.status = status;
-          console.log(`📊 Filtering by status: ${status}`);
         }
 
         const response = await documentsAPI.getDocuments(requestParams);
@@ -104,12 +100,8 @@ export function useDocuments() {
         setTotalResults(totalCount);
         setHasMoreResults(totalCount > currentPage * pageSize);
         setIsSearching(false);
-
-        console.log(`✅ Browse completed: ${fetchedDocs.length} documents (total: ${totalCount})`);
       }
-
     } catch (err: any) {
-      console.error("❌ Failed to fetch documents:", err);
       setError(err.message || "Failed to load documents. Please try again.");
     } finally {
       setIsLoading(false);
@@ -124,29 +116,27 @@ export function useDocuments() {
     currentPage,
     debouncedSearchTerm,
     refreshTrigger,
-    router.query
+    router.query,
   ]);
 
   // Reset to page 1 when search term changes or filters change
   useEffect(() => {
-    const queryChanged = JSON.stringify(router.query) !== JSON.stringify(prevQuery.current);
+    const queryChanged =
+      JSON.stringify(router.query) !== JSON.stringify(prevQuery.current);
     const searchChanged = searchTerm !== debouncedSearchTerm;
-    
+
     if (searchChanged || queryChanged) {
-      console.log(`🔄 Resetting to page 1 (search: ${searchChanged}, filters: ${queryChanged})`);
       setCurrentPage(1);
     }
-    
+
     prevQuery.current = router.query;
   }, [searchTerm, debouncedSearchTerm, router.query]);
 
   const triggerRefresh = () => {
-    console.log("🔄 Triggering refresh");
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const clearSearch = () => {
-    console.log("🧹 Clearing search");
     setSearchTerm("");
     setDebouncedSearchTerm("");
     setIsSearching(false);
@@ -166,6 +156,6 @@ export function useDocuments() {
     searchTerm,
     setSearchTerm,
     isSearching,
-    clearSearch
+    clearSearch,
   };
 }

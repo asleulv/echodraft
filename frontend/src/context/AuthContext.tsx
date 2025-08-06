@@ -6,6 +6,30 @@ import { User, AuthTokens, RegistrationData, RegistrationResponse } from '@/type
 import { jwtDecode } from 'jwt-decode';
 import { debounce } from 'lodash';
 
+// Development-only logging utility
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const devLog = {
+  log: (...args: any[]) => {
+    if (isDevelopment) {
+      console.log(...args);
+    }
+  },
+  error: (...args: any[]) => {
+    // Always log errors, but with less detail in production
+    if (isDevelopment) {
+      console.error(...args);
+    } else {
+      console.error('An error occurred');
+    }
+  },
+  warn: (...args: any[]) => {
+    if (isDevelopment) {
+      console.warn(...args);
+    }
+  }
+};
+
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -48,6 +72,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     }
   }, []);
+  
   const [showInactivityWarning, setShowInactivityWarning] = useState<boolean>(false);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -61,7 +86,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Token is considered expired if it's actually expired or will expire within the buffer time
       return decoded.exp < (currentTime + expirationBuffer);
     } catch (error) {
-      console.error('Error decoding token:', error);
+      devLog.error('Error decoding token:', error);
       return true;
     }
   };
@@ -85,7 +110,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Check if token is about to expire (within 5 minutes)
       const bufferTimeInSeconds = 5 * 60; // 5 minutes
       if (isTokenExpired(token, bufferTimeInSeconds)) {
-        console.log('Token is about to expire, refreshing...');
+        devLog.log('Token is about to expire, refreshing...');
         
         // Refresh the token
         const response = await authAPI.refreshToken(refreshToken);
@@ -93,14 +118,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         // Save the new token
         localStorage.setItem('token', access);
-        console.log('Token refreshed successfully');
+        devLog.log('Token refreshed successfully');
         
         return true;
       }
       
       return false;
     } catch (error) {
-      console.error('Error refreshing token:', error);
+      devLog.error('Error refreshing token:', error);
       // If refresh fails, clear storage and log out
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
@@ -126,36 +151,39 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const isStripeRedirect = url.includes('subscription') && (url.includes('success=true') || url.includes('canceled=true'));
         
         if (isStripeRedirect) {
-          console.log('AuthContext: Detected return from Stripe redirect, ensuring authentication persistence');
+          devLog.log('AuthContext: Detected return from Stripe redirect, ensuring authentication persistence');
         }
         
         const token = localStorage.getItem('token');
         
         if (!token || isTokenExpired(token)) {
           // If no token or expired token, try to refresh
-          console.log('AuthContext: Token missing or expired, attempting to refresh');
+          devLog.log('AuthContext: Token missing or expired, attempting to refresh');
           const refreshed = await refreshTokenIfNeeded();
           
           if (!refreshed) {
             // If refresh failed, clear storage and set as not authenticated
-            console.log('AuthContext: Token refresh failed, logging out');
+            devLog.log('AuthContext: Token refresh failed, logging out');
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
             setUser(null);
             setIsLoading(false);
             return;
           } else {
-            console.log('AuthContext: Token refreshed successfully');
+            devLog.log('AuthContext: Token refreshed successfully');
           }
         }
         
         // Token exists and is valid, fetch user profile
-        console.log('AuthContext: Fetching user profile');
+        devLog.log('AuthContext: Fetching user profile');
         const response = await authAPI.getProfile();
-        console.log('AuthContext: Initial user profile load:', response.data);
+        // Only log user data in development (security concern)
+        if (isDevelopment) {
+          devLog.log('AuthContext: Initial user profile load:', response.data);
+        }
         setUser(response.data);
       } catch (error) {
-        console.error('AuthContext: Error loading user:', error);
+        devLog.error('AuthContext: Error loading user:', error);
         // If error fetching user, clear storage
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
@@ -173,18 +201,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Only set up refresh interval if user is authenticated
     if (!user) return;
     
-    console.log('Setting up token refresh interval');
+    devLog.log('Setting up token refresh interval');
     
     // Check token every minute
     const refreshInterval = setInterval(() => {
       refreshTokenIfNeeded().catch(error => {
-        console.error('Error in token refresh interval:', error);
+        devLog.error('Error in token refresh interval:', error);
       });
     }, 60 * 1000); // 1 minute
     
     // Clean up interval on unmount
     return () => {
-      console.log('Clearing token refresh interval');
+      devLog.log('Clearing token refresh interval');
       clearInterval(refreshInterval);
     };
   }, [user, refreshTokenIfNeeded]);
@@ -202,17 +230,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       // If we don't have any tokens, we can't refresh the user
       if (!token && !refreshToken) {
-        console.log('No authentication tokens found, cannot refresh user profile');
+        devLog.log('No authentication tokens found, cannot refresh user profile');
         setUser(null);
         return;
       }
       
       if (!token || isTokenExpired(token)) {
         // If no token or expired token, try to refresh
-        console.log('Token expired or missing, attempting to refresh before fetching user profile');
+        devLog.log('Token expired or missing, attempting to refresh before fetching user profile');
         
         if (!refreshToken) {
-          console.log('No refresh token available, cannot refresh user profile');
+          devLog.log('No refresh token available, cannot refresh user profile');
           localStorage.removeItem('token');
           setUser(null);
           return;
@@ -220,15 +248,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         try {
           // Try to refresh the token directly
-          console.log('Attempting to refresh token directly...');
+          devLog.log('Attempting to refresh token directly...');
           const response = await authAPI.refreshToken(refreshToken);
           const { access } = response.data;
           
           // Save the new token
           localStorage.setItem('token', access);
-          console.log('Token refreshed successfully');
+          devLog.log('Token refreshed successfully');
         } catch (refreshError) {
-          console.error('Error refreshing token:', refreshError);
+          devLog.error('Error refreshing token:', refreshError);
           
           // If refresh fails, clear storage and set as not authenticated
           localStorage.removeItem('token');
@@ -240,44 +268,48 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       // At this point, we should have a valid token
       // Fetch user profile
-      console.log('Refreshing user profile...');
+      devLog.log('Refreshing user profile...');
       const response = await authAPI.getProfile();
-      console.log('User profile API response:', response.data);
+      
+      // Only log sensitive user data in development
+      if (isDevelopment) {
+        devLog.log('User profile API response:', response.data);
+      }
       
       setUser(response.data);
-      console.log('User profile refreshed successfully');
+      devLog.log('User profile refreshed successfully');
       return response.data;
     } catch (error) {
-      console.error('Error refreshing user profile:', error);
+      devLog.error('Error refreshing user profile:', error);
       
       // If there's an error, try one more time with a fresh token
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         
         if (!refreshToken) {
-          console.log('No refresh token available for second attempt');
+          devLog.log('No refresh token available for second attempt');
           localStorage.removeItem('token');
           setUser(null);
           return;
         }
         
         // Try to refresh the token directly
-        console.log('Second attempt: Refreshing token directly...');
+        devLog.log('Second attempt: Refreshing token directly...');
         const tokenResponse = await authAPI.refreshToken(refreshToken);
         const { access } = tokenResponse.data;
         
         // Save the new token
         localStorage.setItem('token', access);
-        console.log('Token refreshed successfully on second attempt');
+        devLog.log('Token refreshed successfully on second attempt');
         
         // Try to fetch user profile again
-        console.log('Second attempt: Fetching user profile...');
+        devLog.log('Second attempt: Fetching user profile...');
         const userResponse = await authAPI.getProfile();
         setUser(userResponse.data);
-        console.log('User profile refreshed successfully on second attempt');
+        devLog.log('User profile refreshed successfully on second attempt');
         return userResponse.data;
       } catch (secondError) {
-        console.error('Error in second attempt to refresh user profile:', secondError);
+        devLog.error('Error in second attempt to refresh user profile:', secondError);
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         setUser(null);
@@ -290,13 +322,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (username: string, password: string, stayLoggedIn = false) => {
     setIsLoading(true);
     try {
-      console.log('Attempting to login with username:', username);
+      devLog.log('Attempting to login with username:', username);
       
       // Use the API utility for login
       const tokenResponse = await authAPI.login(username, password);
       
       const { access, refresh } = tokenResponse.data as AuthTokens;
-      console.log('Login successful, received tokens');
+      devLog.log('Login successful, received tokens');
       
       // Save tokens to local storage (client-side only)
       if (typeof window !== 'undefined') {
@@ -306,22 +338,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Save stay logged in preference
         if (stayLoggedIn) {
           localStorage.setItem('stayLoggedIn', 'true');
-          console.log('Stay logged in preference saved');
+          devLog.log('Stay logged in preference saved');
         } else {
           localStorage.removeItem('stayLoggedIn');
         }
       }
       
       // Get user profile using the API utility
-      console.log('Fetching user profile after login');
+      devLog.log('Fetching user profile after login');
       const userResponse = await authAPI.getProfile();
       
       setUser(userResponse.data);
-      console.log('User profile loaded successfully');
+      devLog.log('User profile loaded successfully');
       
       // Reset inactivity timer after successful login
       setTimeout(() => {
-        console.log('Initializing inactivity timer after login');
+        devLog.log('Initializing inactivity timer after login');
         if (resetInactivityTimer) {
           resetInactivityTimer();
         }
@@ -330,11 +362,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Redirect to dashboard using replace to avoid navigation issues
       router.replace('/dashboard');
     } catch (error) {
-      console.error('Login error:', error);
+      devLog.error('Login error:', error);
       
-      // Enhanced error logging
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('Login error details:', {
+      // Enhanced error logging (only in development)
+      if (isDevelopment && axios.isAxiosError(error) && error.response) {
+        devLog.error('Login error details:', {
           status: error.response.status,
           data: error.response.data
         });
@@ -400,7 +432,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     // Set logout timer - using a separate function to avoid closure issues
     const performLogout = () => {
-      console.log('Auto-logout timer triggered after inactivity');
+      devLog.log('Auto-logout timer triggered after inactivity');
       logout();
     };
     
@@ -444,7 +476,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Only run on client side
     if (typeof window === 'undefined' || !user) return;
     
-    console.log('Setting up inactivity timer with timeout:', inactivityTimeout, 'seconds');
+    devLog.log('Setting up inactivity timer with timeout:', inactivityTimeout, 'seconds');
     
     // Reset timer initially
     resetInactivityTimer();
@@ -461,10 +493,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const mouseMoveEvents = ['mousemove']; // Handle mousemove separately with more aggressive debouncing
     
     const handleUserActivity = () => {
-      // Don't log every activity event to avoid console spam
-      const eventName = window.event ? window.event.type : 'unknown';
-      if (eventName !== 'mousemove') {
-        console.log('User activity detected:', eventName);
+      // Only log activity in development and avoid mousemove spam
+      if (isDevelopment) {
+        const eventName = window.event ? window.event.type : 'unknown';
+        if (eventName !== 'mousemove') {
+          devLog.log('User activity detected:', eventName);
+        }
       }
       
       // Use the debounced handler
@@ -491,7 +525,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     // Clean up
     return () => {
-      console.log('Cleaning up inactivity timer event listeners');
+      devLog.log('Cleaning up inactivity timer event listeners');
       
       // Remove event listeners
       activityEvents.forEach(event => {
@@ -523,30 +557,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (userData: RegistrationData) => {
     setIsLoading(true);
     try {
-      // Log the registration data for debugging
-      console.log('AuthContext: Registering with data:', userData);
+      // Only log registration data in development (may contain sensitive info)
+      if (isDevelopment) {
+        devLog.log('AuthContext: Registering with data:', userData);
+      }
       
       // Register user - no need to format organization as it's already a string
       const response = await authAPI.register(userData);
-      console.log('AuthContext: Registration response:', response.data);
+      
+      // Only log response in development
+      if (isDevelopment) {
+        devLog.log('AuthContext: Registration response:', response.data);
+      }
       
       // Return the response data instead of auto-login
       // This allows the registration page to show a verification message
       return response.data;
     } catch (error: any) {
-      console.error('Registration error:', error);
+      devLog.error('Registration error:', error);
       
-      // Log more details about the error
-      if (error.response) {
-        console.error('Error response:', {
+      // Log more details about the error only in development
+      if (isDevelopment && error.response) {
+        devLog.error('Error response:', {
           data: error.response.data,
           status: error.response.status,
           headers: error.response.headers
         });
-      } else if (error.request) {
-        console.error('Error request:', error.request);
-      } else {
-        console.error('Error message:', error.message);
+      } else if (isDevelopment && error.request) {
+        devLog.error('Error request:', error.request);
+      } else if (isDevelopment) {
+        devLog.error('Error message:', error.message);
       }
       
       throw error;

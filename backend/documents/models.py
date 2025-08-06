@@ -357,6 +357,7 @@ class DocumentPDFExport(models.Model):
     expiration_type = models.CharField(_("Expiration Type"), max_length=10, choices=EXPIRATION_CHOICES, default='1w')
     pin_protected = models.BooleanField(_("PIN Protected"), default=False)
     pin_code = models.CharField(_("PIN Code"), max_length=4, blank=True, null=True)
+    share_url = models.URLField(_("Share URL"), max_length=500, blank=True)
     
     class Meta:
         verbose_name = _("Document PDF Export")

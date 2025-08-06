@@ -178,6 +178,18 @@ elif not FRONTEND_URL and IS_TESTING:
     FRONTEND_URL = 'http://localhost:3000'
     print(f"WARNING: Using default frontend URL for testing: {FRONTEND_URL}")
 
+# Backend base URL for shared document links
+BACKEND_BASE_URL = 'https://api.echodraft.app'  
+
+# Dynamic fallback function for when request context is available
+def get_backend_base_url(request=None):
+    if request:
+        scheme = 'https' if request.is_secure() else 'http'
+        host = request.get_host()
+        return f"{scheme}://{host}"
+    else:
+        return BACKEND_BASE_URL
+
 # Logging configuration
 LOGGING = {
     'version': 1,

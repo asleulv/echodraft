@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIN Required - echodraft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .icon { 
+            font-size: 4rem; 
+            margin-bottom: 24px;
+            opacity: 0.9;
+        }
+
+        h1 { 
+            margin-bottom: 16px;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        p { 
+            opacity: 0.9;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        form { 
+            margin: 24px 0;
+        }
+
+        input[type="text"] {
+            padding: 16px;
+            font-size: 20px;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            width: 140px;
+            margin: 0 auto 20px;
+            display: block;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: #1f2937;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        button {
+            padding: 14px 32px;
+            background: white;
+            color: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #fecaca;
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .brand {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .icon {
+                font-size: 3rem;
+            }
+
+            input[type="text"] {
+                width: 120px;
+                font-size: 18px;
+                padding: 14px;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔒</div>
+        <h1>PIN Required</h1>
+        <p>This document is protected. Please enter the 4-digit PIN to access it.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="pin" maxlength="4" placeholder="0000" required pattern="\d{4}" inputmode="numeric">
+            <br>
+            <button type="submit">Access Document</button>
+        </form>
+        
+        {% if error %}
+        <div class="error">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+
+        <div class="brand">echodraft</div>
+    </div>
+</body>
+</html>

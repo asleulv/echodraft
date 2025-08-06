@@ -112,6 +112,18 @@ CONTACT_EMAIL = os.getenv('CONTACT_EMAIL', 'hello@echodraft.app')
 # Frontend URL for links in emails
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
+# Backend base URL for shared document links
+BACKEND_BASE_URL = 'http://localhost:8000'
+
+# Dynamic fallback function for when request context is available
+def get_backend_base_url(request=None):
+    if request:
+        scheme = 'https' if request.is_secure() else 'http'
+        host = request.get_host()
+        return f"{scheme}://{host}"
+    else:
+        return BACKEND_BASE_URL
+
 # Logging
 LOGGING = {
     'version': 1,

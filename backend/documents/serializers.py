@@ -168,19 +168,28 @@ class DocumentPDFExportSerializer(serializers.ModelSerializer):
         return f"{obj.created_by.first_name} {obj.created_by.last_name}".strip() or obj.created_by.username
     
     def get_share_url(self, obj):
-        """Get the shareable URL for the document (PDF or HTML)."""
-        request = self.context.get('request')
-        if request is None:
-            return None
+        """Get the shareable URL for the document (served by backend)."""
+        # Use backend URL instead of frontend URL
+        from django.conf import settings
         
-        # Get the protocol (http or https)
-        protocol = 'https' if request.is_secure() else 'http'
+        # Get the backend base URL from settings
+        if hasattr(settings, 'get_backend_base_url'):
+            request = self.context.get('request')
+            base_url = settings.get_backend_base_url(request)
+        elif hasattr(settings, 'BACKEND_BASE_URL'):
+            base_url = settings.BACKEND_BASE_URL
+        else:
+            # Fallback for development
+            request = self.context.get('request')
+            if request:
+                protocol = 'https' if request.is_secure() else 'http'
+                host = request.get_host()
+                base_url = f"{protocol}://{host}"
+            else:
+                base_url = 'http://localhost:8000'
         
-        # Get the frontend URL from environment variables
-        frontend_url = os.getenv('FRONTEND_URL', f"{protocol}://localhost:3000")  # Default to local if not set
-        
-        # Construct the URL for the shared HTML document
-        return f"{frontend_url}/shared/html/{obj.uuid}"
+        # Return the correct backend URL
+        return f"{base_url}/api/v1/shared-html/{obj.uuid}/"
     
     def get_expiration_display(self, obj):
         """Get a human-readable expiration time."""

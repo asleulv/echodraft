@@ -53,6 +53,22 @@ export default function GenerateDocument() {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
 
+  // Helper function to create clean, concise titles
+  const createTitle = (concept: string) => {
+    const trimmed = concept.trim();
+    
+    // If it's already short enough, use as-is
+    if (trimmed.length <= 40) return trimmed;
+    
+    // Find the last space before the 40-character limit
+    const truncated = trimmed.substring(0, 40);
+    const lastSpace = truncated.lastIndexOf(' ');
+    
+    // If there's a space after position 15, cut there (ensures we don't get tiny titles)
+    // Otherwise, just use the 40-character limit without "..."
+    return lastSpace > 15 ? truncated.substring(0, lastSpace) : truncated;
+  };
+
   // Effects and handlers: unchanged, just copied from your code
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -274,7 +290,7 @@ export default function GenerateDocument() {
       const combinedContent = selectedSuggestions.map((p) => `<p>${p.trim()}</p>`).join("\n");
 
       const documentData = {
-        title: concept.trim().length > 50 ? concept.trim().substring(0, 50) + "..." : concept.trim(),
+        title: createTitle(concept),
         content: combinedContent,
         status: "draft",
         category: selectedCategoryFilter ? parseInt(selectedCategoryFilter) : null,
