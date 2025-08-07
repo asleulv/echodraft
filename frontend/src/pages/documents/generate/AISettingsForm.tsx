@@ -10,6 +10,15 @@ import {
   FileText,
 } from "lucide-react";
 
+// NEW: Interface for credit information
+interface CreditInfo {
+  total_credits_available: number;
+  ai_credits_balance: number;
+  bonus_ai_generation_credits: number;
+  ai_credits_purchased_total: number;
+}
+
+// UPDATED: Interface with credit props instead of subscription props
 interface AISettingsFormProps {
   stage: "concept" | "sources" | "ready";
   onConceptComplete: () => void;
@@ -37,8 +46,16 @@ interface AISettingsFormProps {
   onSelectedDocumentsChange: (ids: number[]) => void;
   isSubmitting: boolean;
   handleSubmit: (e: React.FormEvent) => void;
-  aiGenerationsRemaining: number | null;
-  isLoadingGenerationLimit: boolean;
+  
+  // REMOVED: Old subscription props
+  // aiGenerationsRemaining: number | null;
+  // isLoadingGenerationLimit: boolean;
+  
+  // NEW: Credit-related props
+  creditInfo: CreditInfo | null;
+  isLoadingCredits: boolean;
+  hasCredits: boolean;
+  
   debugMode: boolean;
   setDebugMode: (val: boolean) => void;
 }
@@ -70,8 +87,10 @@ export default function AISettingsForm({
   onSelectedDocumentsChange,
   isSubmitting = false,
   handleSubmit,
-  aiGenerationsRemaining,
-  isLoadingGenerationLimit = false,
+  // NEW: Credit props
+  creditInfo,
+  isLoadingCredits = false,
+  hasCredits,
   debugMode = false,
   setDebugMode,
 }: AISettingsFormProps) {
@@ -412,69 +431,54 @@ export default function AISettingsForm({
               </div>
             )}
 
-            {/* Subscription info */}
-            {!isLoadingGenerationLimit && aiGenerationsRemaining !== null && (
+            {/* UPDATED: Credit info instead of subscription info */}
+            {!isLoadingCredits && creditInfo && (
               <div className="text-center bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4">
                 <div className="flex items-center justify-center">
                   <span className="text-lg font-semibold text-primary-600 dark:text-primary-300">
-                    AI Generations Remaining:
+                    AI Credits Available:
                   </span>
-                  <span className="ml-2 text-2xl font-bold text-secondary-600 dark:text-secondary-400">
-                    {aiGenerationsRemaining}
+                  <span className={`ml-2 text-2xl font-bold ${hasCredits ? 'text-secondary-600' : 'text-red-600'} dark:text-secondary-400`}>
+                    {creditInfo.total_credits_available}
                   </span>
                 </div>
-                {aiGenerationsRemaining === 0 && (
+                <div className="mt-2 text-sm text-primary-500">
+                  Purchased: {creditInfo.ai_credits_balance} • Bonus: {creditInfo.bonus_ai_generation_credits}
+                </div>
+                {!hasCredits && (
                   <div className="mt-3 text-danger-600 dark:text-danger-400 bg-danger-50 dark:bg-danger-900/20 rounded-lg p-3">
-                    You have reached your monthly AI generation limit.
+                    You have no credits remaining. Each AI generation uses 1 credit.
                     <button
                       onClick={() => window.location.assign("/subscription")}
                       className="ml-2 underline font-bold text-danger-700 dark:text-danger-300 hover:text-danger-900 dark:hover:text-danger-100 transition-colors duration-200"
                     >
-                      Upgrade your subscription →
+                      Purchase Credits →
                     </button>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Buttons matching Stage 1 style */}
+            {/* UPDATED: Buttons with credit-aware disabled states */}
             <div className="flex gap-4">
               <button
                 type="button"
                 onClick={onSkipStyleSources}
-                disabled={
-                  isSubmitting ||
-                  (aiGenerationsRemaining !== null &&
-                    aiGenerationsRemaining <= 0 &&
-                    !debugMode)
-                }
+                disabled={isSubmitting || !hasCredits}
                 className={`btn-secondary flex-1 py-6 text-xl font-bold shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center ${
-                  isSubmitting ||
-                  (aiGenerationsRemaining !== null &&
-                    aiGenerationsRemaining <= 0 &&
-                    !debugMode)
+                  isSubmitting || !hasCredits
                     ? "opacity-50 cursor-not-allowed scale-95"
                     : "hover:scale-105 hover:-translate-y-1"
                 }`}
               >
-                Skip & Use Generic AI
+                {!hasCredits ? "No Credits Available" : "Skip & Use Generic AI"}
               </button>
 
               <button
                 type="submit"
-                disabled={
-                  isSubmitting ||
-                  !hasStyleSources ||
-                  (aiGenerationsRemaining !== null &&
-                    aiGenerationsRemaining <= 0 &&
-                    !debugMode)
-                }
+                disabled={isSubmitting || !hasStyleSources || !hasCredits}
                 className={`btn-primary flex-1 py-6 text-xl font-bold shadow-lg hover:shadow-xl transform transition-all duration-300 flex items-center justify-center ${
-                  isSubmitting ||
-                  !hasStyleSources ||
-                  (aiGenerationsRemaining !== null &&
-                    aiGenerationsRemaining <= 0 &&
-                    !debugMode)
+                  isSubmitting || !hasStyleSources || !hasCredits
                     ? "opacity-50 cursor-not-allowed scale-95"
                     : "hover:scale-105 hover:-translate-y-1 bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700"
                 }`}
@@ -486,9 +490,8 @@ export default function AISettingsForm({
                   </>
                 ) : debugMode ? (
                   "Show Debug Info"
-                ) : aiGenerationsRemaining !== null &&
-                  aiGenerationsRemaining <= 0 ? (
-                  "Generation Limit Reached"
+                ) : !hasCredits ? (
+                  "No Credits Available"
                 ) : (
                   <>
                     <Sparkles className="h-6 w-6 mr-3" />

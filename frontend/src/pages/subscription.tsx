@@ -7,37 +7,30 @@ import { debounce } from "lodash";
 import { useSystemMessage } from "@/hooks/useSystemMessage";
 import SystemMessage from "@/components/SystemMessage";
 
-interface SubscriptionPlan {
+interface CreditPackage {
   id: number;
   name: string;
   display_name: string;
   description: string;
+  credits: number;
   price: number;
   currency: string;
-  interval: string;
-  ai_generation_limit: number;
-  is_active: boolean;
 }
 
-interface OrganizationSubscription {
+interface OrganizationCredits {
   id: number;
-  subscription_plan: string;
-  subscription_plan_display: string;
-  subscription_status: string;
-  subscription_period_end: string;
-  ai_generations_used: number;
-  ai_generation_limit: number;
-  ai_generations_remaining: number;
-  subscription_price: number;
-  cancel_at_period_end?: boolean;
+  ai_credits_balance: number;
+  bonus_ai_generation_credits: number;
+  total_credits_available: number;
+  ai_credits_purchased_total: number;
 }
 
 export default function SubscriptionPage() {
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [subscription, setSubscription] =
-    useState<OrganizationSubscription | null>(null);
+  const [packages, setPackages] = useState<CreditPackage[]>([]);
+  const [credits, setCredits] = useState<OrganizationCredits | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [purchasing, setPurchasing] = useState<number | null>(null);
   const { isAuthenticated, user, refreshUser, isLoading: authLoading } = useAuth();
   const router = useRouter();
   
@@ -50,52 +43,32 @@ export default function SubscriptionPage() {
 
     // If we're returning from Stripe (success or canceled is present in the URL)
     if (success === "true" || canceled === "true") {
-      console.log("Returning from Stripe redirect, refreshing user profile");
-
       // Refresh the user's profile to ensure we have the latest data
       if (isAuthenticated) {
-        console.log("User is authenticated, refreshing profile");
         refreshUser()
           .then(() => {
-            console.log(
-              "User profile refreshed successfully after Stripe redirect"
-            );
+            // Also refresh credit data
+            fetchCreditData();
           })
           .catch((err) => {
-            console.error(
-              "Error refreshing user profile after Stripe redirect:",
-              err
-            );
+            // Silent error handling - could add user-facing error if needed
           });
       } else {
-        console.log(
-          "User is not authenticated after Stripe redirect, checking for tokens"
-        );
-
         // Check if we have tokens in localStorage
         const token = localStorage.getItem("token");
         const refreshToken = localStorage.getItem("refreshToken");
 
         if (token && refreshToken) {
-          console.log(
-            "Found authentication tokens, attempting to restore session"
-          );
-
           // We have tokens but the user is not authenticated in the context
           // This can happen if the page was reloaded during the redirect
           // Let's wait a moment for the auth context to initialize
           setTimeout(() => {
             refreshUser()
               .then(() => {
-                console.log(
-                  "User profile restored successfully after Stripe redirect"
-                );
+                fetchCreditData();
               })
               .catch((err) => {
-                console.error(
-                  "Error restoring user profile after Stripe redirect:",
-                  err
-                );
+                // Silent error handling
               });
           }, 1000);
         }
@@ -106,12 +79,12 @@ export default function SubscriptionPage() {
   // Add state for caching and request tracking
   const [isRequesting, setIsRequesting] = useState(false);
   const [cache, setCache] = useState<{
-    plans: SubscriptionPlan[] | null;
-    subscription: OrganizationSubscription | null;
+    packages: CreditPackage[] | null;
+    credits: OrganizationCredits | null;
     timestamp: number;
   }>({
-    plans: null,
-    subscription: null,
+    packages: null,
+    credits: null,
     timestamp: 0,
   });
 
@@ -121,11 +94,11 @@ export default function SubscriptionPage() {
   // Determine if new data should be fetched
   const shouldFetchData = () => {
     const timeElapsed = Date.now() - cache.timestamp;
-    return timeElapsed > CACHE_DURATION || !cache.plans || !cache.subscription;
+    return timeElapsed > CACHE_DURATION || !cache.packages || !cache.credits;
   };
 
-  // Fetch subscription data with debouncing
-  const fetchSubscriptionData = async () => {
+  // Fetch credit data with debouncing
+  const fetchCreditData = async () => {
     // If already fetching, don't fetch again
     if (isRequesting) {
       return;
@@ -135,33 +108,28 @@ export default function SubscriptionPage() {
       setIsRequesting(true);
       setLoading(true);
 
-      console.log("Fetching subscription data...");
+      // Fetch credit packages
+      const packagesResponse = await api.get("/subscriptions/packages/");
+      setPackages(packagesResponse.data);
 
-      // Fetch subscription plans
-      const plansResponse = await api.get("/subscriptions/plans/");
-      setPlans(plansResponse.data);
-
-      // Fetch organization subscription
+      // Fetch organization credits
       const orgResponse = await api.get("/subscriptions/organization/");
-      let subscriptionData = null;
+      let creditData = null;
       if (orgResponse.data && orgResponse.data.length > 0) {
-        subscriptionData = orgResponse.data[0];
-        setSubscription(subscriptionData);
+        creditData = orgResponse.data[0];
+        setCredits(creditData);
       }
 
       // Update cache with timestamp
       setCache({
-        plans: plansResponse.data,
-        subscription: subscriptionData,
+        packages: packagesResponse.data,
+        credits: creditData,
         timestamp: Date.now(),
       });
 
       setLoading(false);
     } catch (err) {
-      console.error("Error fetching subscription data:", err);
-      setError(
-        "Failed to load subscription information. Please try again later."
-      );
+      setError("Failed to load credit information. Please try again later.");
       setLoading(false);
     } finally {
       setIsRequesting(false);
@@ -171,14 +139,13 @@ export default function SubscriptionPage() {
   // Create debounced version of fetch function
   const debouncedFetch = useRef(
     debounce(() => {
-      fetchSubscriptionData();
+      fetchCreditData();
     }, 500)
   ).current;
 
   useEffect(() => {
     // Only redirect if auth state is fully loaded and user is not authenticated
     if (!authLoading && !isAuthenticated) {
-      console.log("User not authenticated, redirecting to login");
       router.push('/login');
       return;
     }
@@ -190,9 +157,9 @@ export default function SubscriptionPage() {
         debouncedFetch();
       } else {
         // Use cached data
-        console.log("Using cached subscription data");
-        if (cache.plans) setPlans(cache.plans);
-        if (cache.subscription) setSubscription(cache.subscription);
+        if (cache.packages) setPackages(cache.packages);
+        if (cache.credits) setCredits(cache.credits);
+        setLoading(false);
       }
     }
 
@@ -200,171 +167,64 @@ export default function SubscriptionPage() {
     return () => {
       debouncedFetch.cancel();
     };
-  }, [isAuthenticated, authLoading, router, debouncedFetch, shouldFetchData]);
+  }, [isAuthenticated, authLoading, router, debouncedFetch]);
 
-  // Function to refresh subscription data immediately
-  const refreshSubscriptionData = async () => {
+  // Function to refresh credit data immediately
+  const refreshCreditData = async () => {
     try {
-      console.log("Manually refreshing subscription data...");
-      
       // Refresh user profile first to get the latest data
       await refreshUser();
       
-      // Then fetch subscription data
-      const plansResponse = await api.get("/subscriptions/plans/");
-      setPlans(plansResponse.data);
+      // Then fetch credit data
+      const packagesResponse = await api.get("/subscriptions/packages/");
+      setPackages(packagesResponse.data);
 
-      // Fetch organization subscription
+      // Fetch organization credits
       const orgResponse = await api.get("/subscriptions/organization/");
-      let subscriptionData = null;
+      let creditData = null;
       if (orgResponse.data && orgResponse.data.length > 0) {
-        subscriptionData = orgResponse.data[0];
-        setSubscription(subscriptionData);
+        creditData = orgResponse.data[0];
+        setCredits(creditData);
       }
 
       // Update cache with timestamp
       setCache({
-        plans: plansResponse.data,
-        subscription: subscriptionData,
+        packages: packagesResponse.data,
+        credits: creditData,
         timestamp: Date.now(),
       });
-
-      console.log("Subscription data refreshed successfully");
     } catch (err) {
-      console.error("Error refreshing subscription data:", err);
+      // Silent error handling - function is used internally
     }
   };
 
-  const handleUpgrade = async (planId: number) => {
+  const handlePurchase = async (packageId: number) => {
     try {
-      // Store authentication state in localStorage before redirecting
-      const authState = {
-        timestamp: Date.now(),
-        planId: planId,
-      };
-      localStorage.setItem(
-        "subscription_upgrade_state",
-        JSON.stringify(authState)
-      );
+      setPurchasing(packageId);
+      setError(null);
 
-      console.log(
-        "Storing subscription upgrade state before redirect:",
-        authState
-      );
-
-      // Create checkout session with dedicated success/cancel pages
-      const response = await api.post("/subscriptions/checkout/", {
-        plan_id: planId,
-        // Use dedicated pages instead of query parameters
-        success_url: `${
-          window.location.origin
-        }/subscription/success?t=${Date.now()}`,
-        cancel_url: `${
-          window.location.origin
-        }/subscription/cancel?t=${Date.now()}`,
+      // Create checkout session for credit purchase
+      const response = await api.post("/subscriptions/organization/purchase/", {
+        package_id: packageId,
+        success_url: `${window.location.origin}/subscription/success?t=${Date.now()}`,
+        cancel_url: `${window.location.origin}/subscription/cancel?t=${Date.now()}`,
       });
 
-      // Check if this is a downgrade (moving to a cheaper plan)
-      const selectedPlan = plans.find(p => p.id === planId);
-      const currentPlan = plans.find(p => p.name === subscription?.subscription_plan);
-      const isDowngrade = selectedPlan && currentPlan && selectedPlan.price < currentPlan.price;
-      const isPaidToPaidDowngrade = isDowngrade && selectedPlan?.price > 0 && currentPlan?.price > 0;
-      
-      // If the API returns an error about paid-to-paid downgrade
-      if (response.data && response.data.error && response.data.requires_cancellation) {
-        console.log("Paid-to-paid downgrade not allowed:", response.data.error);
-        
-        // Show the error message to the user
-        setError(response.data.error);
-        
-        // You could also show a modal here with more detailed instructions
-        // For now, we'll just show the error message
-        return;
+      // Redirect to Stripe checkout
+      if (response.data && response.data.checkout_url) {
+        window.location.href = response.data.checkout_url;
+      } else {
+        setError("Failed to initiate checkout process. Please try again later.");
       }
-      // For any downgrade (free plan or between paid plans), refresh the data immediately
-      else if (isDowngrade) {
-        console.log(`Downgrading from ${currentPlan?.display_name} to ${selectedPlan?.display_name}, refreshing data immediately`);
-        console.log("Full response data:", JSON.stringify(response.data));
-        
-        // Always refresh data for downgrades, regardless of response format
-        // This ensures we handle both old and new API response formats
-        setError(null); // Clear any previous errors
-        
-        // Add a small delay to ensure the backend has time to process the changes
-        setTimeout(async () => {
-          console.log("Refreshing subscription data after downgrade...");
-          await refreshSubscriptionData();
-          
-          // Force a page reload to ensure all components are updated
-          window.location.reload();
-        }, 1000);
-      } 
-      // For paid plans, redirect to Stripe checkout
-      else if (response.data && response.data.checkout_url) {
-        console.log("Redirecting to Stripe checkout:", response.data.checkout_url);
-        // Force a redirect to the checkout URL
-        setTimeout(() => {
-          window.location.href = response.data.checkout_url;
-        }, 100);
-      } 
-      // For success responses without a checkout URL (like downgrades that were processed differently)
-      else if (response.data && response.data.success) {
-        console.log("Operation successful:", response.data.message);
-        setError(null); // Clear any previous errors
-        
-        // If there's a redirect URL, use it
-        if (response.data.redirect_url) {
-          window.location.href = response.data.redirect_url;
-        } else {
-          // Otherwise, just reload the page to show the updated subscription
-          window.location.reload();
-        }
+    } catch (err: any) {
+      // Handle specific error cases
+      if (err.response?.status === 402) {
+        setError("Insufficient credits. Please try purchasing a different package.");
+      } else {
+        setError("Failed to initiate checkout process. Please try again later.");
       }
-      // Only show an error if we don't have a success response or checkout URL
-      else {
-        console.error("No checkout URL or success response returned from the server:", response.data);
-        setError("Failed to process subscription change. Please try again later.");
-      }
-    } catch (err) {
-      console.error("Error creating checkout session:", err);
-      setError("Failed to initiate checkout process. Please try again later.");
-    }
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      // Store authentication state in localStorage before redirecting
-      const authState = {
-        timestamp: Date.now(),
-        action: "manage",
-      };
-      localStorage.setItem(
-        "subscription_manage_state",
-        JSON.stringify(authState)
-      );
-
-      console.log(
-        "Storing subscription management state before redirect:",
-        authState
-      );
-
-      // Create customer portal session with dedicated success page
-      const response = await api.post("/subscriptions/portal/", {
-        // Use dedicated success page for better session handling
-        return_url: `${
-          window.location.origin
-        }/subscription/success?t=${Date.now()}`,
-      });
-
-      // Redirect to Stripe customer portal
-      if (response.data && response.data.portal_url) {
-        window.location.href = response.data.portal_url;
-      }
-    } catch (err) {
-      console.error("Error creating portal session:", err);
-      setError(
-        "Failed to access subscription management portal. Please try again later."
-      );
+    } finally {
+      setPurchasing(null);
     }
   };
 
@@ -375,16 +235,6 @@ export default function SubscriptionPage() {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   // Show success message if redirected from successful checkout
   const showSuccess = router.query.success === "true";
 
@@ -392,7 +242,7 @@ export default function SubscriptionPage() {
   const showCanceled = router.query.canceled === "true";
 
   return (
-    <Layout title="Subscription">
+    <Layout title="Credits & Packages">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* System Message */}
         {systemMessage && (
@@ -405,24 +255,23 @@ export default function SubscriptionPage() {
         )}
 
         {showSuccess && (
-          <div className="bg-green-800 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+          <div className="bg-green-800 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded mb-6">
             <p className="font-bold text-white">Success!</p>
-            <p className="text-white">Your subscription has been updated successfully.</p>
+            <p className="text-white">Your credits have been added successfully.</p>
           </div>
         )}
 
         {showCanceled && (
-          <div className="bg-yellow-800 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-            <p className="font-bold text-white">Checkout Canceled</p>
+          <div className="bg-yellow-800 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded mb-6">
+            <p className="font-bold text-white">Purchase Canceled</p>
             <p className="text-white">
-              Your subscription checkout was canceled. No changes were made to
-              your subscription.
+              Your credit purchase was canceled. No charges were made.
             </p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-800 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="bg-red-800 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-6">
             <p className="font-bold text-white">Error</p>
             <p className="text-white">{error}</p>
           </div>
@@ -434,264 +283,129 @@ export default function SubscriptionPage() {
           </div>
         ) : (
           <>
-            {/* Downgrade Notice */}
-            {subscription && subscription.cancel_at_period_end && 
-              // Only show for actual downgrades (not for upgrades where cancel_at_period_end wasn't reset)
-              (subscription.subscription_plan === 'explorer' || 
-               (plans.find(p => p.name === subscription.subscription_plan)?.price ?? 0) < 
-               Math.max(...plans.filter(p => p.name !== subscription.subscription_plan).map(p => p.price || 0), 0)) && (
-              <div className="bg-danger-500 border border-danger-100 text-blue-700 px-6 py-4 rounded mb-6">
-                <div className="flex items-start">
-  
-                  <div className="ml-3">
-                    <h3 className="text-lg font-medium text-primary-200">Subscription Change Pending</h3>
-                    <div className="mt-2">
-                      <p className="text-primary-200">
-                        You've successfully downgraded your subscription. Your current paid plan 
-                        will remain active until {formatDate(subscription.subscription_period_end)}.
-                      </p>
-                      <p className="mt-2 text-primary-200">
-                        After this date, you'll be automatically switched to your new plan and won't be charged again.
+            {/* Current Credits */}
+            {credits && (
+              <div className="bg-primary-100 dark:bg-primary-900/30 rounded-lg shadow-md p-6 mb-8 border border-primary-200 dark:border-gray-700">
+                <h2 className="text-2xl text-center font-semibold text-secondary-500 dark:text-secondary-400 mb-4">
+                  Your AI Credits
+                </h2>
+                <hr className="my-6 border-t border-primary-300 dark:border-gray-600" />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                  <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-primary-200 dark:border-gray-600">
+                    <div className="text-3xl font-bold text-secondary-500 dark:text-secondary-400 mb-2">
+                      {credits.total_credits_available}
+                    </div>
+                    <p className="text-primary-600 dark:text-primary-400 font-semibold">Total Credits Available</p>
+                    <p className="text-sm text-primary-500 dark:text-primary-500 mt-1">Ready to use for AI generation</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-primary-200 dark:border-gray-600">
+                    <div className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
+                      {credits.ai_credits_balance}
+                    </div>
+                    <p className="text-primary-600 dark:text-primary-400 font-semibold">Purchased Credits</p>
+                    <p className="text-sm text-primary-500 dark:text-primary-500 mt-1">Credits you've bought</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-primary-200 dark:border-gray-600">
+                    <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+                      {credits.bonus_ai_generation_credits}
+                    </div>
+                    <p className="text-primary-600 dark:text-primary-400 font-semibold">Bonus Credits</p>
+                    <p className="text-sm text-primary-500 dark:text-primary-500 mt-1">Free credits from admin</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 text-center">
+                  <p className="text-primary-600 dark:text-primary-400">
+                    <span className="font-semibold">Total Credits Purchased:</span> {credits.ai_credits_purchased_total}
+                  </p>
+                  <p className="text-sm text-primary-500 dark:text-primary-500 mt-2">
+                    Each AI generation uses 1 credit. Credits never expire.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Credit Packages */}
+            <div>
+              <h2 className="text-2xl font-semibold text-secondary-500 dark:text-secondary-400 mb-6 text-center">
+                Purchase Credit Packages
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {packages.map((pkg) => (
+                  <div
+                    key={pkg.id}
+                    className="bg-primary-100 dark:bg-primary-900/30 rounded-lg shadow-md p-6 border-2 border-transparent hover:border-secondary-400 dark:hover:border-secondary-500 transition-colors"
+                  >
+                    <h3 className="text-xl font-bold mb-2 text-primary-600 dark:text-primary-400">
+                      {pkg.display_name}
+                    </h3>
+                    
+                    <div className="text-center mb-4">
+                      <div className="text-3xl font-bold text-secondary-500 dark:text-secondary-400">
+                        {pkg.credits}
+                      </div>
+                      <p className="text-primary-600 dark:text-primary-400">AI Generation Credits</p>
+                    </div>
+                    
+                    <div className="text-center mb-4">
+                      <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                        {formatCurrency(pkg.price, pkg.currency)}
+                      </div>
+                      <p className="text-sm text-primary-500 dark:text-primary-500">
+                        ${(pkg.price / pkg.credits).toFixed(3)} per credit
                       </p>
                     </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {/* Current Subscription */}
-            {subscription && (
-              <div className="bg-primary-100 rounded-lg shadow-md p-6 mb-8">
-                <h2 className="text-2xl text-center font-semibold text-secondary-500 mb-4">
-                  Current Subscription
-                </h2>
-                <hr className="my-6 border-t border-primary-300" />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-primary-600 mb-2">
-                      
-                      <span className="font-semibold">Subscription:</span>{" "}
-                      <span className="text-primary-600">
-                        {subscription.subscription_plan_display}
-                      </span>
-                    </p>
-                    <p className="text-primary-600 mb-2">
-                      <span className="font-semibold">Status:</span>{" "}
-                      {subscription.subscription_status}
-                      {subscription.cancel_at_period_end && subscription.subscription_period_end && (
-                        <span className="text-red-600 ml-2">
-                          (expiring {new Date(subscription.subscription_period_end).toLocaleDateString()})
-                        </span>
-                      )}
-                    </p>
-                    {subscription.subscription_period_end && (
-                      <p className="text-primary-600 mb-2">
-                        <span className="font-semibold">Renewal Date:</span>{" "}
-                        {formatDate(subscription.subscription_period_end)}
+                    {pkg.description && (
+                      <p className="text-primary-500 dark:text-primary-500 mb-4 text-sm text-center">
+                        {pkg.description}
                       </p>
                     )}
-                    <p className="text-primary-600 mb-2">
-                      <span className="font-semibold">Price:</span>{" "}
-                      {formatCurrency(subscription.subscription_price, "USD")}
-                      /month
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-primary-600 mb-2">
-                      <span className="font-semibold">
-                        AI Generation Limit:
-                      </span>{" "}
-                      {subscription.ai_generation_limit} per month
-                    </p>
-                    <p className="text-primary-600 mb-2">
-                      <span className="font-semibold">
-                        AI Generations Used:
-                      </span>{" "}
-                      {subscription.ai_generations_used}
-                    </p>
-                    <p className="text-primary-600 mb-2">
-                      <span className="font-semibold">
-                        AI Generations Remaining:
-                      </span>{" "}
-                      {subscription.ai_generations_remaining}
-                    </p>
 
-                    {subscription.subscription_plan !== "explorer" && (
-                      <button
-                        onClick={handleManageSubscription}
-                        className="mt-4 bg-primary-500 text-primary-200 px-4 py-2 rounded hover:bg-primary-700 transition-colors"
-                      >
-                        Manage Subscription
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handlePurchase(pkg.id)}
+                      disabled={purchasing === pkg.id}
+                      className="w-full bg-secondary-600 dark:bg-secondary-600 text-primary-50 px-4 py-2 rounded hover:bg-secondary-500 dark:hover:bg-secondary-700 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+                    >
+                      {purchasing === pkg.id ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        `Purchase ${pkg.credits} Credits`
+                      )}
+                    </button>
                   </div>
+                ))}
+              </div>
+
+              {packages.length === 0 && !loading && (
+                <div className="text-center py-8">
+                  <p className="text-primary-500 dark:text-primary-500">No credit packages are currently available.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Credit Usage Information */}
+            <div className="mt-8 bg-secondary-100 border border-secondary-300 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-secondary-600 mb-3">How Credits Work</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-primary-100">
+                <div>
+                  <p className="mb-2">• <strong>1 Credit = 1 AI Generation</strong></p>
+                  <p className="mb-2">• <strong>Credits never expire</strong></p>
+                  <p className="mb-2">• <strong>Use bonus credits first</strong></p>
+                </div>
+                <div>
+                  <p className="mb-2">• <strong>Instant credit delivery</strong></p>
+                  <p className="mb-2">• <strong>No monthly subscriptions</strong></p>
+                  <p className="mb-2">• <strong>Pay only for what you use</strong></p>
                 </div>
               </div>
-            )}
-
-            {/* Subscription Plans */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Add debugging to see what's happening */}
-              {(() => {
-                console.log("Current subscription:", subscription);
-                console.log("All plans:", plans);
-                return null;
-              })()}
-              
-              {plans
-                .filter(plan => {
-                  // If no subscription, show all plans
-                  if (!subscription) {
-                    console.log(`Showing plan ${plan.name} (no subscription)`);
-                    return true;
-                  }
-                  
-                  // Get the current plan
-                  const currentPlan = plans.find(p => p.name === subscription.subscription_plan);
-                  console.log(`Current plan: ${currentPlan?.name}, price: ${currentPlan?.price}`);
-                  
-                  if (!currentPlan) {
-                    console.log(`Showing plan ${plan.name} (current plan not found)`);
-                    return true;
-                  }
-                  
-                  // Always show the free plan (Explorer)
-                  if (plan.name === 'explorer') {
-                    console.log(`Showing free plan ${plan.name}`);
-                    return true;
-                  }
-                  
-                  // If current plan is free, show all paid plans
-                  if (currentPlan.price === 0) {
-                    console.log(`Showing paid plan ${plan.name} (current plan is free)`);
-                    return true;
-                  }
-                  
-                  // If this is the current plan, show it
-                  if (plan.name === subscription.subscription_plan) {
-                    console.log(`Showing current plan ${plan.name}`);
-                    return true;
-                  }
-                  
-                  // Hide lower-tier paid plans (only show upgrades)
-                  // Ensure that downgrading to a lower-tier paid plan (e.g., Master -> Creator) is not allowed
-                  const planHierarchy = ["explorer", "creator", "master"]; // Order of the plans (lowest to highest)
-                  
-                  if (planHierarchy.indexOf(plan.name) < planHierarchy.indexOf(currentPlan.name)) {
-                    console.log(`Hiding lower-tier paid plan ${plan.name} (${plan.name} < ${currentPlan.name})`);
-                    return false;
-                  }
-                  
-                  // Show higher-tier plans (upgrades)
-                  console.log(`Showing higher-tier plan ${plan.name}`);
-                  return true;
-                })
-                .map((plan) => (
-                <div
-                  key={plan.id}
-                  className={`bg-primary-100 rounded-lg shadow-md p-6 border-2 ${
-                    subscription && subscription.subscription_plan === plan.name
-                      ? "border-secondary-400"
-                      : "border-transparent"
-                  }`}
-                >
-                  <h3 className="text-xl font-bold mb-2">
-                    <span
-                      className={`
-                                ${plan.display_name === "Explorer" ? "text-primary-500" : ""}
-                                ${plan.display_name === "Master" ? "text-secondary-600" : ""}
-                                ${plan.display_name === "Creator" ? "text-primary-900" : ""}
-                                text-primary-600
-                              `}
-                    >
-                      {plan.display_name}
-                    </span>
-                  </h3>
-                  <p className="text-2xl font-bold text-primary-600 mb-4">
-                    {plan.price === 0
-                      ? "Free"
-                      : `${formatCurrency(plan.price, plan.currency)}/${
-                          plan.interval
-                        }`}
-                  </p>
-                  <p className="text-primary-500 mb-4">{plan.description}</p>
-                  <ul className="mb-6 space-y-2">
-                    <li className="flex items-start">
-                      <svg
-                        className="h-5 w-5 text-secondary-500 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="text-primary-700">
-                        {plan.ai_generation_limit} AI generations per month
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        className="h-5 w-5 text-secondary-500 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="text-primary-700">
-                        Unlimited document storage
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        className="h-5 w-5 text-secondary-500 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="text-primary-700">
-                        Full access to all features
-                      </span>
-                    </li>
-                  </ul>
-
-                  {subscription &&
-                  subscription.subscription_plan === plan.name ? (
-                    <button
-                      disabled
-                      className="w-full bg-primary-600 text-white px-4 py-2 rounded opacity-75 cursor-not-allowed"
-                    >
-                      Current Plan
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleUpgrade(plan.id)}
-                      className="w-full bg-secondary-600 text-primary-50 px-4 py-2 rounded hover:bg-secondary-500 transition-colors"
-                    >
-                      {plan.price === 0 ? "Downgrade" : "Switch"} to{" "}
-                      {plan.display_name}
-                    </button>
-                  )}
-                </div>
-              ))}
             </div>
           </>
         )}

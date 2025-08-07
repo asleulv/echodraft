@@ -3,19 +3,24 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { categoriesAPI, documentsAPI } from "@/utils/api";
 import Layout from "@/components/Layout";
-import DocumentPreviewList from "@/components/DocumentPreviewList";
 import GenerationProgress, { GenerationStage } from "@/components/GenerationProgress";
 
+// Your existing imports
 import AISettingsForm from "./generate/AISettingsForm";
 import SuggestionsList from "./generate/SuggestionsList";
 import SaveSelectionActions from "./generate/SaveSelectionActions";
 import StatusAlerts from "./generate/StatusAlerts";
 
+// New credit-related imports
+import CreditDisplay from "./generate/CreditDisplay";
+import { useCreditInfo } from "@/hooks/useCreditInfo";
+import { getCreditErrorText } from "@/utils/creditErrors";
+
 export default function GenerateDocument() {
   // Progressive form stage
   const [formStage, setFormStage] = useState<'concept' | 'sources' | 'ready'>('concept');
   
-  // State declarations (all your state from original code)
+  // State declarations (most unchanged)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | React.ReactNode | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
@@ -23,8 +28,11 @@ export default function GenerateDocument() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [aiGenerationsRemaining, setAiGenerationsRemaining] = useState<number | null>(null);
-  const [isLoadingGenerationLimit, setIsLoadingGenerationLimit] = useState(true);
+  
+  // REMOVED: Old subscription state
+  // const [aiGenerationsRemaining, setAiGenerationsRemaining] = useState<number | null>(null);
+  // const [isLoadingGenerationLimit, setIsLoadingGenerationLimit] = useState(true);
+  
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | undefined>();
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>("published");
   const [concept, setConcept] = useState("");
@@ -50,6 +58,9 @@ export default function GenerateDocument() {
     num_suggestions: 5
   });
 
+  // NEW: Use credit hook instead of subscription state
+  const { creditInfo, isLoading: isLoadingCredits, hasCredits, refreshCreditInfo } = useCreditInfo();
+
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
 
@@ -57,19 +68,32 @@ export default function GenerateDocument() {
   const createTitle = (concept: string) => {
     const trimmed = concept.trim();
     
-    // If it's already short enough, use as-is
     if (trimmed.length <= 40) return trimmed;
     
-    // Find the last space before the 40-character limit
     const truncated = trimmed.substring(0, 40);
     const lastSpace = truncated.lastIndexOf(' ');
     
-    // If there's a space after position 15, cut there (ensures we don't get tiny titles)
-    // Otherwise, just use the 40-character limit without "..."
     return lastSpace > 15 ? truncated.substring(0, lastSpace) : truncated;
   };
 
-  // Effects and handlers: unchanged, just copied from your code
+  // Helper function to create credit error JSX from utils
+  const createCreditErrorJSX = (type: 'insufficient' | 'deduction_failed' | 'purchase_required') => {
+    const errorText = getCreditErrorText(type);
+    return (
+      <div>
+        <p className="font-semibold mb-2">{errorText.title}</p>
+        <p className="mb-3">{errorText.message}</p>
+        <button
+          onClick={() => router.push('/subscription')}
+          className="bg-secondary-600 text-white px-4 py-2 rounded hover:bg-secondary-500 transition-colors"
+        >
+          {errorText.buttonText}
+        </button>
+      </div>
+    );
+  };
+
+  // Effects and handlers
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push("/login");
@@ -90,27 +114,9 @@ export default function GenerateDocument() {
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    const fetchSubscriptionInfo = async () => {
-      try {
-        setIsLoadingGenerationLimit(true);
-        const { default: api } = await import("@/utils/api");
-        const response = await api.get("/subscriptions/organization/");
-        if (response.data && response.data.length > 0) {
-          setAiGenerationsRemaining(response.data[0].ai_generations_remaining);
-        }
-      } catch (err) {
-        // ignore
-      } finally {
-        setIsLoadingGenerationLimit(false);
-      }
-    };
-    if (isAuthenticated) {
-      fetchSubscriptionInfo();
-    }
-  }, [isAuthenticated]);
+  // REMOVED: Old subscription fetch effect - replaced with useCreditInfo hook
 
-  // Tag input handlers
+  // Tag input handlers (unchanged)
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setTagInput(e.target.value);
   const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
@@ -128,20 +134,17 @@ export default function GenerateDocument() {
   const removeTag = (tagToRemove: string) => setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   const handleSelectedDocumentsChange = (docIds: number[]) => setSelectedDocumentIds(docIds);
 
-  // Progressive form handlers
+  // Progressive form handlers (unchanged)
   const handleConceptComplete = () => {
     if (concept.trim()) {
       setFormStage('sources');
-      setError(undefined); // Clear any previous errors
+      setError(undefined);
     }
   };
 
-  // NEW: Allow skipping style sources and generate directly
   const handleSkipStyleSources = async () => {
     if (concept.trim()) {
-      // Clear any selected documents since we're skipping
       setSelectedDocumentIds([]);
-      // Generate directly without style sources
       await handleSubmit(new Event('submit') as any);
     }
   };
@@ -153,9 +156,16 @@ export default function GenerateDocument() {
     setSuccess(undefined);
   };
 
-  // Form submission logic - UPDATED to allow empty selectedDocumentIds
+  // UPDATED: Form submission logic with credit checking
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // NEW: Check credits before submission
+    if (!hasCredits) {
+      setError(createCreditErrorJSX('insufficient'));
+      return;
+    }
+
     setIsSubmitting(true);
     setError(undefined);
     setSuccess(undefined);
@@ -175,17 +185,16 @@ export default function GenerateDocument() {
       const requestBody = {
         generation_type: "suggestions",
         concept: concept.trim(),
-        selected_document_ids: selectedDocumentIds, // Can be empty array now
+        selected_document_ids: selectedDocumentIds,
         debug_mode: debugMode,
         suggestion_length: suggestionLength,
       };
 
-      // Store the original request data for "Generate More" functionality
       setOriginalRequestData({
         concept: concept.trim(),
         suggestion_length: suggestionLength,
         selected_document_ids: selectedDocumentIds,
-        num_suggestions: 5 // Default number of suggestions
+        num_suggestions: 5
       });
 
       setTimeout(() => setGenerationStage("processing"), 1000);
@@ -203,7 +212,10 @@ export default function GenerateDocument() {
           ? "Suggestions generated using your style references!" 
           : "Suggestions generated! (No specific style applied)";
         setSuccess(`${styleMessage} Select one or more paragraphs to add to your new document.`);
-        setFormStage('ready'); // Move to suggestions stage
+        setFormStage('ready');
+        
+        // NEW: Refresh credit info after successful generation
+        await refreshCreditInfo();
       } else if (data.debug) {
         setDebugData(data);
         setSuccess("Debug information generated successfully!");
@@ -211,14 +223,26 @@ export default function GenerateDocument() {
         setError("No suggestions returned from the AI.");
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to generate suggestions. Please try again.");
+      // UPDATED: Better error handling for credit issues
+      if (err.response?.status === 402) {
+        setError(createCreditErrorJSX('insufficient'));
+        await refreshCreditInfo();
+      } else {
+        setError(err.response?.data?.error || err.message || "Failed to generate suggestions. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // NEW: Generate More handler to replace handleGenerateNew
+  // UPDATED: Generate More handler with credit check
   const handleGenerateMore = async (count: number) => {
+    // NEW: Check credits before generating more
+    if (!hasCredits) {
+      setError(createCreditErrorJSX('purchase_required'));
+      return;
+    }
+
     setIsSubmitting(true);
     setError(undefined);
     
@@ -231,10 +255,9 @@ export default function GenerateDocument() {
         selected_document_ids: originalRequestData.selected_document_ids,
         debug_mode: debugMode,
         suggestion_length: originalRequestData.suggestion_length,
-        num_suggestions: count, // Use the count parameter
+        num_suggestions: count,
       };
 
-      // Progress stages
       setTimeout(() => setGenerationStage("processing"), 1000);
       setTimeout(() => setGenerationStage("generating"), 2000);
 
@@ -245,20 +268,28 @@ export default function GenerateDocument() {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (data.suggestions) {
-        // Append new suggestions to existing ones
         setSuggestions(prev => prev ? [...prev, ...data.suggestions] : data.suggestions);
         setSuccess(`Generated ${count} more suggestions! Select paragraphs to add to your document.`);
+        
+        // NEW: Refresh credit info after successful generation
+        await refreshCreditInfo();
       } else {
         setError("No additional suggestions returned from the AI.");
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to generate more suggestions. Please try again.");
+      // UPDATED: Better error handling for credit issues
+      if (err.response?.status === 402) {
+        setError(createCreditErrorJSX('purchase_required'));
+        await refreshCreditInfo();
+      } else {
+        setError(err.response?.data?.error || err.message || "Failed to generate more suggestions. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Multi-selection handlers
+  // Multi-selection handlers (unchanged)
   const toggleSuggestionSelection = (suggestion: string) => {
     setSelectedSuggestions((prev) =>
       prev.includes(suggestion) ? prev.filter((s) => s !== suggestion) : [...prev, suggestion]
@@ -269,7 +300,7 @@ export default function GenerateDocument() {
     setSuccess("Suggestions generated! Select one or more paragraphs to add to your new document.");
   };
 
-  // Save handler
+  // Save handler (unchanged)
   const handleSaveToDocument = async () => {
     if (selectedSuggestions.length === 0) {
       setError("Please select at least one suggestion to save.");
@@ -319,10 +350,17 @@ export default function GenerateDocument() {
     }
   };
 
+  // NEW: Calculate if generation should be disabled
+  const isGenerationDisabled = !hasCredits || isSubmitting || isLoadingCredits;
+
   return (
     <Layout title="Generate Document with AI">
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* NEW: Credit Display Component */}
+          <CreditDisplay creditInfo={creditInfo} isLoading={isLoadingCredits} />
+
+          {/* Existing Status Alerts */}
           <StatusAlerts error={error} success={success} debugData={debugData} clearDebugData={() => setDebugData(null)} />
 
           {/* Only show form when not generating and no suggestions yet */}
@@ -330,7 +368,7 @@ export default function GenerateDocument() {
             <AISettingsForm
               stage={formStage}
               onConceptComplete={handleConceptComplete}
-              onSkipStyleSources={handleSkipStyleSources} // NEW PROP
+              onSkipStyleSources={handleSkipStyleSources}
               concept={concept}
               setConcept={setConcept}
               suggestionLength={suggestionLength}
@@ -352,10 +390,12 @@ export default function GenerateDocument() {
               isLoadingCategories={isLoadingCategories}
               selectedDocumentIds={selectedDocumentIds}
               onSelectedDocumentsChange={handleSelectedDocumentsChange}
-              isSubmitting={isSubmitting}
+              isSubmitting={isGenerationDisabled} // UPDATED: Use credit-aware disabled state
               handleSubmit={handleSubmit}
-              aiGenerationsRemaining={aiGenerationsRemaining}
-              isLoadingGenerationLimit={isLoadingGenerationLimit}
+              // UPDATED: Replace subscription props with credit props
+              creditInfo={creditInfo}
+              isLoadingCredits={isLoadingCredits}
+              hasCredits={hasCredits}
               debugMode={debugMode}
               setDebugMode={setDebugMode}
             />
@@ -379,8 +419,10 @@ export default function GenerateDocument() {
                 selectedSuggestions={selectedSuggestions}
                 toggleSuggestionSelection={toggleSuggestionSelection}
                 handleClearSelection={handleClearSelection}
-                onGenerateMore={handleGenerateMore} // Changed from handleGenerateNew
-                originalRequestData={originalRequestData} // Add this prop
+                onGenerateMore={handleGenerateMore}
+                originalRequestData={originalRequestData}
+                // NEW: Pass credit info to disable "Generate More" if no credits
+                hasCredits={hasCredits}
               />
 
               {selectedSuggestions.length > 0 && (

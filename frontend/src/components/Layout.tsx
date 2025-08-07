@@ -199,7 +199,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
 
   const userNavigation = [
     { name: "Your Profile", href: "/profile" },
-    { name: "Subscription", href: "/subscription" },
+    { name: "Credits", href: "/subscription" },
     { name: "Settings", href: "/settings" },
     { name: "Sign out", href: "#", onClick: () => logout() },
   ];
