@@ -93,8 +93,8 @@ export function useDocuments() {
         }
 
         const response = await documentsAPI.getDocuments(requestParams);
-        const fetchedDocs = response.data.results || [];
-        const totalCount = response.data.count || 0;
+        const fetchedDocs = response.data.results || response.data.documents || [];
+        const totalCount = response.data.count || (response.data.documents ? response.data.documents.length : 0);
 
         setDocuments(fetchedDocs);
         setTotalResults(totalCount);

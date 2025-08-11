@@ -18,6 +18,8 @@ from documents.views.ai_views import generate_document_with_ai
 from subscriptions import views as subscription_views
 from .webhook_handler import root_webhook_handler
 
+from accounts.auth_views import CustomTokenObtainPairView
+
 # API documentation schema
 schema_view = get_schema_view(
     openapi.Info(
@@ -57,7 +59,7 @@ urlpatterns = [
     path('api/v1/stripe/webhook/', csrf_exempt(subscription_views.StripeWebhookView.as_view({'post': 'webhook'})), name='stripe-webhook'),
     
 # JWT authentication
-    path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/auth/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     

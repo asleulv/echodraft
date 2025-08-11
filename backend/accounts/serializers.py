@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Organization
 
 User = get_user_model()
@@ -111,3 +112,71 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A user with this email already exists.")
         
         return value
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom JWT token serializer with better error messages for unverified accounts.
+    """
+    
+    def validate(self, attrs):
+        # Get username/email and password from request - try multiple field names
+        username = attrs.get(self.username_field) or attrs.get('email') or attrs.get('username')
+        password = attrs.get('password')
+        
+        if not username or not password:
+            raise serializers.ValidationError({
+                'detail': 'Email and password are required.',
+                'error_type': 'missing_credentials'
+            })
+        
+        # Check if user exists and handle unverified accounts
+        try:
+            # Try multiple ways to find the user
+            user = None
+            try:
+                user = User.objects.get(email=username)
+            except User.DoesNotExist:
+                try:
+                    user = User.objects.get(username=username)
+                except User.DoesNotExist:
+                    pass
+            
+            if not user:
+                raise serializers.ValidationError({
+                    'detail': 'Invalid email or password.',
+                    'error_type': 'invalid_credentials'
+                })
+            
+            # Check if user exists but is inactive (unverified email)
+            if not user.is_active:
+                if hasattr(user, 'email_verification_token') and user.email_verification_token:
+                    raise serializers.ValidationError({
+                        'detail': 'Please verify your email before logging in. Check your inbox for the verification link.',
+                        'error_type': 'email_not_verified'
+                    })
+                else:
+                    raise serializers.ValidationError({
+                        'detail': 'Your account is inactive. Please contact support.',
+                        'error_type': 'account_inactive'
+                    })
+            
+            # Check password
+            if not user.check_password(password):
+                raise serializers.ValidationError({
+                    'detail': 'Invalid email or password.',
+                    'error_type': 'invalid_credentials'
+                })
+                
+        except serializers.ValidationError:
+            # Re-raise our custom validation errors
+            raise
+        except Exception as e:
+            raise serializers.ValidationError({
+                'detail': 'Invalid email or password.',
+                'error_type': 'invalid_credentials'
+            })
+        
+        # Continue with normal JWT validation
+        return super().validate(attrs)
+
+

@@ -34,7 +34,7 @@ export default function GenerateDocument() {
   // const [isLoadingGenerationLimit, setIsLoadingGenerationLimit] = useState(true);
   
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | undefined>();
-  const [selectedStatus, setSelectedStatus] = useState<string | undefined>("published");
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
   const [concept, setConcept] = useState("");
   const [suggestionLength, setSuggestionLength] = useState("medium");
   const [suggestions, setSuggestions] = useState<string[] | null>(null);

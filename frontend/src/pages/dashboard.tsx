@@ -8,6 +8,7 @@ import { useSystemMessage } from "@/hooks/useSystemMessage";
 import SystemMessage from "@/components/SystemMessage";
 import RecentDocumentsSection from "@/components/dashboard/RecentDocumentsSection";
 import CategoriesSection from "@/components/dashboard/CategoriesSection";
+import GettingStartedSection from "@/components/dashboard/GettingStartedSection";
 
 export default function Dashboard() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -25,6 +26,10 @@ export default function Dashboard() {
   const [documentLimit, setDocumentLimit] = useState<number>(5);
   const [isLimitLoaded, setIsLimitLoaded] = useState(false);
   const [isViewModeLoaded, setIsViewModeLoaded] = useState(false);
+  
+  // Add these new state variables for Getting Started functionality
+  const [showGettingStarted, setShowGettingStarted] = useState(false);
+  const [hasOnlyDemoDocuments, setHasOnlyDemoDocuments] = useState(false);
 
   // Load saved document limit and category view mode from localStorage
   useEffect(() => {
@@ -72,7 +77,22 @@ export default function Dashboard() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // Fetch documents
+  // NEW: Handle URL parameter from help button
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldShow = urlParams.get('help');
+    
+    if (shouldShow === 'true') {
+      const dismissed = localStorage.getItem('getting-started-dismissed');
+      if (!dismissed) {
+        setShowGettingStarted(true);
+      }
+      // Clean up URL parameter
+      router.replace('/dashboard', undefined, { shallow: true });
+    }
+  }, [router]);
+
+  // Fetch documents (updated to handle demo status)
   useEffect(() => {
     const fetchDocuments = async () => {
       if (!isAuthenticated || !isLimitLoaded) return; // Don't fetch until limit is loaded
@@ -94,7 +114,17 @@ export default function Dashboard() {
         };
 
         const response = await documentsAPI.getDocuments(params);
-        const allDocuments = response.data.results || [];
+        const allDocuments = response.data.results || response.data.documents || [];
+        
+        // Check if user only has demo documents (from your backend response)
+        const hasOnlyDemos = response.data.has_only_demo_documents || false;
+        setHasOnlyDemoDocuments(hasOnlyDemos);
+        
+        // Show getting started if user has only demo documents and hasn't dismissed it
+        const dismissed = localStorage.getItem('getting-started-dismissed');
+        if (hasOnlyDemos && !dismissed) {
+          setShowGettingStarted(true);
+        }
 
         // Filter documents based on selected statuses
         let filteredDocuments =
@@ -112,13 +142,20 @@ export default function Dashboard() {
         setDocuments(filteredDocuments);
       } catch (err: any) {
         setError("Failed to load documents");
+        console.error("Error fetching documents:", err);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchDocuments();
-  }, [isAuthenticated, selectedStatuses, documentLimit, isLimitLoaded]); // Add isLimitLoaded to dependencies
+  }, [isAuthenticated, selectedStatuses, documentLimit, isLimitLoaded]);
+
+  // Handle dismissing the getting started section
+  const handleDismissGettingStarted = () => {
+    setShowGettingStarted(false);
+    localStorage.setItem('getting-started-dismissed', 'true');
+  };
 
   // Fetch categories and documents
   useEffect(() => {
@@ -137,7 +174,7 @@ export default function Dashboard() {
           latest_only: true,
           limit: 100, // Get a reasonable number of documents to analyze
         });
-        const documentsData = documentsResponse.data.results || [];
+        const documentsData = documentsResponse.data.results || documentsResponse.data.documents || [];
 
         // Create a map of category ID to the latest document update time
         const categoryLastUpdated = new Map<number, string>();
@@ -185,7 +222,7 @@ export default function Dashboard() {
           }
         }
       } catch (err: any) {
-        // Handle error
+        console.error("Error fetching categories:", err);
       } finally {
         setIsLoadingCategories(false);
       }
@@ -215,6 +252,11 @@ export default function Dashboard() {
                 onClose={dismissMessage}
               />
             </div>
+          )}
+
+          {/* Add Getting Started Section */}
+          {showGettingStarted && (
+            <GettingStartedSection onDismiss={handleDismissGettingStarted} />
           )}
 
           <RecentDocumentsSection

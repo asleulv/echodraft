@@ -1,10 +1,10 @@
-import { ReactNode, useState, useEffect, useRef } from "react";
+import { ReactNode, useState, useEffect, useRef, useCallback } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Sun, Moon, UserRound } from "lucide-react";
+import { Sun, Moon, UserRound, CircleHelp } from "lucide-react";
 import WandPencilIcon from "@/components/icons/WandPencilIcon";
 import InactivityWarning from "@/components/InactivityWarning";
 
@@ -30,6 +30,20 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Function to trigger Getting Started guide - Option C (Complete Layout Update)
+  const showGettingStartedGuide = useCallback(() => {
+    // Remove the dismissed flag
+    localStorage.removeItem("getting-started-dismissed");
+
+    if (router.pathname !== "/dashboard") {
+      // Navigate to dashboard with flag
+      router.push("/dashboard?help=true");
+    } else {
+      // If already on dashboard, force refresh to show guide
+      window.location.reload();
+    }
+  }, [router]);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -105,7 +119,6 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
       href: "/dashboard",
       current: router.pathname === "/dashboard",
     },
-
     {
       name: "Documents",
       href: "/documents",
@@ -193,8 +206,6 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
         </svg>
       ),
     },
-    // Tags page is not implemented yet
-    // { name: 'Tags', href: '/tags', current: router.pathname.startsWith('/tags') },
   ];
 
   const userNavigation = [
@@ -219,14 +230,28 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
 
         {/* Canonical URL */}
         <link rel="canonical" href="https://echodraft.app" />
-        
+
         {/* Favicons */}
         <link rel="icon" href="/images/favicons/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/favicon-16x16.png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/images/favicons/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/images/favicons/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/images/favicons/favicon-16x16.png"
+        />
         <link rel="manifest" href="/images/favicons/site.webmanifest" />
-        
+
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://echodraft.app" />
@@ -297,7 +322,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                 <button
                   type="button"
                   onClick={toggleTheme}
-                  className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-200  flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
+                  className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-200 flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
                   aria-label="Toggle dark mode"
                 >
                   {mounted &&
@@ -307,6 +332,18 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                       <Moon className="h-4 w-4" />
                     ))}
                 </button>
+
+                {/* Help button - Desktop (Direct action, no dropdown) */}
+                {isAuthenticated && (
+                  <button
+                    type="button"
+                    onClick={showGettingStartedGuide}
+                    className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-200 flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
+                    aria-label="Show Getting Started Guide"
+                  >
+                    <CircleHelp className="h-6 w-6" />
+                  </button>
+                )}
 
                 {isAuthenticated ? (
                   <div className="relative">
@@ -394,7 +431,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
 
                     {isNewDocMenuOpen && (
                       <div
-                        className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-primary-100  ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                        className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-primary-100 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
                         role="menu"
                         aria-orientation="vertical"
                         tabIndex={-1}
@@ -472,6 +509,18 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                     <Moon className="h-5 w-5" />
                   ))}
               </button>
+
+              {/* Mobile help button (Direct action, no dropdown) */}
+              {isAuthenticated && (
+                <button
+    type="button"
+    onClick={showGettingStartedGuide}
+    className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-200 flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
+    aria-label="Show Getting Started Guide"
+  >
+    <CircleHelp className="h-6 w-6" />
+  </button>
+              )}
 
               {/* New document button - Mobile */}
               {isAuthenticated && (

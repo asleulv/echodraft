@@ -12,6 +12,7 @@ from ..serializers import (
     TextDocumentCreateSerializer,
     TextDocumentUpdateSerializer,
 )
+from ..utils.onboarding import user_has_only_demo_documents
 from accounts.permissions import IsSameOrganization
 
 
@@ -125,6 +126,20 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
         
         self.check_object_permissions(self.request, obj)
         return obj
+    
+    def list(self, request, *args, **kwargs):
+        """Override list method to include demo document check"""
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        
+        # Check if user only has demo documents
+        has_only_demo_documents = user_has_only_demo_documents(request.user)
+        
+        return Response({
+            'documents': serializer.data,
+            'has_only_demo_documents': has_only_demo_documents,
+            'show_getting_started': has_only_demo_documents
+        })
     
     def destroy(self, request, *args, **kwargs):
         """Soft delete by changing status."""

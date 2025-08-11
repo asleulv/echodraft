@@ -73,7 +73,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
         
         // Fetch documents
         const response = await documentsAPI.getDocuments(params);
-        let filteredDocs = response.data.results || [];
+        let filteredDocs = response.data.results || response.data.documents || [];
         
         // Filter by tags on the client side if tags are provided
         if (tags && tags.length > 0) {
@@ -98,7 +98,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
         // 3. This is the initial load or filter change
         if (filteredDocs.length > 0 && !manualSelectionMode) {
           const docsToSelect = filteredDocs
-            .slice(0, Math.min(MAX_SELECTED_DOCS, filteredDocs.length))
+            .slice(0, Math.min(1, filteredDocs.length))
             .map((doc: Document) => doc.id);
           
           setSelectedDocs(docsToSelect);

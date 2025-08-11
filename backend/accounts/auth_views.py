@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 import json
 import os
 import logging
@@ -12,18 +13,23 @@ from google.auth.transport import requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 
+
 from .models import Organization
+from documents.utils.demo_content import create_demo_documents_for_new_org
 from .serializers import (
     OrganizationSerializer,
     UserCreateSerializer,
     UserSerializer,
+    CustomTokenObtainPairSerializer
 )
 from .email_verification import generate_verification_token
 from emails.utils import send_welcome_email
 
+
 # Set up logger for this module
 logger = logging.getLogger(__name__)
 User = get_user_model()
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -100,6 +106,20 @@ def google_auth_callback(request):
                 user.set_unusable_password()  # Google users don't need passwords
                 user.save()
                 logger.info(f"Created new user via Google OAuth: {user.email}")
+
+                try:
+                    create_demo_documents_for_new_org(organization, user)
+                    logger.debug(f"Created demo documents for Google OAuth organization: {organization.name}")
+                    
+                    # Grant free credits to new Google users
+                    try:
+                        organization.add_bonus_credits(5)  # 5 free credits
+                        logger.info(f"Granted 5 free credits to new Google user organization: {organization.name}")
+                    except Exception as credit_error:
+                        logger.error(f"Error granting free credits to Google organization {organization.name}: {str(credit_error)}")
+                        
+                except Exception as e:
+                    logger.error(f"Error creating demo documents for Google OAuth {organization.name}: {str(e)}")
                 
             except Exception as user_error:
                 logger.error(f"User creation failed: {str(user_error)}")
@@ -149,11 +169,13 @@ def google_auth_callback(request):
             'error_type': 'server_error'
         }, status=500)
 
+
 class RegisterView(generics.CreateAPIView):
     """View for registering a new user and organization."""
     
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
     serializer_class = UserCreateSerializer
     
     def create(self, request, *args, **kwargs):
@@ -196,6 +218,20 @@ class RegisterView(generics.CreateAPIView):
                 user.save()
                 
                 logger.info(f"Created new user registration: {user.email}")
+
+                try:
+                    create_demo_documents_for_new_org(organization, user)
+                    logger.debug(f"Created demo documents for organization: {organization.name}")
+                    
+                    # Grant free credits to new email users
+                    try:
+                        organization.add_bonus_credits(5)  # 5 free credits
+                        logger.info(f"Granted 5 free credits to new email user organization: {organization.name}")
+                    except Exception as credit_error:
+                        logger.error(f"Error granting free credits to email organization {organization.name}: {str(credit_error)}")
+                        
+                except Exception as e:
+                    logger.error(f"Error creating demo documents for {organization.name}: {str(e)}")
                 
                 # Create verification URL
                 verification_url = f"{settings.FRONTEND_URL}/verify-email/{verification_token}"
@@ -223,3 +259,10 @@ class RegisterView(generics.CreateAPIView):
         
         logger.warning("Organization creation failed during registration")
         return Response(org_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom JWT token view that uses our custom serializer with better error messages.
+    """
+    serializer_class = CustomTokenObtainPairSerializer
