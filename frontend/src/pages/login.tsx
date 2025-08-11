@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import Layout from '@/components/Layout';
 import WandPencilIcon from "@/components/icons/WandPencilIcon";
+import GoogleLoginButton from '@/components/GoogleLoginButton'; // Add this import
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -54,13 +55,25 @@ export default function Login() {
     }
   };
 
+  const handleGoogleLoginSuccess = () => {
+    setError('');
+    setSuccess('Successfully logged in with Google!');
+    // Redirect to dashboard or wherever your auth context handles it
+    router.push('/dashboard');
+  };
+
+  const handleGoogleLoginError = (errorMessage: string) => {
+    setError(errorMessage);
+    setSuccess('');
+  };
+
   return (
     <Layout title="Login">
       <div className="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h1 className="text-center text-3xl font-bold bg-gradient-to-r from-secondary-400 to-secondary-800 bg-clip-text text-transparent dark:from-secondary-700 dark:to-secondary-500">
-          <WandPencilIcon className="w-24 h-24 mx-auto text-secondary-800 dark:text-secondary-500" />
-        </h1>
+          <h1 className="text-center text-3xl font-bold bg-gradient-to-r from-secondary-400 to-secondary-800 bg-clip-text text-transparent dark:from-secondary-700 dark:to-secondary-500">
+            <WandPencilIcon className="w-24 h-24 mx-auto text-secondary-800 dark:text-secondary-500" />
+          </h1>
 
           <h2 className="mt-6 text-center text-2xl font-bold text-primary-600">Sign in to your account</h2>
           <p className="mt-2 text-center text-sm text-primary-500">
@@ -85,7 +98,26 @@ export default function Login() {
               </div>
             )}
 
+            {/* Google Login Button - Add this section */}
+            <div className="mb-6">
+              <GoogleLoginButton 
+                onSuccess={handleGoogleLoginSuccess}
+                onError={handleGoogleLoginError}
+              />
+            </div>
+
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-primary-200 text-primary-500">Or continue with</span>
+              </div>
+            </div>
+
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* Your existing form fields remain the same */}
               <div>
                 <label htmlFor="username" className="form-label">
                   Username

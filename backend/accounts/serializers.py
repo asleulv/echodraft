@@ -8,28 +8,22 @@ User = get_user_model()
 class OrganizationSerializer(serializers.ModelSerializer):
     """Serializer for Organization model."""
     
-    subscription_plan_display = serializers.SerializerMethodField()
-    ai_generations_remaining = serializers.ReadOnlyField()
-    subscription_price = serializers.ReadOnlyField()
+    total_credits_available = serializers.ReadOnlyField()
+    has_credits = serializers.ReadOnlyField()
     
     class Meta:
         model = Organization
         fields = [
-            'id', 'name', 'subscription_plan', 'subscription_plan_display',
-            'subscription_status', 'subscription_period_end', 'cancel_at_period_end',
-            'ai_generations_used', 'ai_generation_limit', 'ai_generations_remaining',
-            'subscription_price', 'document_limit', 'user_limit',
-            'created_at', 'updated_at'
+            'id', 'name', 'billing_info', 'stripe_customer_id',
+            'ai_credits_balance', 'bonus_ai_generation_credits', 
+            'ai_credits_purchased_total', 'total_credits_available', 
+            'has_credits', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'created_at', 'updated_at', 'document_limit', 'user_limit',
-            'ai_generation_limit', 'ai_generations_used', 'ai_generations_remaining',
-            'subscription_price', 'subscription_plan_display', 'cancel_at_period_end'
+            'id', 'created_at', 'updated_at', 'total_credits_available', 
+            'has_credits'
         ]
-    
-    def get_subscription_plan_display(self, obj):
-        """Get the display name of the subscription plan."""
-        return obj.get_subscription_plan_display()
+
 
 
 class UserSerializer(serializers.ModelSerializer):

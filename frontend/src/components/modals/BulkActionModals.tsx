@@ -454,7 +454,7 @@ export const BulkDeleteModal: React.FC<ModalProps> = ({
 
     try {
       // Call the bulk delete API (now performs soft delete)
-      await documentsAPI.bulkDelete(documentIds);
+      await documentsAPI.bulkUpdateStatus(documentIds, 'deleted');
       onSuccess();
       onClose();
     } catch (err: any) {

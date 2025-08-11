@@ -138,6 +138,15 @@ class User(AbstractUser):
     """
     # Override the email field to make it unique
     email = models.EmailField(_('email address'), unique=True)
+
+    google_id = models.CharField(
+        _("Google ID"),
+        max_length=100,
+        blank=True,
+        null=True,
+        unique=True,
+        help_text=_("Google's unique identifier for OAuth authentication")
+    )
     
     organization = models.ForeignKey(
         Organization,

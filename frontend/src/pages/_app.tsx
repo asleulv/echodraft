@@ -9,6 +9,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { CookieConsentProvider } from '@/context/CookieConsentContext';
 import CookieConsentWrapper from '@/components/CookieConsentWrapper';
+import { GoogleOAuthProvider } from '@react-oauth/google'; // Add this import
 import { useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -99,52 +100,54 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.events]);
   
   return (
-    <AuthProvider>
-      <Head>
-        {/* Inline script to prevent flash of incorrect theme and handle authentication persistence */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                // Immediately try to get the theme from localStorage
-                var storedTheme = localStorage.getItem('theme');
-                
-                // Apply theme class to document
-                if (storedTheme === 'dark') {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
-                
-                // Handle authentication persistence for Stripe redirects
-                var url = window.location.href;
-                if (url.includes('subscription') && (url.includes('success=true') || url.includes('canceled=true'))) {
-                  console.log('Detected return from Stripe redirect in inline script, ensuring authentication persistence');
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
+      <AuthProvider>
+        <Head>
+          {/* Inline script to prevent flash of incorrect theme and handle authentication persistence */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  // Immediately try to get the theme from localStorage
+                  var storedTheme = localStorage.getItem('theme');
                   
-                  // Force a refresh of the auth token if it exists
-                  var token = localStorage.getItem('token');
-                  var refreshToken = localStorage.getItem('refreshToken');
-                  
-                  if (token && refreshToken) {
-                    console.log('Authentication tokens found in inline script');
-                    
-                    // We don't need to do anything else here, as the AuthProvider will handle
-                    // refreshing the token and user profile on mount
+                  // Apply theme class to document
+                  if (storedTheme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
                   }
-                }
-              })();
-            `
-          }}
-        />
-      </Head>
-      <ThemeProvider>
-        <CookieConsentProvider>
-          <main className={`${inter.variable} font-sans`}>
-            <Component {...pageProps} />
-            <CookieConsentWrapper />
-          </main>
-        </CookieConsentProvider>
-      </ThemeProvider>
-    </AuthProvider>
+                  
+                  // Handle authentication persistence for Stripe redirects
+                  var url = window.location.href;
+                  if (url.includes('subscription') && (url.includes('success=true') || url.includes('canceled=true'))) {
+                    console.log('Detected return from Stripe redirect in inline script, ensuring authentication persistence');
+                    
+                    // Force a refresh of the auth token if it exists
+                    var token = localStorage.getItem('token');
+                    var refreshToken = localStorage.getItem('refreshToken');
+                    
+                    if (token && refreshToken) {
+                      console.log('Authentication tokens found in inline script');
+                      
+                      // We don't need to do anything else here, as the AuthProvider will handle
+                      // refreshing the token and user profile on mount
+                    }
+                  }
+                })();
+              `
+            }}
+          />
+        </Head>
+        <ThemeProvider>
+          <CookieConsentProvider>
+            <main className={`${inter.variable} font-sans`}>
+              <Component {...pageProps} />
+              <CookieConsentWrapper />
+            </main>
+          </CookieConsentProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }

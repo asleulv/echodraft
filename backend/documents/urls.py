@@ -11,10 +11,10 @@ from .views import (
     shared_html_view,
     format_document_with_ai
 )
-from .ai_views import generate_document_with_ai
+from .views.ai_views import generate_document_with_ai
 
 # Create a router and register our viewsets with it
-router = DefaultRouter(trailing_slash=False)
+router = DefaultRouter(trailing_slash=True)
 router.register(r'documents', TextDocumentViewSet, basename='document')
 router.register(r'comments', CommentViewSet, basename='comment')
 router.register(r'pdf-exports', DocumentPDFExportViewSet, basename='pdf-export')

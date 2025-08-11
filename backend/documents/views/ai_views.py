@@ -5,11 +5,11 @@ from rest_framework.response import Response
 from openai import OpenAI
 import re
 import tiktoken
-from .models import TextDocument, AIModelSettings, AIPromptTemplate
+from ..models import TextDocument, AIModelSettings, AIPromptTemplate
 
 # Constants for document processing
 MAX_REFERENCE_DOCS = 3
-MAX_CHARS_PER_DOC = 600
+MAX_CHARS_PER_DOC = 1500
 MAX_TOTAL_TOKENS = 3000
 DEFAULT_MODEL = "gpt-3.5-turbo-0125"
 DEFAULT_TEMPERATURE = 0.7

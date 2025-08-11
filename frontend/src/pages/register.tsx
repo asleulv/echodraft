@@ -7,6 +7,7 @@ import { RegistrationData } from "@/types/api";
 import WandPencilIcon from "@/components/icons/WandPencilIcon";
 import { useSystemMessage } from "@/hooks/useSystemMessage";
 import SystemMessage from "@/components/SystemMessage";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 export default function Register() {
   // Fetch system message for register page
@@ -105,6 +106,18 @@ export default function Register() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleLoginSuccess = () => {
+    setError('');
+    setSuccess('Successfully registered with Google!');
+    // Redirect to dashboard or wherever your auth context handles it
+    router.push('/dashboard');
+  };
+
+  const handleGoogleLoginError = (errorMessage: string) => {
+    setError(errorMessage);
+    setSuccess('');
   };
 
   // Helper to display field errors
@@ -218,6 +231,25 @@ export default function Register() {
                     {error.detail}
                   </div>
                 )}
+
+                {/* Google Registration Button */}
+                <div className="mb-6">
+                  <GoogleLoginButton 
+                    onSuccess={handleGoogleLoginSuccess}
+                    onError={handleGoogleLoginError}
+                    buttonText="signup_with"
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white dark:bg-primary-100 text-gray-500 dark:text-gray-400">Or register with email</span>
+                  </div>
+                </div>
 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div>

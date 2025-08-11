@@ -59,7 +59,7 @@ export default function RecentDocumentsSection({
         </div>
       ) : documents.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-secondary-500 dark:text-primary-600">No documents found</p>
+          <p className="text-secondary-500 dark:text-primary-600">No documents foudnd</p>
           <button
             onClick={() => router.replace("/documents/new")}
             className="mt-4 btn-primary"

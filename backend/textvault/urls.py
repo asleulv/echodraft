@@ -14,7 +14,7 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 from django.views.decorators.csrf import csrf_exempt
-from documents.ai_views import generate_document_with_ai
+from documents.views.ai_views import generate_document_with_ai
 from subscriptions import views as subscription_views
 from .webhook_handler import root_webhook_handler
 

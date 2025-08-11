@@ -63,8 +63,15 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
         # Tags filter
         tags = self.request.query_params.get('tags')
         if tags:
-            tag_list = tags.split(',')
-            queryset = queryset.filter(tags__contains=tag_list)
+            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+            
+            tag_q = Q()
+            for tag in tag_list:
+                # Search for the tag within the JSON array (as text)
+                tag_q |= Q(tags__icontains=f'"{tag}"')
+            
+            if tag_q:
+                queryset = queryset.filter(tag_q)
         
         # Search filter
         search = self.request.query_params.get('search')
@@ -171,3 +178,101 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
         versions = TextDocument.objects.filter(id__in=all_versions).order_by('version')
         serializer = TextDocumentListSerializer(versions, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'], url_path='bulk/delete')
+    def bulk_delete(self, request):
+        """Soft delete multiple documents by setting their status to 'deleted'."""
+        document_ids = request.data.get('document_ids', [])
+        
+        if not document_ids:
+            return Response(
+                {"detail": "No document IDs provided."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Use the same filtering logic as get_queryset for consistency
+        documents = self.get_queryset().filter(id__in=document_ids)
+        count = documents.count()
+        documents.update(status='deleted')
+        
+        return Response({"detail": f"Moved {count} documents to trash."})
+    
+    @action(detail=False, methods=['post'], url_path='bulk/update-status')
+    def bulk_update_status(self, request):
+        """Update status for multiple documents."""
+        document_ids = request.data.get('document_ids', [])
+        status_value = request.data.get('status')
+        
+        if not document_ids:
+            return Response(
+                {"detail": "No document IDs provided."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not status_value or status_value not in ['draft', 'published', 'archived', 'deleted']:
+            return Response(
+                {"detail": "Invalid status value."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        documents = self.get_queryset().filter(
+            id__in=document_ids,
+            is_latest=True
+        )
+        
+        documents.update(status=status_value)
+        
+        return Response({"detail": f"Updated status for {documents.count()} documents."})
+    
+    @action(detail=False, methods=['post'], url_path='bulk/update-category')
+    def bulk_update_category(self, request):
+        """Update category for multiple documents."""
+        document_ids = request.data.get('document_ids', [])
+        category_id = request.data.get('category')
+        
+        if not document_ids:
+            return Response(
+                {"detail": "No document IDs provided."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        documents = self.get_queryset().filter(
+            id__in=document_ids,
+            is_latest=True
+        )
+        
+        documents.update(category_id=category_id)
+        
+        return Response({"detail": f"Updated category for {documents.count()} documents."})
+    
+    @action(detail=False, methods=['post'], url_path='bulk/add-tags')
+    def bulk_add_tags(self, request):
+        """Add tags to multiple documents."""
+        document_ids = request.data.get('document_ids', [])
+        tags = request.data.get('tags', [])
+        
+        if not document_ids:
+            return Response(
+                {"detail": "No document IDs provided."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not tags:
+            return Response(
+                {"detail": "No tags provided."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        documents = self.get_queryset().filter(
+            id__in=document_ids,
+            is_latest=True
+        )
+        
+        for document in documents:
+            current_tags = document.tags or []
+            new_tags = list(set(current_tags + tags))  # Remove duplicates
+            document.tags = new_tags
+            document.save()
+        
+        return Response({"detail": f"Added tags to {documents.count()} documents."})
+
