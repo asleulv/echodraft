@@ -103,11 +103,15 @@ class TextDocumentCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id','title', 'content', 'organization', 'category', 'tags', 'status'
         ]
+        # Make organization read-only so frontend doesn't need to send it
+        read_only_fields = ['id', 'organization']
     
     def create(self, validated_data):
         """Create and return a new document."""
         user = self.context['request'].user
         validated_data['created_by'] = user
+        # Auto-assign the user's organization
+        validated_data['organization'] = user.organization
         return super().create(validated_data)
 
 
