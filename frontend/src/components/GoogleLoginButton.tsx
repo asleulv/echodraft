@@ -41,7 +41,9 @@ const GoogleLoginButton = ({ onError, onSuccess, buttonText }: GoogleLoginButton
           localStorage.setItem('refreshToken', data.refresh_token);
         }
         
-        loginWithGoogle(data.user);
+        // Login with Google - AuthContext handles the user profile refresh
+        await loginWithGoogle(data.user);
+        
         onSuccess?.();
       } else {
         onError?.(data.error || 'Google login failed');

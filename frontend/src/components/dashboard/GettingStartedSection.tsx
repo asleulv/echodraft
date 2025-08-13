@@ -22,13 +22,13 @@ const GettingStartedSection: React.FC<GettingStartedSectionProps> = ({
           </div>
 
           <p className="text-primary-600 mb-6 text-lg">
-  Let's see it in action! Ready to create your first document? We gave you 
-  <span className="bg-secondary-100 text-secondary-700 font-bold px-2 py-1 rounded-md mx-1">
-    5 free generations
-  </span>. 
-  Follow these steps:
-</p>
-
+            Let's see it in action! Ready to create your first document? We gave
+            you
+            <span className="bg-secondary-100 text-secondary-700 font-bold px-2 py-1 rounded-md mx-1">
+              5 free generations
+            </span>
+            . Follow these steps:
+          </p>
 
           {/* Step-by-step guide */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -61,8 +61,8 @@ const GettingStartedSection: React.FC<GettingStartedSectionProps> = ({
                     Let AI create content in your style
                   </h4>
                   <p className="text-sm text-primary-600">
-                    Type in the concept you want to write about, and select
-                    your style source from the dropdown.
+                    Type in the concept you want to write about, and select your
+                    style source from the dropdown.
                   </p>
                 </div>
               </div>
@@ -79,7 +79,6 @@ const GettingStartedSection: React.FC<GettingStartedSectionProps> = ({
                     Select the paragraphs you like and click "Save to document"
                   </p>
                 </div>
-                
               </div>
 
               <h3 className="text-lg font-semibold text-secondary-600 mb-3">
@@ -187,8 +186,6 @@ const GettingStartedSection: React.FC<GettingStartedSectionProps> = ({
               </svg>
               Generate text in that style
             </Link>
-
-            
           </div>
         </div>
 

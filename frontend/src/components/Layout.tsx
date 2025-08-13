@@ -513,13 +513,13 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
               {/* Mobile help button (Direct action, no dropdown) */}
               {isAuthenticated && (
                 <button
-    type="button"
-    onClick={showGettingStartedGuide}
-    className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-200 flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
-    aria-label="Show Getting Started Guide"
-  >
-    <CircleHelp className="h-6 w-6" />
-  </button>
+                  type="button"
+                  onClick={showGettingStartedGuide}
+                  className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-200 flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
+                  aria-label="Show Getting Started Guide"
+                >
+                  <CircleHelp className="h-6 w-6" />
+                </button>
               )}
 
               {/* New document button - Mobile */}

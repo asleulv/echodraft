@@ -1,43 +1,60 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { useRouter } from 'next/router';
-import axios from 'axios';
-import { authAPI } from '@/utils/api';
-import { User, AuthTokens, RegistrationData, RegistrationResponse } from '@/types/api';
-import { jwtDecode } from 'jwt-decode';
-import { debounce } from 'lodash';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useRef,
+} from "react";
+import { useRouter } from "next/router";
+import axios from "axios";
+import { authAPI } from "@/utils/api";
+import {
+  User,
+  AuthTokens,
+  RegistrationData,
+  RegistrationResponse,
+} from "@/types/api";
+import { jwtDecode } from "jwt-decode";
+import { debounce } from "lodash";
 
 // Production-ready logging utility
 const logger = {
   debug: (...args: any[]) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[DEBUG]', ...args);
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEBUG]", ...args);
     }
   },
   info: (...args: any[]) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[INFO]', ...args);
+    if (process.env.NODE_ENV === "development") {
+      console.log("[INFO]", ...args);
     }
   },
   warn: (...args: any[]) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[WARN]', ...args);
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[WARN]", ...args);
     }
   },
   error: (...args: any[]) => {
     // Always log errors, but with less detail in production
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[ERROR]', ...args);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[ERROR]", ...args);
     } else {
-      console.error('Authentication error occurred');
+      console.error("Authentication error occurred");
     }
-  }
+  },
 };
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string, stayLoggedIn?: boolean) => Promise<void>;
+  login: (
+    username: string,
+    password: string,
+    stayLoggedIn?: boolean
+  ) => Promise<void>;
   loginWithGoogle: (userData: User) => void;
   logout: () => void;
   register: (userData: RegistrationData) => Promise<any>;
@@ -52,7 +69,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -65,19 +82,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [inactivityTimeout, setInactivityTimeout] = useState<number>(1800); // Default 30 minutes
-  
+
   // Initialize from localStorage when component mounts (client-side only)
   useEffect(() => {
     // Check if we're in the browser environment
-    if (typeof window !== 'undefined') {
-      const savedTimeout = localStorage.getItem('inactivityTimeout');
+    if (typeof window !== "undefined") {
+      const savedTimeout = localStorage.getItem("inactivityTimeout");
       if (savedTimeout) {
         setInactivityTimeout(parseInt(savedTimeout, 10));
       }
     }
   }, []);
-  
-  const [showInactivityWarning, setShowInactivityWarning] = useState<boolean>(false);
+
+  const [showInactivityWarning, setShowInactivityWarning] =
+    useState<boolean>(false);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
@@ -88,9 +106,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const decoded: any = jwtDecode(token);
       const currentTime = Date.now() / 1000;
       // Token is considered expired if it's actually expired or will expire within the buffer time
-      return decoded.exp < (currentTime + expirationBuffer);
+      return decoded.exp < currentTime + expirationBuffer;
     } catch (error) {
-      logger.error('Error decoding token:', error);
+      logger.error("Error decoding token:", error);
       return true;
     }
   };
@@ -98,42 +116,42 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Function to refresh the token
   const refreshTokenIfNeeded = useCallback(async () => {
     // Only run on client side
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return false;
     }
-    
+
     try {
-      const token = localStorage.getItem('token');
-      const refreshToken = localStorage.getItem('refreshToken');
-      
+      const token = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refreshToken");
+
       // If no tokens, we can't refresh
       if (!token || !refreshToken) {
         return false;
       }
-      
+
       // Check if token is about to expire (within 5 minutes)
       const bufferTimeInSeconds = 5 * 60; // 5 minutes
       if (isTokenExpired(token, bufferTimeInSeconds)) {
-        logger.debug('Token is about to expire, refreshing...');
-        
+        logger.debug("Token is about to expire, refreshing...");
+
         // Refresh the token
         const response = await authAPI.refreshToken(refreshToken);
         const { access } = response.data;
-        
+
         // Save the new token
-        localStorage.setItem('token', access);
-        logger.debug('Token refreshed successfully');
-        
+        localStorage.setItem("token", access);
+        logger.debug("Token refreshed successfully");
+
         return true;
       }
-      
+
       return false;
     } catch (error) {
-      logger.error('Error refreshing token:', error);
+      logger.error("Error refreshing token:", error);
       // If refresh fails, clear storage and log out
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
       }
       setUser(null);
       return false;
@@ -143,73 +161,77 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Load user from local storage on initial load
   useEffect(() => {
     // Only run on client side
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       setIsLoading(false);
       return;
     }
-    
+
     const loadUser = async () => {
       try {
         // Check if we're returning from a Stripe redirect
         const url = window.location.href;
-        const isStripeRedirect = url.includes('subscription') && (url.includes('success=true') || url.includes('canceled=true'));
-        
+        const isStripeRedirect =
+          url.includes("subscription") &&
+          (url.includes("success=true") || url.includes("canceled=true"));
+
         if (isStripeRedirect) {
-          logger.debug('Detected return from Stripe redirect, ensuring authentication persistence');
+          logger.debug(
+            "Detected return from Stripe redirect, ensuring authentication persistence"
+          );
         }
-        
-        const token = localStorage.getItem('token');
-        
+
+        const token = localStorage.getItem("token");
+
         if (!token || isTokenExpired(token)) {
           // If no token or expired token, try to refresh
-          logger.debug('Token missing or expired, attempting to refresh');
+          logger.debug("Token missing or expired, attempting to refresh");
           const refreshed = await refreshTokenIfNeeded();
-          
+
           if (!refreshed) {
             // If refresh failed, clear storage and set as not authenticated
-            logger.debug('Token refresh failed, logging out');
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
+            logger.debug("Token refresh failed, logging out");
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
             setUser(null);
             setIsLoading(false);
             return;
           } else {
-            logger.debug('Token refreshed successfully');
+            logger.debug("Token refreshed successfully");
           }
         }
-        
+
         // Token exists and is valid, fetch user profile
-        logger.debug('Fetching user profile');
+        logger.debug("Fetching user profile");
         const response = await authAPI.getProfile();
         setUser(response.data);
       } catch (error) {
-        logger.error('Error loading user:', error);
+        logger.error("Error loading user:", error);
         // If error fetching user, clear storage
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
         setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     loadUser();
   }, [refreshTokenIfNeeded]);
-  
+
   // Set up periodic token refresh
   useEffect(() => {
     // Only set up refresh interval if user is authenticated
     if (!user) return;
-    
-    logger.debug('Setting up token refresh interval');
-    
+
+    logger.debug("Setting up token refresh interval");
+
     // Check token every minute
     const refreshInterval = setInterval(() => {
-      refreshTokenIfNeeded().catch(error => {
-        logger.error('Error in token refresh interval:', error);
+      refreshTokenIfNeeded().catch((error) => {
+        logger.error("Error in token refresh interval:", error);
       });
     }, 60 * 1000); // 1 minute
-    
+
     // Clean up interval on unmount
     return () => {
       clearInterval(refreshInterval);
@@ -219,93 +241,102 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Refresh user data
   const refreshUser = async () => {
     // Only run on client side
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
-    
+
     try {
-      const token = localStorage.getItem('token');
-      const refreshToken = localStorage.getItem('refreshToken');
-      
+      const token = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refreshToken");
+
       // If we don't have any tokens, we can't refresh the user
       if (!token && !refreshToken) {
-        logger.debug('No authentication tokens found, cannot refresh user profile');
+        logger.debug(
+          "No authentication tokens found, cannot refresh user profile"
+        );
         setUser(null);
         return;
       }
-      
+
       if (!token || isTokenExpired(token)) {
         // If no token or expired token, try to refresh
-        logger.debug('Token expired or missing, attempting to refresh before fetching user profile');
-        
+        logger.debug(
+          "Token expired or missing, attempting to refresh before fetching user profile"
+        );
+
         if (!refreshToken) {
-          logger.debug('No refresh token available, cannot refresh user profile');
-          localStorage.removeItem('token');
+          logger.debug(
+            "No refresh token available, cannot refresh user profile"
+          );
+          localStorage.removeItem("token");
           setUser(null);
           return;
         }
-        
+
         try {
           // Try to refresh the token directly
-          logger.debug('Attempting to refresh token directly...');
+          logger.debug("Attempting to refresh token directly...");
           const response = await authAPI.refreshToken(refreshToken);
           const { access } = response.data;
-          
+
           // Save the new token
-          localStorage.setItem('token', access);
-          logger.debug('Token refreshed successfully');
+          localStorage.setItem("token", access);
+          logger.debug("Token refreshed successfully");
         } catch (refreshError) {
-          logger.error('Error refreshing token:', refreshError);
-          
+          logger.error("Error refreshing token:", refreshError);
+
           // If refresh fails, clear storage and set as not authenticated
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
           setUser(null);
           return;
         }
       }
-      
+
       // At this point, we should have a valid token
       // Fetch user profile
-      logger.debug('Refreshing user profile...');
+      logger.debug("Refreshing user profile...");
       const response = await authAPI.getProfile();
-      
+
       setUser(response.data);
-      logger.debug('User profile refreshed successfully');
+      logger.debug("User profile refreshed successfully");
       return response.data;
     } catch (error) {
-      logger.error('Error refreshing user profile:', error);
-      
+      logger.error("Error refreshing user profile:", error);
+
       // If there's an error, try one more time with a fresh token
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        
+        const refreshToken = localStorage.getItem("refreshToken");
+
         if (!refreshToken) {
-          logger.debug('No refresh token available for second attempt');
-          localStorage.removeItem('token');
+          logger.debug("No refresh token available for second attempt");
+          localStorage.removeItem("token");
           setUser(null);
           return;
         }
-        
+
         // Try to refresh the token directly
-        logger.debug('Second attempt: Refreshing token directly...');
+        logger.debug("Second attempt: Refreshing token directly...");
         const tokenResponse = await authAPI.refreshToken(refreshToken);
         const { access } = tokenResponse.data;
-        
+
         // Save the new token
-        localStorage.setItem('token', access);
-        logger.debug('Token refreshed successfully on second attempt');
-        
+        localStorage.setItem("token", access);
+        logger.debug("Token refreshed successfully on second attempt");
+
         // Try to fetch user profile again
-        logger.debug('Second attempt: Fetching user profile...');
+        logger.debug("Second attempt: Fetching user profile...");
         const userResponse = await authAPI.getProfile();
         setUser(userResponse.data);
-        logger.debug('User profile refreshed successfully on second attempt');
+        logger.debug("User profile refreshed successfully on second attempt");
         return userResponse.data;
       } catch (secondError) {
-        logger.error('Error in second attempt to refresh user profile:', secondError);
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        logger.error(
+          "Error in second attempt to refresh user profile:",
+          secondError
+        );
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
         setUser(null);
         return null;
       }
@@ -313,49 +344,53 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // Login function
-  const login = async (username: string, password: string, stayLoggedIn = false) => {
+  const login = async (
+    username: string,
+    password: string,
+    stayLoggedIn = false
+  ) => {
     setIsLoading(true);
     try {
-      logger.debug('Attempting to login with username:', username);
-      
+      logger.debug("Attempting to login with username:", username);
+
       // Use the API utility for login
       const tokenResponse = await authAPI.login(username, password);
-      
+
       const { access, refresh } = tokenResponse.data as AuthTokens;
-      logger.debug('Login successful, received tokens');
-      
+      logger.debug("Login successful, received tokens");
+
       // Save tokens to local storage (client-side only)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', access);
-        localStorage.setItem('refreshToken', refresh);
-        
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", access);
+        localStorage.setItem("refreshToken", refresh);
+
         // Save stay logged in preference
         if (stayLoggedIn) {
-          localStorage.setItem('stayLoggedIn', 'true');
-          logger.debug('Stay logged in preference saved');
+          localStorage.setItem("stayLoggedIn", "true");
+          logger.debug("Stay logged in preference saved");
         } else {
-          localStorage.removeItem('stayLoggedIn');
+          localStorage.removeItem("stayLoggedIn");
         }
       }
-      
+
       // Get user profile using the API utility
-      logger.debug('Fetching user profile after login');
+      logger.debug("Fetching user profile after login");
       const userResponse = await authAPI.getProfile();
-      
+
       setUser(userResponse.data);
-      logger.debug('User profile loaded successfully');
-      
+      logger.debug("User profile loaded successfully");
+
       // Reset inactivity timer after successful login
       setTimeout(() => {
         if (resetInactivityTimer) {
           resetInactivityTimer();
         }
       }, 1000);
-      
+
       // Redirect to dashboard using replace to avoid navigation issues
-      router.replace('/dashboard');
+      router.replace("/dashboard");
     } catch (error) {
-      logger.error('Login error:', error);
+      logger.error("Login error:", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -363,54 +398,70 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // Google OAuth login function (simpler than regular login)
-  const loginWithGoogle = (userData: User) => {
-    logger.debug('Logging in with Google OAuth');
-    
-    // Set the user directly (tokens are handled by the Google OAuth flow)
+  const loginWithGoogle = async (userData: User) => {
+    logger.debug("Logging in with Google OAuth");
+
+    // Set the user directly first (tokens are handled by the Google OAuth flow)
     setUser(userData);
-    
+
     // Store user data in localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user', JSON.stringify(userData));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(userData));
     }
-    
+
+    // FORCE REFRESH USER DATA - This will get the organization info
+    try {
+      logger.debug("Refreshing user profile after Google OAuth login");
+      const refreshedUser = await refreshUser();
+      if (refreshedUser && refreshedUser.organization) {
+        logger.debug(
+          "Organization data loaded after refresh:",
+          refreshedUser.organization
+        );
+      } else {
+        logger.warn("No organization data found after profile refresh");
+      }
+    } catch (error) {
+      logger.error("Failed to refresh user profile after Google OAuth:", error);
+    }
+
     // Reset inactivity timer after successful login
     setTimeout(() => {
       if (resetInactivityTimer) {
         resetInactivityTimer();
       }
     }, 1000);
-    
+
     // Redirect to dashboard
-    router.replace('/dashboard');
+    router.replace("/dashboard");
   };
 
   // Logout function
   const logout = () => {
     // Only access localStorage on client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // First clear auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('stayLoggedIn');
-      localStorage.removeItem('user');
-      
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("stayLoggedIn");
+      localStorage.removeItem("user");
+
       // Set user to null
       setUser(null);
-      
+
       // Use window.location for a full page navigation instead of Next.js router
       // This avoids the "Cancel rendering route" error by completely bypassing the Next.js router
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   };
-  
+
   // Reset inactivity timer function
   const resetInactivityTimer = useCallback(() => {
     // Only run on client side
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
-    
+
     // Clear existing timers
     if (inactivityTimerRef.current) {
       clearTimeout(inactivityTimerRef.current);
@@ -420,16 +471,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       clearTimeout(warningTimerRef.current);
       warningTimerRef.current = null;
     }
-    
+
     // Hide warning if it's showing
     setShowInactivityWarning(false);
-    
+
     // If inactivity timeout is 0 (disabled) or user has "stay logged in" enabled, don't set timers
-    const stayLoggedIn = localStorage.getItem('stayLoggedIn') === 'true';
+    const stayLoggedIn = localStorage.getItem("stayLoggedIn") === "true";
     if (inactivityTimeout === 0 || stayLoggedIn) {
       return;
     }
-    
+
     // Set warning timer (2 minutes before logout)
     const warningTime = inactivityTimeout - 120; // 2 minutes before timeout
     if (warningTime > 0) {
@@ -437,110 +488,116 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setShowInactivityWarning(true);
       }, warningTime * 1000);
     }
-    
+
     // Set logout timer - using a separate function to avoid closure issues
     const performLogout = () => {
-      logger.info('Auto-logout timer triggered after inactivity');
+      logger.info("Auto-logout timer triggered after inactivity");
       logout();
     };
-    
+
     // Set logout timer
-    inactivityTimerRef.current = setTimeout(performLogout, inactivityTimeout * 1000);
+    inactivityTimerRef.current = setTimeout(
+      performLogout,
+      inactivityTimeout * 1000
+    );
   }, [inactivityTimeout, logout]);
-  
+
   // Listen for changes to inactivityTimeout in localStorage
   useEffect(() => {
     // Only run on client side
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
-    
+
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'inactivityTimeout' && e.newValue) {
+      if (e.key === "inactivityTimeout" && e.newValue) {
         setInactivityTimeout(parseInt(e.newValue, 10));
         // Reset the timer with the new timeout
         resetInactivityTimer();
       }
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
+
+    window.addEventListener("storage", handleStorageChange);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [resetInactivityTimer]);
-  
+
   // Type for debounced function with cancel method
   type DebouncedFunction = {
     (): void;
     cancel: () => void;
   };
-  
+
   // Create a debounced version of the activity handler
   const debouncedActivityHandler = useRef<DebouncedFunction | null>(null);
 
   // Set up activity listeners
   useEffect(() => {
     // Only run on client side
-    if (typeof window === 'undefined' || !user) return;
-    
-    logger.debug('Setting up inactivity timer');
-    
+    if (typeof window === "undefined" || !user) return;
+
+    logger.debug("Setting up inactivity timer");
+
     // Reset timer initially
     resetInactivityTimer();
-    
+
     // Create a debounced activity handler if it doesn't exist
     if (!debouncedActivityHandler.current) {
       debouncedActivityHandler.current = debounce(() => {
         resetInactivityTimer();
       }, 300); // 300ms debounce
     }
-    
+
     // Set up event listeners for user activity
-    const activityEvents = ['mousedown', 'keypress', 'scroll', 'touchstart'];
-    const mouseMoveEvents = ['mousemove']; // Handle mousemove separately with more aggressive debouncing
-    
+    const activityEvents = ["mousedown", "keypress", "scroll", "touchstart"];
+    const mouseMoveEvents = ["mousemove"]; // Handle mousemove separately with more aggressive debouncing
+
     const handleUserActivity = () => {
       // Use the debounced handler
       if (debouncedActivityHandler.current) {
         debouncedActivityHandler.current();
       }
     };
-    
+
     // Add event listeners
-    activityEvents.forEach(event => {
+    activityEvents.forEach((event) => {
       window.addEventListener(event, handleUserActivity);
     });
-    
+
     // Add mousemove with a more aggressive debounce
     const handleMouseMove: DebouncedFunction = debounce(() => {
       if (debouncedActivityHandler.current) {
         debouncedActivityHandler.current();
       }
     }, 1000); // 1 second debounce for mousemove
-    
-    mouseMoveEvents.forEach(event => {
+
+    mouseMoveEvents.forEach((event) => {
       window.addEventListener(event, handleMouseMove);
     });
-    
+
     // Clean up
     return () => {
       // Remove event listeners
-      activityEvents.forEach(event => {
+      activityEvents.forEach((event) => {
         window.removeEventListener(event, handleUserActivity);
       });
-      
-      mouseMoveEvents.forEach(event => {
+
+      mouseMoveEvents.forEach((event) => {
         window.removeEventListener(event, handleMouseMove);
       });
-      
+
       // Cancel debounced functions
-      if (debouncedActivityHandler.current && typeof debouncedActivityHandler.current.cancel === 'function') {
+      if (
+        debouncedActivityHandler.current &&
+        typeof debouncedActivityHandler.current.cancel === "function"
+      ) {
         debouncedActivityHandler.current.cancel();
       }
-      
+
       handleMouseMove.cancel();
-      
+
       // Clear timers
       if (inactivityTimerRef.current) {
         clearTimeout(inactivityTimerRef.current);
@@ -555,18 +612,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (userData: RegistrationData) => {
     setIsLoading(true);
     try {
-      logger.debug('Registering user');
-      
+      logger.debug("Registering user");
+
       // Register user - no need to format organization as it's already a string
       const response = await authAPI.register(userData);
-      
-      logger.debug('Registration successful');
-      
+
+      logger.debug("Registration successful");
+
       // Return the response data instead of auto-login
       // This allows the registration page to show a verification message
       return response.data;
     } catch (error: any) {
-      logger.error('Registration error:', error);
+      logger.error("Registration error:", error);
       throw error;
     } finally {
       setIsLoading(false);
