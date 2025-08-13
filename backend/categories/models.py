@@ -8,7 +8,7 @@ class Category(models.Model):
     """
     name = models.CharField(_("Name"), max_length=255)
     description = models.TextField(_("Description"), blank=True)
-    slug = models.SlugField(_("Slug"), max_length=255, unique=True, blank=True)
+    slug = models.SlugField(_("Slug"), max_length=255, blank=True)  # ✅ REMOVED unique=True
     
     # Organization ownership
     organization = models.ForeignKey(
@@ -42,7 +42,10 @@ class Category(models.Model):
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
         ordering = ['name']
-        unique_together = [['organization', 'name']]
+        unique_together = [
+            ['organization', 'name'],
+            ['organization', 'slug']  # ✅ ADDED: Make slug unique per organization
+        ]
         indexes = [
             models.Index(fields=['organization']),
             models.Index(fields=['parent']),
@@ -54,7 +57,19 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         # Generate slug if not provided
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            
+            # ✅ IMPROVED: Handle duplicate slugs within the same organization
+            while Category.objects.filter(
+                organization=self.organization, 
+                slug=slug
+            ).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = slug
         super().save(*args, **kwargs)
     
     @property
