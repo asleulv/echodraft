@@ -31,7 +31,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
     setMounted(true);
   }, []);
 
-  // Function to trigger Getting Started guide - Option C (Complete Layout Update)
+  // Function to trigger Getting Started guide - Elegant solution
   const showGettingStartedGuide = useCallback(() => {
     // Remove the dismissed flag
     localStorage.removeItem("getting-started-dismissed");
@@ -40,8 +40,11 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
       // Navigate to dashboard with flag
       router.push("/dashboard?help=true");
     } else {
-      // If already on dashboard, force refresh to show guide
-      window.location.reload();
+      // If already on dashboard, update URL and trigger a custom event
+      router.push("/dashboard?help=true", undefined, { shallow: true });
+      
+      // Dispatch a custom event to tell the dashboard component to show the guide
+      window.dispatchEvent(new CustomEvent('showGettingStarted'));
     }
   }, [router]);
 
