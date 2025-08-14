@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import Link from "next/link";
 import Head from "next/head";
@@ -8,16 +8,17 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
-  X,
-  Check,
+  ThumbsUp,
   Save,
   Target,
   Wand2,
+  ThumbsDown,
 } from "lucide-react";
 import WorkFlowDiagram from "@/components/icons/WorkFlowDiagram";
 import EchopenIcon from "@/components/icons/EchopenIcon";
+import TypingStruggle from "@/components/TypingStruggle";
 
-// FAQ Item Component - Updated with warm theme and single color codes
+// FAQ Item Component - Move OUTSIDE of Home component
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -44,8 +45,22 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function Home() {
-  // Fix for hydration error - only animate on client side
+  // Video overlay state
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [showOverlay, setShowOverlay] = useState(true);
+  const [videoDuration, setVideoDuration] = useState<string>("");
+
+  // Animation state
   const [animate, setAnimate] = useState(false);
+
+  const handlePlayClick = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.warn("Video play failed:", error);
+        setShowOverlay(false);
+      });
+    }
+  };
 
   useEffect(() => {
     setAnimate(true);
@@ -70,7 +85,7 @@ export default function Home() {
                 priceCurrency: "USD",
               },
               description:
-                "echodraft is your personal text archive with AI intelligence. Save content that works, then generate new posts that match the exact same style and tone.",
+                "Save your best content and generate new posts in the same style. Never start from scratch again.",
               aggregateRating: {
                 "@type": "AggregateRating",
                 ratingValue: "5",
@@ -89,140 +104,162 @@ export default function Home() {
         />
       </Head>
       <div className="min-h-screen">
-        {/* Hero Section - Updated with warm theme */}
+        {/* Hero Section - Streamlined and Focused */}
         <section
           aria-labelledby="hero-heading"
           className="bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-100 py-16 md:py-24"
         >
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              {/* Large icon floating above headline */}
-              <div className="mb-8">
-                <EchopenIcon
-                  className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 mx-auto text-secondary-600"
-                  width={192}
-                  height={192}
-                />
-              </div>
+            <div className="max-w-5xl mx-auto text-center">
+              {/* Typing Animation - Shows writing struggle */}
+              <TypingStruggle />
 
               <h1
                 id="hero-heading"
-                className={`text-3xl md:text-4xl lg:text-5xl mb-6 leading-tight 
-      bg-clip-text text-transparent 
-      bg-gradient-to-r from-secondary-700 to-primary-800
-      pb-2 overflow-visible
-      ${animate ? "animate-fade-in" : "opacity-0"}`}
+                className={`text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight 
+                bg-clip-text text-transparent 
+                bg-gradient-to-r from-secondary-700 to-primary-800
+                pb-2 overflow-visible font-bold
+                ${animate ? "animate-fade-in" : "opacity-0"}`}
               >
-                Stop Starting From Scratch Every Time You Write
+                Never Stare at a Blank Page Again
               </h1>
 
               <style jsx>{`
                 @keyframes fade-in {
                   0% {
                     opacity: 0;
+                    transform: translateY(20px);
                   }
                   100% {
                     opacity: 1;
+                    transform: translateY(0);
                   }
                 }
                 .animate-fade-in {
-                  animation: fade-in 3.5s ease-out forwards;
+                  animation: fade-in 1s ease-out forwards;
                 }
               `}</style>
 
-              <p className="text-xl md:text-2xl text-primary-700 mb-8 leading-relaxed">
-                echodraft is your personal text archive with AI intelligence.
-                Save content that works, then generate new posts that match the
-                exact same style and tone.
+              <p className="text-xl md:text-2xl text-primary-700 mb-12 leading-relaxed max-w-3xl mx-auto">
+                Upload your best content. Generate unlimited variations in the
+                same style.
+                <span className="block mt-2 text-lg text-primary-600">
+                  It's that simple.
+                </span>
               </p>
 
-              {/* Value proposition highlights - Sophisticated and compelling */}
-              <div className="bg-gradient-to-br from-primary-50 to-secondary-50 border border-primary-300 p-10 mb-12 max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-primary-800 mb-3 font-heading">
-                    Stop reinventing your voice every time you write
+              {/* Video with Custom Play Button Overlay */}
+              <div className="max-w-4xl mx-auto mb-12">
+                <div className="relative overflow-hidden shadow-2xl bg-primary-100 dark:bg-primary-900">
+                  <video
+                    ref={videoRef}
+                    poster="/videos/echodraft-poster.jpg"
+                    className="w-full h-auto"
+                    preload="metadata"
+                    controls={!showOverlay}
+                    onPlay={() => setShowOverlay(false)}
+                    onPause={() => setShowOverlay(true)}
+                    onEnded={() => setShowOverlay(true)}
+                    onLoadedMetadata={() => {
+                      if (
+                        videoRef.current &&
+                        !isNaN(videoRef.current.duration)
+                      ) {
+                        const duration = videoRef.current.duration;
+                        const minutes = Math.floor(duration / 60);
+                        const seconds = Math.floor(duration % 60);
+                        setVideoDuration(
+                          `${minutes}:${seconds.toString().padStart(2, "0")}`
+                        );
+                      }
+                    }}
+                  >
+                    <source src="/videos/echodraft.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+
+                  {/* Custom Play Button Overlay */}
+                  {showOverlay && (
+                    <div
+                      className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center cursor-pointer group-hover:bg-opacity-30 transition-all duration-300"
+                      onClick={handlePlayClick}
+                    >
+                      <div className="w-20 h-20 md:w-24 md:h-24 bg-secondary-600 hover:bg-secondary-700 rounded-full flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-all duration-300">
+                        <svg
+                          className="w-8 h-8 md:w-10 md:h-10 text-white ml-1"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dynamic Duration Badge */}
+                  {showOverlay && videoDuration && (
+                    <div className="absolute bottom-4 right-4 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
+                      {videoDuration}
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-primary-600 mt-4">
+                  ▲ Watch how we transform your successful content into new
+                  posts
+                </p>
+              </div>
+
+              {/* Simplified Value Props - More Concise */}
+              <div className="grid md:grid-cols-3 gap-8 mb-12 max-w-4xl mx-auto">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-primary-50" />
+                  </div>
+                  <h3 className="font-semibold text-primary-800 mb-2">
+                    That viral LinkedIn post?
                   </h3>
-                  <p className="text-primary-600 text-lg">
-                    Your best content already shows you what works. Now make it
-                    repeatable.
+                  <p className="text-primary-600 text-sm">
+                    Use its exact tone for your next campaign
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle2 className="w-8 h-8 text-primary-50" />
-                    </div>
-                    <h4 className="font-semibold text-primary-800 mb-2">
-                      That viral LinkedIn post?
-                    </h4>
-                    <p className="text-primary-600 text-sm">
-                      Use its exact tone for your next campaign
-                    </p>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Newspaper className="w-8 h-8 text-primary-50" />
                   </div>
-
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Newspaper className="w-8 h-8 text-primary-50" />
-                    </div>
-                    <h4 className="font-semibold text-primary-800 mb-2">
-                      That newsletter everyone loved?
-                    </h4>
-                    <p className="text-primary-600 text-sm">
-                      Recreate its magic for your blog series
-                    </p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-8 h-8 text-primary-50" />
-                    </div>
-                    <h4 className="font-semibold text-primary-800 mb-2">
-                      That email with 45% opens?
-                    </h4>
-                    <p className="text-primary-600 text-sm">
-                      Scale that voice across all your content
-                    </p>
-                  </div>
+                  <h3 className="font-semibold text-primary-800 mb-2">
+                    That newsletter everyone loved?
+                  </h3>
+                  <p className="text-primary-600 text-sm">
+                    Recreate its magic for your blog series
+                  </p>
                 </div>
 
-                <div className="text-center mt-8 pt-6 border-t border-primary-200">
-                  <p className="text-primary-700 font-medium">
-                    Your audience already told you what they want to hear.
-                    <span className="text-secondary-600 font-semibold">
-                      {" "}
-                      Now give them more of it.
-                    </span>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-primary-50" />
+                  </div>
+                  <h3 className="font-semibold text-primary-800 mb-2">
+                    That email with 45% opens?
+                  </h3>
+                  <p className="text-primary-600 text-sm">
+                    Scale that voice across all your content
                   </p>
                 </div>
               </div>
 
-              {/* VIDEO DIRECTLY IN HERO - Card Style */}
-              <div className="max-w-4xl mx-auto mb-8">
-                <div className="bg-primary-50 shadow-lg border border-primary-200 p-8">
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-semibold text-primary-800 mb-2 font-heading">
-                      See echodraft in action
-                    </h3>
-                    <div className="w-16 h-0.5 bg-secondary-500 mx-auto mb-4"></div>
-                    <p className="text-primary-700">
-                      Watch how we transform your successful content into new
-                      posts
-                    </p>
-                  </div>
-
-                  <div className="relative bg-primary-800 overflow-hidden">
-                    <video
-                      controls
-                      poster="/videos/echodraft-poster.jpg"
-                      className="w-full"
-                      preload="metadata"
-                    >
-                      <source src="/videos/echodraft.mp4" type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                </div>
+              {/* Single, Clear CTA */}
+              <div className="text-center">
+                <Link
+                  href="/register"
+                  className="inline-block px-12 py-4 bg-secondary-600 hover:bg-secondary-700 text-primary-50 text-xl font-semibold rounded-lg shadow-lg transition-all duration-300 focus:ring-4 focus:ring-secondary-500 focus:ring-offset-2 focus:ring-offset-primary-100 transform hover:scale-105"
+                >
+                  Try 5 Free Generations
+                </Link>
+                <p className="text-sm text-primary-600 mt-3">
+                  No credit card required • Takes 2 minutes to set up
+                </p>
               </div>
             </div>
           </div>
@@ -243,9 +280,9 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {/* Not For You */}
-              <div className="bg-primary-50 border-2 border-primary-200 rounded-lg p-6">
+              <div className="bg-primary-50 border-2 border-primary-200 p-6">
                 <div className="flex items-center mb-4">
-                  <X className="w-10 h-10 text-danger-600 mr-3" />
+                  <ThumbsDown className="w-10 h-10 text-danger-600 mr-3" />
                   <h3 className="text-xl font-semibold text-primary-800">
                     Not for you if:
                   </h3>
@@ -271,9 +308,9 @@ export default function Home() {
               </div>
 
               {/* Perfect For You */}
-              <div className="bg-secondary-50 border-2 border-secondary-200 rounded-lg p-6">
+              <div className="bg-secondary-50 border-2 border-secondary-200 p-6">
                 <div className="flex items-center mb-4">
-                  <Check className="w-10 h-10 text-secondary-600 mr-3" />
+                  <ThumbsUp className="w-10 h-10 text-secondary-600 mr-3" />
                   <h3 className="text-xl font-semibold text-secondary-800">
                     Perfect for you if:
                   </h3>
@@ -343,19 +380,19 @@ export default function Home() {
         {/* Diagram Section */}
         <section
           aria-labelledby="workflow-heading"
-          className="bg-primary-200 py-16 relative"
+          className="bg-primary-200 py-10 relative"
         >
           <div className="container mx-auto px-4 text-center">
             <h2
               id="workflow-heading"
-              className="text-3xl font-bold text-primary-800 mb-8"
+              className="text-3xl font-bold text-primary-800"
             >
-              It's Stupidly Simple
+              A Simple Concept
             </h2>
             <div className="max-w-4xl mx-auto text-secondary-600">
               <WorkFlowDiagram className="mx-auto" />
             </div>
-            <p className="text-lg text-primary-700 mt-8 max-w-2xl mx-auto">
+            <p className="text-lg text-primary-700 max-w-2xl mx-auto">
               Think of it as having a writing assistant who studied all your
               best content and can recreate that magic on demand.
             </p>
@@ -505,15 +542,24 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CTA Section */}
+        {/* CTA Section - Updated with EchopenIcon */}
         <section
           aria-labelledby="cta-heading"
           className="bg-gradient-to-b from-secondary-100 to-primary-100 py-16"
         >
           <div className="container mx-auto px-4 text-center">
+            {/* Add the EchopenIcon here */}
+            <div className="mb-8">
+              <EchopenIcon
+                className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 mx-auto text-secondary-600"
+                width={144}
+                height={144}
+              />
+            </div>
+
             <h2
               id="cta-heading"
-              className="text-3xl font-bold text-secondary-800 mb-6 flex items-center justify-center gap-2"
+              className="text-3xl font-bold text-secondary-800 mb-6"
             >
               Ready to never stare at a blank page again?
             </h2>
@@ -524,13 +570,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/register"
-                className="px-8 py-3 bg-secondary-600 hover:bg-secondary-700 text-primary-50 font-medium  shadow-md transition-all duration-300 focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 focus:ring-offset-secondary-100"
+                className="px-8 py-3 bg-secondary-600 hover:bg-secondary-700 text-primary-50 font-medium shadow-md transition-all duration-300 focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 focus:ring-offset-secondary-100"
               >
                 Start Creating Content
               </Link>
               <Link
                 href="/login"
-                className="px-8 py-3 bg-primary-50 hover:bg-primary-200 text-primary-800 font-medium  shadow-md border border-primary-300 transition-all duration-300 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-100"
+                className="px-8 py-3 bg-primary-50 hover:bg-primary-200 text-primary-800 font-medium shadow-md border border-primary-300 transition-all duration-300 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-100"
               >
                 Sign In
               </Link>

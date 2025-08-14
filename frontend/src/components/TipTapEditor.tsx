@@ -60,6 +60,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       }),
     ],
     content: value,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },

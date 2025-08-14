@@ -33,6 +33,7 @@ const TipTapViewer: React.FC<TipTapViewerProps> = ({ content, title }) => {
       }),
     ],
     content,
+    immediatelyRender: false,
     editable: false,
   });
 

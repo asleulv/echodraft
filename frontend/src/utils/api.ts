@@ -23,14 +23,14 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Only run on client side
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      
-      if (token && token !== 'google_oauth_authenticated') {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+
+      if (token && token !== "google_oauth_authenticated") {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -284,100 +284,37 @@ export const documentsAPI = {
     return api.get("documents", { params: queryParams });
   },
 
-  // Search documents with content - hybrid approach for scalability
   searchDocuments: (searchTerm: string, additionalParams?: any) => {
-    // Default limit to 100 documents for better performance
-    const limit = additionalParams?.limit || 10;
+    const limit = additionalParams?.limit || 100;
     const page = additionalParams?.page || 1;
 
-    // If search term is short (1-2 chars), use client-side filtering only
-    // This prevents excessive server load for very short search terms
-    const useClientSideOnly = searchTerm.length < 3;
-
-    // Prepare query parameters
     const queryParams = {
-      ...additionalParams,
+      search: searchTerm,
       latest_only: true,
       limit: limit,
       offset: (page - 1) * limit,
+      ...additionalParams,
     };
 
-    // Helper function for client-side search
-    function fallbackToClientSide() {
-      return api.get("documents", { params: queryParams }).then((response) => {
-        // If we have a search term, filter the results client-side
-        if (searchTerm && response.data.results) {
-          const searchTermLower = searchTerm.toLowerCase();
-          const allDocuments = response.data.results || [];
 
-          // Filter documents that match the search term in title, content, or tags
-          const filteredResults = allDocuments.filter((doc: any) => {
-            // Search in title
-            if (doc.title.toLowerCase().includes(searchTermLower)) {
-              return true;
-            }
+    return api.get("documents", { params: queryParams }).then((response) => {
 
-            // Search in plain_text content if available
-            if (
-              doc.plain_text &&
-              doc.plain_text.toLowerCase().includes(searchTermLower)
-            ) {
-              return true;
-            }
+      const documents = response.data.results || response.data.documents || [];
+      const totalCount =
+        response.data.count || response.data.total || documents.length;
 
-            // Search in tags
-            if (
-              doc.tags &&
-              Array.isArray(doc.tags) &&
-              doc.tags.some((tag: string) =>
-                tag.toLowerCase().includes(searchTermLower)
-              )
-            ) {
-              return true;
-            }
-
-            return false;
-          });
-
-          // Return a modified response with the filtered results
-          return {
-            ...response,
-            data: {
-              ...response.data,
-              results: filteredResults,
-              count: filteredResults.length,
-            },
-          };
-        }
-
-        return response;
-      });
-    }
-
-    // For longer search terms, add the search parameter for server-side filtering
-    if (searchTerm && !useClientSideOnly) {
-      // Try to use server-side search first
-      try {
-        // Add search parameter for server-side filtering
-        queryParams.search = searchTerm;
-
-        return api
-          .get("documents", { params: queryParams })
-          .then((response) => {
-            return response;
-          })
-          .catch((error) => {
-            // If server-side search fails, fall back to client-side
-            delete queryParams.search;
-            return fallbackToClientSide();
-          });
-      } catch (error) {
-        return fallbackToClientSide();
-      }
-    } else {
-      // For short search terms or when no search term is provided
-      return fallbackToClientSide();
-    }
+      // Transform Django response to match expected format
+      return {
+        ...response,
+        data: {
+          results: documents,
+          count: totalCount,
+          documents: documents, // For backward compatibility
+          totalCount: totalCount, // For backward compatibility
+          ...response.data,
+        },
+      };
+    });
   },
 
   // Get documents and filter by tag on the client side

@@ -23,11 +23,9 @@ export async function searchDocuments(params: SearchParams): Promise<SearchResul
   const { query, page = 1, limit = 100, ...filters } = params;
 
   try {
-    console.log(`Searching for: "${query}"`, { page, limit, filters });
 
     // Parse the search query for advanced features
     const parsedQuery = parseSearchQuery(query);
-    console.log('Parsed search query:', parsedQuery);
 
     // Prepare search parameters
     const searchParams: Record<string, any> = {
@@ -50,7 +48,6 @@ export async function searchDocuments(params: SearchParams): Promise<SearchResul
     
     if (allTags.length > 0) {
       searchParams.tags = allTags.join(',');
-      console.log(`🏷️ Including tags: ${allTags.join(', ')}`);
     }
 
     // Build the cleaned search query (without hashtags)
@@ -66,16 +63,17 @@ export async function searchDocuments(params: SearchParams): Promise<SearchResul
     const finalQuery = cleanQuery.trim() || (parsedTags.length > 0 ? '*' : query.trim());
 
     // Execute search with cleaned query
+
+
     const response = await documentsAPI.searchDocuments(finalQuery, searchParams);
     const documents = response.data.results || [];
     const totalCount = response.data.count || 0;
 
-    console.log(`Search results: ${documents.length} documents (total: ${totalCount})`);
 
     // Log sample results for debugging
     if (documents.length > 0) {
       const firstDoc = documents[0];
-      console.log(`First result: "${firstDoc.title}" - Tags: [${firstDoc.tags.join(', ')}]`);
+
     }
 
     return {

@@ -45,14 +45,13 @@ export default function EditDocument() {
       if (!isAuthenticated || !slug || typeof slug !== 'string') return;
       
       try {
-        console.log('Fetching document for editing with slug:', slug);
         setIsLoading(true);
         
         const response = await documentsAPI.getDocument(slug);
-        console.log('Document fetched successfully for editing:', response.data);
+
         setDocument(response.data);
       } catch (err: any) {
-        console.error('Failed to load document for editing:', err);
+
         setError('Failed to load document. Please try again.');
       } finally {
         setIsLoading(false);

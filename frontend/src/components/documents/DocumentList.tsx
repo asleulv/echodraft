@@ -184,7 +184,7 @@ export default function DocumentList({
                 e.stopPropagation();
                 onTagClick(tag);
               }}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-700 hover:bg-primary-300 cursor-pointer"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-600 hover:bg-primary-300 cursor-pointer"
             >
               {tag}
             </span>
@@ -286,7 +286,7 @@ export default function DocumentList({
                 e.stopPropagation();
                 onTagClick(tag);
               }}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-700 hover:bg-primary-300 cursor-pointer"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-200 text-primary-600 hover:bg-primary-300 cursor-pointer"
             >
               {tag}
             </span>

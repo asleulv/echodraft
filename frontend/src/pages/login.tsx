@@ -85,7 +85,7 @@ export default function Login() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-primary-200 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-primary-200 py-8 px-4 shadow  sm:px-10">
             {success && (
               <div className="mb-4 bg-success-50 dark:bg-success-900/30 border border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 px-4 py-3 rounded">
                 {success}

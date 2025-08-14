@@ -83,7 +83,6 @@ const DocumentForm: React.FC<DocumentFormProps> = ({
   // Log the initial category for debugging
   useEffect(() => {
     if (initialData?.category) {
-      console.log("Initial category:", initialData.category);
     }
   }, [initialData]);
 

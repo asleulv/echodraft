@@ -21,7 +21,7 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
     
     permission_classes = [permissions.IsAuthenticated, IsSameOrganization]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['title', 'plain_text', 'tags']
+    search_fields = ['title', 'plain_text', 'tags', 'category__name']
     ordering_fields = ['title', 'created_at', 'updated_at']
     ordering = ['-updated_at']
     
@@ -74,14 +74,6 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
             if tag_q:
                 queryset = queryset.filter(tag_q)
         
-        # Search filter
-        search = self.request.query_params.get('search')
-        if search:
-            queryset = queryset.filter(
-                Q(title__icontains=search) | 
-                Q(plain_text__icontains=search)
-            )
-        
         return queryset
     
     def get_serializer_class(self):
@@ -129,17 +121,22 @@ class TextDocumentViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         """Override list method to include demo document check"""
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+        # Let DRF handle filtering and pagination first
+        response = super().list(request, *args, **kwargs)
         
         # Check if user only has demo documents
         has_only_demo_documents = user_has_only_demo_documents(request.user)
         
-        return Response({
-            'documents': serializer.data,
+        # Modify the response to include your custom fields
+        response.data = {
+            'documents': response.data.get('results', response.data),
+            'count': response.data.get('count', len(response.data.get('results', []))),
             'has_only_demo_documents': has_only_demo_documents,
             'show_getting_started': has_only_demo_documents
-        })
+        }
+    
+        return response
+
     
     def destroy(self, request, *args, **kwargs):
         """Soft delete by changing status."""

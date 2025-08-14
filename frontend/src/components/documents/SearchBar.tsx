@@ -24,6 +24,8 @@ export default function SearchBar({
     }
   }, [isSearching]);
 
+  
+
   return (
     <div className="mb-4">
       <div className="relative">

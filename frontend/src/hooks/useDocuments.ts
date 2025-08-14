@@ -49,12 +49,9 @@ export function useDocuments() {
       const { tags, category, status } = router.query;
 
       if (debouncedSearchTerm.trim()) {
-        // SEARCH MODE: Search across all documents
-        console.log(`🔍 SEARCH MODE: "${debouncedSearchTerm}"`);
 
         // Parse search query for advanced features
         const parsedQuery = parseSearchQuery(debouncedSearchTerm);
-        console.log("Parsed search query:", parsedQuery);
 
         const searchResult = await searchDocsUtil({
           query: debouncedSearchTerm,
