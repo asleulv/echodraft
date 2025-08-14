@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Quicksand:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -78,50 +78,72 @@
 
 @layer base {
   :root {
-    /* Light theme variables (default) */
-    --color-text-primary: theme('colors.gray.900');
-    --color-text-secondary: theme('colors.gray.600');
-    --color-text-muted: theme('colors.gray.500');
+    /* Warm theme font stacks */
+    --font-heading: 'Lora', 'Merriweather', 'Source Serif Pro', Georgia, serif;
+    --font-body: 'Lato', 'Source Sans Pro', 'Inter', system-ui, -apple-system, sans-serif;
     
-    --color-bg-primary: theme('colors.white');
-    --color-bg-secondary: theme('colors.gray.50');
-    --color-bg-tertiary: theme('colors.gray.100');
+    /* Light theme variables - Updated with warm colors */
+    --color-text-primary: #2c2018; /* Dark warm brown */
+    --color-text-secondary: #4a3d32; /* Medium warm brown */
+    --color-text-muted: #6b5b50; /* Light warm brown */
     
-    /* UI element colors are handled by Tailwind's color system */
+    --color-bg-primary: #f8f4f1; /* Warm cream background */
+    --color-bg-secondary: #f2ede6; /* Slightly deeper cream */
+    --color-bg-tertiary: #ebe3d8; /* Deeper warm beige */
   }
   
   .dark {
-    /* Dark theme variables */
-    --color-text-primary: theme('colors.gray.50');
-    --color-text-secondary: theme('colors.gray.300');
-    --color-text-muted: theme('colors.gray.400');
+    /* Dark theme variables - Inverted warm colors */
+    --color-text-primary: #f8f4f1; /* Light cream */
+    --color-text-secondary: #f2ede6; /* Medium cream */
+    --color-text-muted: #e5d8ca; /* Muted cream */
     
-    /* Updated to use more black/gray tones instead of blue-gray */
-    --color-bg-primary: #121212;
-    --color-bg-secondary: #1a1a1a;
-    --color-bg-tertiary: #2c2c2c;
+    --color-bg-primary: #0f0b05; /* Deep warm charcoal */
+    --color-bg-secondary: #1a1309; /* Medium charcoal */
+    --color-bg-tertiary: #2c2018; /* Lighter charcoal */
   }
   
-  /* Base styles using semantic color variables */
+  /* Base typography with warm fonts */
   html {
+    font-family: var(--font-body);
     @apply text-text-primary;
     @apply transition-colors duration-200;
   }
   
   body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
     @apply bg-bg-primary transition-colors duration-200;
   }
   
+  /* Headings with serif font for writer's feel */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    @apply text-text-primary;
+  }
+  
   h1 {
-    @apply text-3xl font-bold mb-4 text-text-primary;
+    @apply text-3xl font-bold mb-4;
+    font-weight: 700;
   }
   
   h2 {
-    @apply text-2xl font-bold mb-3 text-text-primary;
+    @apply text-2xl font-bold mb-3;
+    font-weight: 600;
   }
   
   h3 {
-    @apply text-xl font-bold mb-2 text-text-primary;
+    @apply text-xl font-bold mb-2;
+    font-weight: 600;
+  }
+  
+  h4, h5, h6 {
+    font-weight: 500;
   }
   
   a {
@@ -130,63 +152,87 @@
   
   p {
     @apply mb-4 text-text-secondary;
+    line-height: 1.7;
+  }
+  
+  /* Body text variations */
+  .text-warm {
+    font-weight: 400;
+    line-height: 1.7;
+  }
+  
+  .text-friendly {
+    font-weight: 300;
+    line-height: 1.8;
   }
 }
 
-
-
 @layer components {
   .document-title {
-    font-family: 'Quicksand', sans-serif;
-    @apply text-primary-600 dark:text-primary-500 tracking-wide;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    font-family: var(--font-heading); /* Changed to serif for writer's feel */
+    @apply text-primary-600 tracking-wide;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+  }
+  
+  .main-logo {
+    font-family: var(--font-heading); /* Changed to serif for sophistication */
+    @apply tracking-wide;
+    font-weight: 700;
   }
   
   .btn {
-    @apply px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
-  }
-
-  .main-logo {
-    font-family: 'Quicksand', sans-serif;
-    @apply tracking-wide;
-
+    font-family: var(--font-body);
+    @apply px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
   
+  /* Updated button styles for warm theme - single color system */
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-400;
+    @apply btn bg-secondary-600 text-primary-50 hover:bg-secondary-700 focus:ring-secondary-500;
   }
   
   .btn-secondary {
-    @apply btn bg-secondary-200 text-secondary-800 hover:bg-secondary-300 focus:ring-secondary-500 dark:bg-secondary-400 dark:text-secondary-100 dark:hover:bg-secondary-300;
+    @apply btn bg-primary-200 text-primary-800 hover:bg-primary-300 focus:ring-primary-500 border border-primary-300;
   }
   
   .btn-success {
-    @apply btn bg-success-600 text-white hover:bg-success-700 focus:ring-success-500 dark:bg-success-500 dark:hover:bg-success-400;
+    @apply btn bg-success-600 text-primary-50 hover:bg-success-700 focus:ring-success-500;
   }
   
   .btn-danger {
-    @apply btn bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500 dark:bg-danger-500 dark:hover:bg-danger-400;
+    @apply btn bg-danger-600 text-primary-50 hover:bg-danger-700 focus:ring-danger-500;
   }
   
   .card {
-    @apply bg-bg-secondary rounded-lg shadow-md p-6 dark:border dark:border-secondary-300;
+    @apply bg-primary-100 rounded-lg shadow-md p-6 border border-primary-200;
   }
   
   .form-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-bg-tertiary dark:border-gray-700 dark:text-primary-600 dark:focus:ring-primary-500 dark:focus:border-primary-500;
+    font-family: var(--font-body);
+    @apply w-full px-3 py-2 border border-primary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 bg-primary-50 text-primary-800;
   }
   
   .form-label {
-    @apply block text-sm font-medium text-text-secondary mb-1;
+    font-family: var(--font-body);
+    @apply block text-sm font-medium text-primary-700 mb-1;
+    font-weight: 500;
   }
   
   .form-error {
-    @apply mt-1 text-sm text-danger-600 dark:text-danger-400;
+    @apply mt-1 text-sm text-danger-600;
   }
   
   /* Theme toggle button */
   .theme-toggle {
-    @apply p-2 rounded-full text-white hover:text-gray-200 dark:text-secondary-500 dark:hover:text-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-secondary-200;
+    @apply p-2 rounded-full text-primary-700 hover:text-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 transition-colors;
+  }
+  
+  /* Font utility classes */
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  
+  .font-body {
+    font-family: var(--font-body);
   }
 }
-

@@ -307,7 +307,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                           item.current
                             ? "bg-primary-600 text-primary-50"
                             : "text-primary-600 border-2 border-transparent hover:border-primary-400 hover:text-primary-800"
-                        } px-3 py-2 bg-primary-200 rounded-md text-sm font-medium transition-all`}
+                        } px-3 py-2 bg-primary-200  text-sm font-medium transition-all`}
                         aria-current={item.current ? "page" : undefined}
                       >
                         {item.name}
@@ -515,7 +515,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                 <button
                   type="button"
                   onClick={showGettingStartedGuide}
-                  className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-200 flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
+                  className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-200 flex items-center justify-center text-primary-600 dark:text-primary-600 mr-3 hover:border hover:border-primary-400"
                   aria-label="Show Getting Started Guide"
                 >
                   <CircleHelp className="h-6 w-6" />

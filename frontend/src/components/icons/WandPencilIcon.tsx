@@ -14,20 +14,43 @@ export default function WandPencilIcon(props: React.SVGProps<SVGSVGElement>) {
       {...props}
     >
       <defs>
-        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <style>
+          {`
+            .wand-gradient {
+              /* Light mode - sophisticated brown gradient */
+              --gradient-start: #8b7355;    /* Secondary-500 sophisticated brown */
+              --gradient-end: #a8947d;      /* Secondary-400 lighter brown */
+            }
+            
+            /* Dark mode - perfect inversion using your new theme */
+            @media (prefers-color-scheme: dark) {
+              .wand-gradient {
+                --gradient-start: #a8947d;  /* Secondary-400 inverted */
+                --gradient-end: #6f5a43;    /* Secondary-600 darker brown */
+              }
+            }
+            
+            /* Support for explicit dark mode class */
+            .dark .wand-gradient {
+              --gradient-start: #a8947d !important;
+              --gradient-end: #6f5a43 !important;
+            }
+          `}
+        </style>
+        <linearGradient id="warmGradient" x1="0%" y1="0%" x2="100%" y2="100%" className="wand-gradient">
           <stop
             offset="0%"
-            style={{ stopColor: "var(--tw-secondary-500)", stopOpacity: 1 }}
+            style={{ stopColor: "var(--gradient-start)", stopOpacity: 1 }}
           />
           <stop
             offset="100%"
-            style={{ stopColor: "var(--tw-secondary-300)", stopOpacity: 1 }}
+            style={{ stopColor: "var(--gradient-end)", stopOpacity: 1 }}
           />
         </linearGradient>
       </defs>
       <g
         transform="translate(0.000000,312.000000) scale(0.100000,-0.100000)"
-        fill="url(#gradient1)"
+        fill="url(#warmGradient)"
         stroke="none"
       >
         <path d="M1385 2949 c-602 -81 -1082 -534 -1202 -1136 -24 -122 -24 -394 0
