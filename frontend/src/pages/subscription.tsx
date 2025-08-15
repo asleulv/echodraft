@@ -31,11 +31,17 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState<number | null>(null);
-  const { isAuthenticated, user, refreshUser, isLoading: authLoading } = useAuth();
+  const {
+    isAuthenticated,
+    user,
+    refreshUser,
+    isLoading: authLoading,
+  } = useAuth();
   const router = useRouter();
-  
+
   // Fetch system message for subscription page
-  const { message: systemMessage, dismissMessage } = useSystemMessage('subscription');
+  const { message: systemMessage, dismissMessage } =
+    useSystemMessage("subscription");
 
   // Check for success or canceled query parameters and refresh the user's profile
   useEffect(() => {
@@ -146,7 +152,7 @@ export default function SubscriptionPage() {
   useEffect(() => {
     // Only redirect if auth state is fully loaded and user is not authenticated
     if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
@@ -174,7 +180,7 @@ export default function SubscriptionPage() {
     try {
       // Refresh user profile first to get the latest data
       await refreshUser();
-      
+
       // Then fetch credit data
       const packagesResponse = await api.get("/subscriptions/packages/");
       setPackages(packagesResponse.data);
@@ -206,22 +212,32 @@ export default function SubscriptionPage() {
       // Create checkout session for credit purchase
       const response = await api.post("/subscriptions/organization/purchase/", {
         package_id: packageId,
-        success_url: `${window.location.origin}/subscription/success?t=${Date.now()}`,
-        cancel_url: `${window.location.origin}/subscription/cancel?t=${Date.now()}`,
+        success_url: `${
+          window.location.origin
+        }/subscription/success?t=${Date.now()}`,
+        cancel_url: `${
+          window.location.origin
+        }/subscription/cancel?t=${Date.now()}`,
       });
 
       // Redirect to Stripe checkout
       if (response.data && response.data.checkout_url) {
         window.location.href = response.data.checkout_url;
       } else {
-        setError("Failed to initiate checkout process. Please try again later.");
+        setError(
+          "Failed to initiate checkout process. Please try again later."
+        );
       }
     } catch (err: any) {
       // Handle specific error cases
       if (err.response?.status === 402) {
-        setError("Insufficient credits. Please try purchasing a different package.");
+        setError(
+          "Insufficient credits. Please try purchasing a different package."
+        );
       } else {
-        setError("Failed to initiate checkout process. Please try again later.");
+        setError(
+          "Failed to initiate checkout process. Please try again later."
+        );
       }
     } finally {
       setPurchasing(null);
@@ -247,17 +263,16 @@ export default function SubscriptionPage() {
         {/* System Message */}
         {systemMessage && (
           <div className="mb-6">
-            <SystemMessage 
-              message={systemMessage} 
-              onClose={dismissMessage}
-            />
+            <SystemMessage message={systemMessage} onClose={dismissMessage} />
           </div>
         )}
 
         {showSuccess && (
           <div className="bg-green-800 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded mb-6">
             <p className="font-bold text-white">Success!</p>
-            <p className="text-white">Your credits have been added successfully.</p>
+            <p className="text-white">
+              Your credits have been added successfully.
+            </p>
           </div>
         )}
 
@@ -285,43 +300,58 @@ export default function SubscriptionPage() {
           <>
             {/* Current Credits */}
             {credits && (
-              <div className="bg-primary-100 dark:bg-primary-900/30 rounded-lg shadow-md p-6 mb-8 border border-primary-200 dark:border-gray-700">
-                <h2 className="text-2xl text-center font-semibold text-secondary-500 dark:text-secondary-400 mb-4">
+              <div className="bg-primary-100 shadow-md p-6 mb-8 border border-primary-200">
+                <h2 className="text-2xl text-center font-semibold text-secondary-500 mb-4">
                   Your AI Credits
                 </h2>
-                <hr className="my-6 border-t border-primary-300 dark:border-gray-600" />
+                <hr className="my-6 border-t border-primary-300" />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                  <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-primary-200 dark:border-gray-600">
-                    <div className="text-3xl font-bold text-secondary-500 dark:text-secondary-400 mb-2">
+                  <div className="bg-primary-200 p-4 border border-primary-200">
+                    <div className="text-3xl font-bold text-secondary-500 mb-2">
                       {credits.total_credits_available}
                     </div>
-                    <p className="text-primary-600 dark:text-primary-400 font-semibold">Total Credits Available</p>
-                    <p className="text-sm text-primary-500 dark:text-primary-500 mt-1">Ready to use for AI generation</p>
+                    <p className="text-primary-600 font-semibold">
+                      Total Credits Available
+                    </p>
+                    <p className="text-sm text-primary-500  mt-1">
+                      Ready to use for AI generation
+                    </p>
                   </div>
-                  
-                  <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-primary-200 dark:border-gray-600">
-                    <div className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
+
+                  <div className="bg-primary-200 rounded-lg p-4 border border-primary-200">
+                    <div className="text-3xl font-bold text-primary-600 mb-2">
                       {credits.ai_credits_balance}
                     </div>
-                    <p className="text-primary-600 dark:text-primary-400 font-semibold">Purchased Credits</p>
-                    <p className="text-sm text-primary-500 dark:text-primary-500 mt-1">Credits you've bought</p>
+                    <p className="text-primary-600 dark:text-primary-400 font-semibold">
+                      Purchased Credits
+                    </p>
+                    <p className="text-sm text-primary-500 dark:text-primary-500 mt-1">
+                      Credits you've bought
+                    </p>
                   </div>
-                  
-                  <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-primary-200 dark:border-gray-600">
-                    <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+
+                  <div className="bg-primary-200 rounded-lg p-4 border border-primary-200">
+                    <div className="text-3xl font-bold text-success-400 mb-2">
                       {credits.bonus_ai_generation_credits}
                     </div>
-                    <p className="text-primary-600 dark:text-primary-400 font-semibold">Bonus Credits</p>
-                    <p className="text-sm text-primary-500 dark:text-primary-500 mt-1">Free credits from admin</p>
+                    <p className="text-primary-600 font-semibold">
+                      Bonus Credits
+                    </p>
+                    <p className="text-sm text-primary-500 mt-1">
+                      Free credits from admin
+                    </p>
                   </div>
                 </div>
 
                 <div className="mt-4 text-center">
-                  <p className="text-primary-600 dark:text-primary-400">
-                    <span className="font-semibold">Total Credits Purchased:</span> {credits.ai_credits_purchased_total}
+                  <p className="text-primary-600">
+                    <span className="font-semibold">
+                      Total Credits Purchased:
+                    </span>{" "}
+                    {credits.ai_credits_purchased_total}
                   </p>
-                  <p className="text-sm text-primary-500 dark:text-primary-500 mt-2">
+                  <p className="text-sm text-primary-500 mt-2">
                     Each AI generation uses 1 credit. Credits never expire.
                   </p>
                 </div>
@@ -330,38 +360,40 @@ export default function SubscriptionPage() {
 
             {/* Credit Packages */}
             <div>
-              <h2 className="text-2xl font-semibold text-secondary-500 dark:text-secondary-400 mb-6 text-center">
+              <h2 className="text-2xl font-semibold text-secondary-500 mb-6 text-center">
                 Purchase Credit Packages
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {packages.map((pkg) => (
                   <div
                     key={pkg.id}
-                    className="bg-primary-100 dark:bg-primary-900/30 rounded-lg shadow-md p-6 border-2 border-transparent hover:border-secondary-400 dark:hover:border-secondary-500 transition-colors"
+                    className="bg-primary-100 rounded-lg shadow-md p-6 border-2 border-transparent hover:border-secondary-400 transition-colors"
                   >
-                    <h3 className="text-xl font-bold mb-2 text-primary-600 dark:text-primary-400">
-                      {pkg.display_name}
-                    </h3>
-                    
                     <div className="text-center mb-4">
-                      <div className="text-3xl font-bold text-secondary-500 dark:text-secondary-400">
+                      <h3 className="inline-block bg-secondary-600 text-primary-50 px-4 py-2 rounded-full text-lg font-bold uppercase tracking-wider">
+                        {pkg.display_name}
+                      </h3>
+                    </div>
+
+                    <div className="text-center mb-4">
+                      <div className="text-3xl font-bold text-secondary-500">
                         {pkg.credits}
                       </div>
-                      <p className="text-primary-600 dark:text-primary-400">AI Generation Credits</p>
+                      <p className="text-primary-600">AI Generation Credits</p>
                     </div>
-                    
+
                     <div className="text-center mb-4">
-                      <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                      <div className="text-2xl font-bold text-primary-600">
                         {formatCurrency(pkg.price, pkg.currency)}
                       </div>
-                      <p className="text-sm text-primary-500 dark:text-primary-500">
+                      <p className="text-sm text-primary-500 ">
                         ${(pkg.price / pkg.credits).toFixed(3)} per credit
                       </p>
                     </div>
 
                     {pkg.description && (
-                      <p className="text-primary-500 dark:text-primary-500 mb-4 text-sm text-center">
+                      <p className="text-primary-500 mb-4 text-sm text-center">
                         {pkg.description}
                       </p>
                     )}
@@ -369,11 +401,11 @@ export default function SubscriptionPage() {
                     <button
                       onClick={() => handlePurchase(pkg.id)}
                       disabled={purchasing === pkg.id}
-                      className="w-full bg-secondary-600 dark:bg-secondary-600 text-primary-50 px-4 py-2 rounded hover:bg-secondary-500 dark:hover:bg-secondary-700 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+                      className="w-full bg-secondary-600 text-primary-50 px-4 py-2 hover:bg-secondary-500 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
                     >
                       {purchasing === pkg.id ? (
                         <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-secondary-200 mr-2"></div>
                           Processing...
                         </div>
                       ) : (
@@ -386,24 +418,40 @@ export default function SubscriptionPage() {
 
               {packages.length === 0 && !loading && (
                 <div className="text-center py-8">
-                  <p className="text-primary-500 dark:text-primary-500">No credit packages are currently available.</p>
+                  <p className="text-primary-500 dark:text-primary-500">
+                    No credit packages are currently available.
+                  </p>
                 </div>
               )}
             </div>
 
             {/* Credit Usage Information */}
             <div className="mt-8 bg-secondary-100 border border-secondary-300 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-secondary-600 mb-3">How Credits Work</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-primary-100">
+              <h3 className="text-lg font-semibold text-secondary-600 mb-3">
+                How Credits Work
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-primary-200">
                 <div>
-                  <p className="mb-2">• <strong>1 Credit = 1 AI Generation</strong></p>
-                  <p className="mb-2">• <strong>Credits never expire</strong></p>
-                  <p className="mb-2">• <strong>Use bonus credits first</strong></p>
+                  <p className="mb-2 text-secondary-700">
+                    • 1 Credit = 1 AI Generation
+                  </p>
+                  <p className="mb-2 text-secondary-700">
+                    • Credits never expire
+                  </p>
+                  <p className="mb-2 text-secondary-700">
+                    • Use bonus credits first
+                  </p>
                 </div>
                 <div>
-                  <p className="mb-2">• <strong>Instant credit delivery</strong></p>
-                  <p className="mb-2">• <strong>No monthly subscriptions</strong></p>
-                  <p className="mb-2">• <strong>Pay only for what you use</strong></p>
+                  <p className="mb-2 text-secondary-700">
+                    • Instant credit delivery
+                  </p>
+                  <p className="mb-2 text-secondary-700">
+                    • No monthly subscriptions
+                  </p>
+                  <p className="mb-2 text-secondary-700">
+                    • Pay only for what you use
+                  </p>
                 </div>
               </div>
             </div>
