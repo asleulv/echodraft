@@ -5,8 +5,8 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Sun, Moon, UserRound, CircleHelp } from "lucide-react";
-import WandPencilIcon from "@/components/icons/WandPencilIcon";
 import InactivityWarning from "@/components/InactivityWarning";
+import EchoDraftLogo from "@/components/icons/EchoDraftLogo";
 
 interface LayoutProps {
   children: ReactNode;
@@ -42,9 +42,9 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
     } else {
       // If already on dashboard, update URL and trigger a custom event
       router.push("/dashboard?help=true", undefined, { shallow: true });
-      
+
       // Dispatch a custom event to tell the dashboard component to show the guide
-      window.dispatchEvent(new CustomEvent('showGettingStarted'));
+      window.dispatchEvent(new CustomEvent("showGettingStarted"));
     }
   }, [router]);
 
@@ -292,7 +292,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                   className="main-logo flex items-center text-primary-600 bg-clip-text text-2xl sm:text-2xl text-xl"
                 >
                   {mounted && (
-                    <WandPencilIcon className="w-8 h-8 mr-1 text-primary-500 dark:text-primary-600 align-middle mr-1" />
+                    <EchoDraftLogo className="w-8 h-8 text-primary-500 dark:text-primary-600 align-middle" />
                   )}
                   <span className="sm:text-2xl text-lg leading-tight">
                     echodraft
@@ -776,27 +776,38 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
       <InactivityWarning />
 
       <footer className="bg-primary-50 border-t border-primary-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-            <div className="text-sm text-gray-500 text-center sm:text-left">
-              &copy; {new Date().getFullYear()} echodraft. All rights reserved.
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-6 sm:space-y-0">
+            {/* Logo and Company Info */}
+            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <EchoDraftLogo className="w-12 h-auto" />
+              <div className="text-center sm:text-left">
+                <div className="text-sm font-medium text-primary-700">
+                  echodraft
+                </div>
+                <div className="text-xs text-primary-500">
+                  &copy; {new Date().getFullYear()} All rights reserved.
+                </div>
+              </div>
             </div>
-            <div className="flex space-x-6 text-sm">
+
+            {/* Navigation Links */}
+            <div className="flex flex-wrap justify-center sm:justify-end space-x-6 text-sm">
               <Link
                 href="/privacy"
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-primary-600 hover:text-primary-800 transition-colors duration-200"
               >
                 Privacy Policy
               </Link>
               <Link
                 href="/terms"
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-primary-600 hover:text-primary-800 transition-colors duration-200"
               >
                 Terms of Service
               </Link>
               <Link
                 href="/contact"
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-primary-600 hover:text-primary-800 transition-colors duration-200"
               >
                 Contact
               </Link>

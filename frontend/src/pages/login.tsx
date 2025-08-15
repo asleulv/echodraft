@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import Layout from '@/components/Layout';
-import WandPencilIcon from "@/components/icons/WandPencilIcon";
+import WandPencilIcon from "@/components/icons/EchoDraftLogo";
 import GoogleLoginButton from '@/components/GoogleLoginButton'; // Add this import
 
 export default function Login() {

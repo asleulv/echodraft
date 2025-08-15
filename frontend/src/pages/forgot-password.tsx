@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import WandPencilIcon from "@/components/icons/WandPencilIcon";
+import WandPencilIcon from "@/components/icons/EchoDraftLogo";
 import { authAPI } from '@/utils/api';
 
 export default function ForgotPassword() {

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import { Download, Printer } from "lucide-react";
 import { printDocument } from "@/utils/htmlExport";
-import WandPencilIcon from "@/components/icons/WandPencilIcon";
+import WandPencilIcon from "@/components/icons/EchoDraftLogo";
 
 export default function SharedHtmlView() {
   const [docData, setDocData] = useState<any>(null);

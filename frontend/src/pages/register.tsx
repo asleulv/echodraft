@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import Layout from "@/components/Layout";
 import { RegistrationData } from "@/types/api";
-import WandPencilIcon from "@/components/icons/WandPencilIcon";
+import WandPencilIcon from "@/components/icons/EchoDraftLogo";
 import { useSystemMessage } from "@/hooks/useSystemMessage";
 import SystemMessage from "@/components/SystemMessage";
 import GoogleLoginButton from "@/components/GoogleLoginButton";

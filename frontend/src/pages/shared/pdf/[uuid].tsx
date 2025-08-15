@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { Download } from 'lucide-react';
 import Script from 'next/script';
-import WandPencilIcon from '@/components/icons/WandPencilIcon';
+import WandPencilIcon from '@/components/icons/EchoDraftLogo';
 
 export default function SharedPDFView() {
   const [document, setDocument] = useState<any>(null);
