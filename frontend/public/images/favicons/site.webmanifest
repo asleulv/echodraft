@@ -1,6 +1,6 @@
 {
-  "name": "Your App Name",
-  "short_name": "AppShortName",
+  "name": "echodraft",
+  "short_name": "echodraft",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
