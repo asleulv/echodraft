@@ -155,7 +155,7 @@ export default function Home() {
                 <div className="text-sm text-primary-600 mb-4 flex">
                   <CornerLeftDown className="w-5 h-5 mt-1 mr-2 flex-shrink-0" />
                   <span>
-                    This video shows how the user uses AI to write about the
+                    This video shows how the user uses AI to write about
                     John Lennon using the style of a previous social
                     media rant
                   </span>
