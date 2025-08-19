@@ -153,11 +153,13 @@ export default function Home() {
 
               <div className="max-w-4xl mx-auto mb-12">
                 <div className="text-sm text-primary-600 mb-4 flex">
-  <CornerLeftDown className="w-5 h-5 mt-1 mr-2 flex-shrink-0" />
-  <span>
-    This video shows how the user uses AI to write about the death of John Lennon using the style of a previous social media rant
-  </span>
-</div>
+                  <CornerLeftDown className="w-5 h-5 mt-1 mr-2 flex-shrink-0" />
+                  <span>
+                    This video shows how the user uses AI to write about the
+                    John Lennon using the style of a previous social
+                    media rant
+                  </span>
+                </div>
                 <div className="relative overflow-hidden shadow-2xl bg-primary-100 dark:bg-primary-900">
                   <video
                     ref={videoRef}

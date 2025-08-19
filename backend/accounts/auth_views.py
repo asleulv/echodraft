@@ -9,6 +9,7 @@ import json
 import os
 import logging
 import requests
+from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
@@ -50,7 +51,7 @@ def google_auth_callback(request):
         # Verify the token with Google - WITH CLOCK SKEW TOLERANCE
         idinfo = id_token.verify_oauth2_token(
             token, 
-            requests.Request(), 
+            google_requests.Request(),
             os.getenv('GOOGLE_CLIENT_ID'),
             clock_skew_in_seconds=60  # Allow 1 minute of clock difference
         )
