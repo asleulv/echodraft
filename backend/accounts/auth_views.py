@@ -8,8 +8,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 import json
 import os
 import logging
+import requests
 from google.oauth2 import id_token
-from google.auth.transport import requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 
@@ -181,6 +181,28 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         """Create a new user and organization."""
         logger.info("User registration request received")
+        logger.info(f"Request data keys: {list(request.data.keys())}")
+        logger.info(f"Captcha token received: {request.data.get('captchaToken')}")
+        
+        # Verify reCAPTCHA token
+        captcha_token = request.data.get('captchaToken')
+        if not captcha_token:
+            return Response(
+                {'error': 'Captcha token is missing.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        data = {
+            'secret': settings.RECAPTCHA_SECRET_KEY,  # Put your secret key in your env and settings
+            'response': captcha_token,
+        }
+        google_resp = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = google_resp.json()
+        if not result.get('success'):
+            logger.warning(f"reCAPTCHA validation failed: {result}")
+            return Response(
+                {'error': 'Invalid reCAPTCHA. Please try again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Create organization first
         org_data = request.data.get('organization', {})
@@ -188,7 +210,7 @@ class RegisterView(generics.CreateAPIView):
         # If organization is empty or not provided, use email
         if not org_data or (isinstance(org_data, dict) and not org_data.get('name')):
             email = request.data.get('email', '')
-            org_data = {'name': email}  # Simply use the full email as org name
+            org_data = {'name': email}  # Use the full email as org name
         elif isinstance(org_data, str) and not org_data.strip():
             # If organization is an empty string
             email = request.data.get('email', '')
@@ -251,7 +273,7 @@ class RegisterView(generics.CreateAPIView):
                     },
                     status=status.HTTP_201_CREATED
                 )
-                
+            
             # If user creation fails, delete the organization
             logger.warning("User creation failed, cleaning up organization")
             organization.delete()
@@ -259,6 +281,7 @@ class RegisterView(generics.CreateAPIView):
         
         logger.warning("Organization creation failed during registration")
         return Response(org_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
 
 class CustomTokenObtainPairView(TokenObtainPairView):

@@ -13,10 +13,12 @@ import {
   Target,
   Wand2,
   ThumbsDown,
+  CornerLeftDown,
 } from "lucide-react";
 import WorkFlowDiagram from "@/components/icons/WorkFlowDiagram";
 import EchopenIcon from "@/components/icons/EchopenIcon";
 import TypingStruggle from "@/components/TypingStruggle";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 // FAQ Item Component - Move OUTSIDE of Home component
 function FaqItem({ question, answer }: { question: string; answer: string }) {
@@ -142,15 +144,20 @@ export default function Home() {
               `}</style>
 
               <p className="text-xl md:text-2xl text-primary-700 mb-12 leading-relaxed max-w-3xl mx-auto">
-                Upload your best content. Generate unlimited variations in the
-                same style.
+                Store your texts. Teach AI your style. Generate new drafts in
+                your voice.{" "}
                 <span className="block mt-2 text-lg text-primary-600">
-                  It's that simple.
+                  Don't use generic AI voices. Use your own.
                 </span>
               </p>
 
-              {/* Video with Custom Play Button Overlay */}
               <div className="max-w-4xl mx-auto mb-12">
+                <div className="text-sm text-primary-600 mb-4 flex">
+  <CornerLeftDown className="w-5 h-5 mt-1 mr-2 flex-shrink-0" />
+  <span>
+    This video shows how the user uses AI to write about the death of John Lennon using the style of a previous social media rant
+  </span>
+</div>
                 <div className="relative overflow-hidden shadow-2xl bg-primary-100 dark:bg-primary-900">
                   <video
                     ref={videoRef}
@@ -204,10 +211,6 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-primary-600 mt-4">
-                  ▲ Watch how we transform your successful content into new
-                  posts
-                </p>
               </div>
 
               {/* Simplified Value Props - More Concise */}

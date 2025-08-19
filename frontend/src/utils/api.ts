@@ -113,6 +113,7 @@ export const authAPI = {
       role: userData.role || "admin",
       first_name: userData.first_name || "",
       last_name: userData.last_name || "",
+      captchaToken: userData.captchaToken
     };
 
     return api.post<RegistrationResponse>("register/", payload, {

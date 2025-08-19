@@ -734,13 +734,13 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                 <div className="flex space-x-4 px-5 justify-center">
                   <Link
                     href="/login"
-                    className="bg-secondary-400 text-black hover:bg-primary-700 dark:hover:bg-secondary-400 px-3 py-2 rounded-md text-sm font-medium"
+                    className="bg-secondary-400 text-primary-50 dark:text-primary-700 hover:bg-primary-700 px-3 py-2  text-sm font-medium"
                   >
                     Login
                   </Link>
                   <Link
                     href="/register"
-                    className="bg-secondary-400 text-black hover:bg-primary-700 dark:hover:bg-secondary-400 px-3 py-2 rounded-md text-sm font-medium"
+                    className="bg-secondary-400 text-primary-50 dark:text-primary-700 hover:bg-primary-700 px-3 py-2 text-sm font-medium"
                   >
                     Register
                   </Link>

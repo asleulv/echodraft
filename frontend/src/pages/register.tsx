@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import ReCAPTCHA from "react-google-recaptcha";
 import { useAuth } from "@/context/AuthContext";
 import Layout from "@/components/Layout";
 import { RegistrationData } from "@/types/api";
@@ -11,8 +12,8 @@ import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 export default function Register() {
   // Fetch system message for register page
-  const { message: systemMessage, dismissMessage } = useSystemMessage('register');
-  
+  const { message: systemMessage, dismissMessage } = useSystemMessage("register");
+
   // Using a separate state for organization name to avoid type issues
   const [organizationName, setOrganizationName] = useState("");
 
@@ -31,6 +32,10 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const router = useRouter();
+
+  // reCAPTCHA token state and ref
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -54,8 +59,15 @@ export default function Register() {
       return;
     }
 
+    // Validate reCAPTCHA token presence
+    if (!captchaToken) {
+      setError("Please complete the reCAPTCHA challenge.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      // Create a simple registration object with only the required fields
+      // Create a registration object including the captcha token
       const registrationData = {
         username: formData.username,
         email: formData.email,
@@ -66,16 +78,23 @@ export default function Register() {
         first_name: formData.first_name,
         last_name: formData.last_name,
         marketing_consent: formData.marketing_consent,
+        captchaToken, // Add captcha token to send to backend for verification
       };
 
       // Log the data for debugging
       console.log("Submitting registration data:", registrationData);
 
       await register(registrationData);
-      
+
+      // Reset the captcha on success
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
+
       // Show success message instead of redirecting
-      setSuccess("Registration successful! Please check your email to verify your account before logging in.");
-      
+      setSuccess(
+        "Registration successful! Please check your email to verify your account before logging in."
+      );
+
       // Clear the form
       setFormData({
         username: "",
@@ -94,12 +113,14 @@ export default function Register() {
       // Log the full error for debugging
       console.error("Full error object:", err);
 
+      // Reset captcha on error so user can retry
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
+
       if (err.response?.data) {
         setError(err.response.data);
       } else if (err.response?.status === 500) {
-        setError(
-          "Server error occurred. Please try again later or contact support."
-        );
+        setError("Server error occurred. Please try again later or contact support.");
       } else {
         setError("Registration failed. Please try again.");
       }
@@ -109,15 +130,15 @@ export default function Register() {
   };
 
   const handleGoogleLoginSuccess = () => {
-    setError('');
-    setSuccess('Successfully registered with Google!');
+    setError("");
+    setSuccess("Successfully registered with Google!");
     // Redirect to dashboard or wherever your auth context handles it
-    router.push('/dashboard');
+    router.push("/dashboard");
   };
 
   const handleGoogleLoginError = (errorMessage: string) => {
     setError(errorMessage);
-    setSuccess('');
+    setSuccess("");
   };
 
   // Helper to display field errors
@@ -177,13 +198,10 @@ export default function Register() {
             {/* System Message */}
             {systemMessage && (
               <div className="mb-6">
-                <SystemMessage 
-                  message={systemMessage} 
-                  onClose={dismissMessage}
-                />
+                <SystemMessage message={systemMessage} onClose={dismissMessage} />
               </div>
             )}
-            
+
             {/* Display success message or disable registration if needed */}
             {success ? (
               <div className="text-center">
@@ -234,7 +252,7 @@ export default function Register() {
 
                 {/* Google Registration Button */}
                 <div className="mb-6">
-                  <GoogleLoginButton 
+                  <GoogleLoginButton
                     onSuccess={handleGoogleLoginSuccess}
                     onError={handleGoogleLoginError}
                     buttonText="signup_with"
@@ -247,7 +265,9 @@ export default function Register() {
                     <div className="w-full border-t border-gray-300" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white dark:bg-primary-100 text-gray-500 dark:text-gray-400">Or register with email</span>
+                    <span className="px-2 bg-white dark:bg-primary-100 text-gray-500 dark:text-gray-400">
+                      Or register with email
+                    </span>
                   </div>
                 </div>
 
@@ -412,9 +432,7 @@ export default function Register() {
                       onChange={handleChange}
                     />
                     {getFieldError("password_confirm") && (
-                      <p className="form-error">
-                        {getFieldError("password_confirm")}
-                      </p>
+                      <p className="form-error">{getFieldError("password_confirm")}</p>
                     )}
                   </div>
 
@@ -425,23 +443,35 @@ export default function Register() {
                         name="marketing_consent"
                         type="checkbox"
                         checked={formData.marketing_consent}
-                        onChange={(e) => 
-                          setFormData((prev) => ({ 
-                            ...prev, 
-                            marketing_consent: e.target.checked 
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            marketing_consent: e.target.checked,
                           }))
                         }
                         className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                       />
                     </div>
                     <div className="ml-3 text-sm">
-                      <label htmlFor="marketing_consent" className="font-medium text-gray-700 dark:text-gray-300">
+                      <label
+                        htmlFor="marketing_consent"
+                        className="font-medium text-gray-700 dark:text-gray-300"
+                      >
                         Marketing emails
                       </label>
                       <p className="text-gray-500 dark:text-gray-400">
                         Yes, I'd like to receive updates about new features, tips, and special offers. You can unsubscribe at any time.
                       </p>
                     </div>
+                  </div>
+
+                  {/* reCAPTCHA Component */}
+                  <div className="my-4">
+                    <ReCAPTCHA
+                      sitekey="6Ld5CKorAAAAAPLqFEdJXWtQJ_cJ-m0WYQkctIio" // Replace with your actual site key
+                      onChange={(token) => setCaptchaToken(token)}
+                      ref={recaptchaRef}
+                    />
                   </div>
 
                   <div>

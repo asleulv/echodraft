@@ -132,6 +132,9 @@ STRIPE_PRICE_EXPLORER = os.getenv('STRIPE_PRICE_EXPLORER')
 STRIPE_PRICE_CREATOR = os.getenv('STRIPE_PRICE_CREATOR')
 STRIPE_PRICE_MASTER = os.getenv('STRIPE_PRICE_MASTER')
 
+# Recaptcha settings
+RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
+
 # Celery settings
 if IS_TESTING:
     # Use a dummy broker URL for testing

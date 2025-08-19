@@ -86,6 +86,9 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 # Anthropic settings
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
+# Recaptcha settings
+RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
+
 # Stripe settings
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
@@ -135,7 +138,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'WARNING',
+        'level': 'INFO',
     },
     'loggers': {
         'django': {

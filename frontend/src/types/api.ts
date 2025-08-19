@@ -14,6 +14,7 @@ export interface RegistrationData {
   first_name?: string;
   last_name?: string;
   marketing_consent?: boolean;
+  captchaToken?: string;
 }
 
 export interface RegistrationResponse {
