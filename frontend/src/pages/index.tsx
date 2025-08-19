@@ -14,11 +14,12 @@ import {
   Wand2,
   ThumbsDown,
   CornerLeftDown,
+  X,
+  Check,
 } from "lucide-react";
 import WorkFlowDiagram from "@/components/icons/WorkFlowDiagram";
 import EchopenIcon from "@/components/icons/EchopenIcon";
 import TypingStruggle from "@/components/TypingStruggle";
-import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 // FAQ Item Component - Move OUTSIDE of Home component
 function FaqItem({ question, answer }: { question: string; answer: string }) {
@@ -144,20 +145,51 @@ export default function Home() {
               `}</style>
 
               <p className="text-xl md:text-2xl text-primary-700 mb-12 leading-relaxed max-w-3xl mx-auto">
-                Store your texts. Teach AI your style. Generate new drafts in
-                your voice.{" "}
-                <span className="block mt-2 text-lg text-primary-600">
-                  Don't use generic AI voices. Use your own.
+                Create publishable drafts in seconds. Your AI learns your voice
+                so every piece sounds like you—consistently.
+              </p>
+
+              {/* Move bullets outside the paragraph and fix mobile centering */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 mt-6 mb-6 text-base md:text-lg text-primary-600 justify-center items-center max-w-3xl mx-auto">
+                <span className="flex items-center">
+                  <X className="text-red-500 mr-2 w-5 h-5" />
+                  No more generic AI content
                 </span>
+                <span className="flex items-center">
+                  <X className="text-red-500 mr-2 w-5 h-5" />
+                  No more starting from scratch
+                </span>
+                <span className="flex items-center">
+                  <Check className="text-green-500 mr-2 w-5 h-5" />
+                  Just authentic writing
+                </span>
+              </div>
+
+              <p className="text-xl text-primary-700 mb-8 max-w-3xl mx-auto font-semibold">
+                Don't use generic AI voices. Use your own.
+              </p>
+
+              {/* Primary CTA - moved above the fold */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8 mb-2">
+                <Link
+                  href="/register"
+                  className="inline-block px-12 py-4 bg-secondary-600 dark:bg-orange-800 hover:bg-secondary-700 dark:hover:bg-orange-700 text-primary-50 dark:text-white text-xl font-semibold shadow-lg transition-all duration-300 focus:ring-4 focus:ring-secondary-500 dark:focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-primary-100 dark:focus:ring-offset-gray-900"
+
+                >
+                  Try 5 Free Generations
+                </Link>
+              </div>
+
+              <p className="text-sm text-primary-600 mb-8">
+                No credit card required • Takes 2 minutes to set up
               </p>
 
               <div className="max-w-4xl mx-auto mb-12">
                 <div className="text-sm text-primary-600 mb-4 flex">
                   <CornerLeftDown className="w-5 h-5 mt-1 mr-2 flex-shrink-0" />
                   <span>
-                    This video shows how the user uses AI to write about
-                    John Lennon using the style of a previous social
-                    media rant
+                    This video shows how the user uses AI to write about John
+                    Lennon using the style of a previous social media rant
                   </span>
                 </div>
                 <div className="relative overflow-hidden shadow-2xl bg-primary-100 dark:bg-primary-900">
@@ -252,19 +284,6 @@ export default function Home() {
                     Scale that voice across all your content
                   </p>
                 </div>
-              </div>
-
-              {/* Single, Clear CTA */}
-              <div className="text-center">
-                <Link
-                  href="/register"
-                  className="inline-block px-12 py-4 bg-secondary-600 hover:bg-secondary-700 text-primary-50 text-xl font-semibold rounded-lg shadow-lg transition-all duration-300 focus:ring-4 focus:ring-secondary-500 focus:ring-offset-2 focus:ring-offset-primary-100 transform hover:scale-105"
-                >
-                  Try 5 Free Generations
-                </Link>
-                <p className="text-sm text-primary-600 mt-3">
-                  No credit card required • Takes 2 minutes to set up
-                </p>
               </div>
             </div>
           </div>
@@ -505,6 +524,11 @@ export default function Home() {
             <div className="max-w-3xl mx-auto">
               <div className="space-y-4">
                 <FaqItem
+                  question="Will AI replace my writing completely?"
+                  answer="Never! EchoDraft is designed to get you started, not take over. We believe the human touch is irreplaceable - your creativity, personal experiences, and unique perspective are what make your content valuable. EchoDraft simply gives you a strong first draft in your voice, then you add the finishing touches, personal insights, and final polish that only you can provide."
+                />
+
+                <FaqItem
                   question="How does echodraft work?"
                   answer="It's a text archive with AI intelligence. Upload posts that worked well, then when you need new content, choose which saved post should guide the tone and style. The AI analyzes your example and writes new content that matches it perfectly."
                 />
@@ -575,13 +599,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/register"
-                className="px-8 py-3 bg-secondary-600 hover:bg-secondary-700 text-primary-50 font-medium shadow-md transition-all duration-300 focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 focus:ring-offset-secondary-100"
+                className="px-8 py-3 bg-secondary-600 hover:bg-secondary-700 dark:bg-orange-800 dark:hover:bg-orange-700 text-primary-50 dark:text-white font-medium shadow-md transition-all duration-300 focus:ring-2 focus:ring-secondary-500 dark:focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-secondary-100 dark:focus:ring-offset-gray-900"
               >
                 Start Creating Content
               </Link>
               <Link
                 href="/login"
-                className="px-8 py-3 bg-primary-50 hover:bg-primary-200 text-primary-800 font-medium shadow-md border border-primary-300 transition-all duration-300 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-100"
+                className="px-8 py-3 bg-primary-50 hover:bg-primary-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-primary-800 dark:text-white font-medium shadow-md border border-primary-300 dark:border-gray-600 transition-all duration-300 focus:ring-2 focus:ring-primary-500 dark:focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-secondary-100 dark:focus:ring-offset-gray-900"
               >
                 Sign In
               </Link>
