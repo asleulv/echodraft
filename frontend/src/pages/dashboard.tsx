@@ -8,7 +8,7 @@ import { useSystemMessage } from "@/hooks/useSystemMessage";
 import SystemMessage from "@/components/SystemMessage";
 import RecentDocumentsSection from "@/components/dashboard/RecentDocumentsSection";
 import CategoriesSection from "@/components/dashboard/CategoriesSection";
-import LiveOnboardingSection from "@/components/dashboard/LiveOnboardingSection";
+import LiveOnBoardingSection from "@/components/dashboard/LiveOnBoardingSection";
 
 export default function Dashboard() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -262,7 +262,7 @@ export default function Dashboard() {
 
           {/* Add Getting Started Section */}
           {showGettingStarted && (
-            <LiveOnboardingSection onDismiss={handleDismissGettingStarted} />
+            <LiveOnBoardingSection onDismiss={handleDismissGettingStarted} />
           )}
 
           <RecentDocumentsSection
