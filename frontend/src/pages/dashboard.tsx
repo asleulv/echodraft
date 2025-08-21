@@ -8,7 +8,7 @@ import { useSystemMessage } from "@/hooks/useSystemMessage";
 import SystemMessage from "@/components/SystemMessage";
 import RecentDocumentsSection from "@/components/dashboard/RecentDocumentsSection";
 import CategoriesSection from "@/components/dashboard/CategoriesSection";
-import GettingStartedSection from "@/components/dashboard/GettingStartedSection";
+import LiveOnboardingSection from "@/components/dashboard/LiveOnboardingSection";
 
 export default function Dashboard() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -95,6 +95,12 @@ export default function Dashboard() {
   // Fetch documents (updated to handle demo status)
   useEffect(() => {
     const fetchDocuments = async () => {
+      console.log("=== DEBUG INFO ===");
+      console.log("Total documents:", documents.length);
+      console.log("All documents:", documents);
+      console.log("Demo documents:", documents.filter(doc => doc.is_demo));
+      console.log("Non-demo documents:", documents.filter(doc => !doc.is_demo));
+      console.log("==================");
       if (!isAuthenticated || !isLimitLoaded) return; // Don't fetch until limit is loaded
 
       try {
@@ -256,11 +262,11 @@ export default function Dashboard() {
 
           {/* Add Getting Started Section */}
           {showGettingStarted && (
-            <GettingStartedSection onDismiss={handleDismissGettingStarted} />
+            <LiveOnboardingSection onDismiss={handleDismissGettingStarted} />
           )}
 
           <RecentDocumentsSection
-            documents={documents}
+            documents={documents.filter(doc => !doc.is_demo)} 
             isLoading={isLoading}
             error={error}
             documentLimit={documentLimit}

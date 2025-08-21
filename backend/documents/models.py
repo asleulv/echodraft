@@ -108,6 +108,7 @@ class TextDocument(models.Model):
     tags = models.JSONField(_("Tags"), default=list, blank=True)
 
     is_demo = models.BooleanField(_("Is Demo Content"), default=False, help_text=_("Whether this document is demo content for new users"))
+    demo_type = models.CharField(max_length=50, blank=True, null=True) 
 
     
     # Version control

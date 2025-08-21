@@ -56,6 +56,7 @@ export interface Document {
   created_at: string;
   updated_at: string;
   comment_count: number;
+  is_demo: boolean; 
   plain_text?: string; // Plain text content for search
 }
 

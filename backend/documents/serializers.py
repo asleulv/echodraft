@@ -37,7 +37,7 @@ class TextDocumentListSerializer(serializers.ModelSerializer):
             'id', 'title', 'plain_text', 'slug', 'created_by', 'created_by_name',
             'organization', 'category', 'category_name', 'category_color', 'tags',
             'version', 'is_latest', 'status', 'created_at', 'updated_at',
-            'comment_count'
+            'comment_count', 'is_demo', 'demo_type'
         ]
         read_only_fields = [
             'id', 'slug', 'plain_text', 'version', 'is_latest', 'created_at', 'updated_at',
