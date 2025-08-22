@@ -16,39 +16,38 @@ const stageConfig = {
   analyzing: {
     title: "Analyzing Your Style Sources",
     message: "Reading through your selected documents...",
-    description:
-      "Understanding the writing style and tone from your reference documents",
+    description: "Understanding the writing style and tone from your reference documents",
     icon: FileText,
-    color: "text-secondary-600",
-    bgColor: "bg-secondary-100",
-    barColor: "bg-secondary-500",
+    color: "text-primary-700",
+    bgColor: "bg-primary-50",
+    borderColor: "border-primary-200",
   },
   processing: {
-    title: "Processing Content",
+    title: "Processing Content", 
     message: "Preparing the perfect writing recipe...",
     description: "Extracting key patterns and preparing AI prompts",
     icon: Brain,
-    color: "text-secondary-600",
-    bgColor: "bg-secondary-200",
-    barColor: "bg-secondary-600",
+    color: "text-primary-700",
+    bgColor: "bg-primary-50", 
+    borderColor: "border-primary-200",
   },
   generating: {
     title: "AI is Writing",
     message: "Creating your personalized content...",
     description: "Generating original text that matches your style and concept",
     icon: Sparkles,
-    color: "text-secondary-700",
-    bgColor: "bg-secondary-300",
-    barColor: "bg-secondary-700",
+    color: "text-primary-800",
+    bgColor: "bg-primary-50",
+    borderColor: "border-success-300",
   },
   formatting: {
     title: "Almost Ready!",
-    message: "Polishing and formatting...",
+    message: "Polishing and formatting...", 
     description: "Applying final formatting touches",
     icon: Check,
-    color: "text-primary-600",
-    bgColor: "bg-primary-100",
-    barColor: "bg-primary-600",
+    color: "text-success-700",
+    bgColor: "bg-success-50",
+    borderColor: "border-success-300",
   },
 };
 
@@ -85,7 +84,7 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
     // Update completed stages
     const stages: GenerationStage[] = [
       "analyzing",
-      "processing",
+      "processing", 
       "generating",
       "formatting",
     ];
@@ -114,7 +113,7 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
     const stages: GenerationStage[] = [
       "analyzing",
       "processing",
-      "generating",
+      "generating", 
       "formatting",
     ];
     const currentStageIndex = stages.indexOf(stage);
@@ -136,75 +135,73 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
   };
 
   return (
-    <div
-      className={`border-4 rounded-xl p-8 mb-6 transition-all duration-500 ${currentConfig.bgColor} border-secondary-300 shadow-lg`}
-    >
+    <div className={`relative ${currentConfig.bgColor} ${currentConfig.borderColor} border-2 p-8 mb-6 transition-all duration-500 shadow-xl overflow-hidden`}>
+      {/* Animated background elements - subtle */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute top-4 right-4 w-32 h-32 bg-gradient-to-br from-success-200 to-primary-200 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-4 left-4 w-24 h-24 bg-gradient-to-tr from-primary-200 to-success-200 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+
       {/* Header with animated icon */}
-      <div className="flex items-center justify-center mb-6">
-        <div className="relative">
-          <CurrentIcon
-            className={`h-12 w-12 mr-4 ${currentConfig.color} animate-pulse`}
-          />
+      <div className="relative z-10 flex flex-col items-center justify-center mb-8">
+        <div className="mb-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-success-200 rounded-full opacity-30 animate-ping"></div>
+            <div className="relative bg-secondary-200 p-4 rounded-full shadow-lg border border-primary-200">
+              <CurrentIcon className={`h-12 w-12 ${currentConfig.color} animate-pulse`} />
+            </div>
+          </div>
         </div>
 
         <div className="text-center">
-          <h2 className={`text-3xl font-bold ${currentConfig.color} mb-2`}>
+          <h2 className={`text-3xl font-bold ${currentConfig.color} mb-3 leading-tight`}>
             {currentConfig.title}
           </h2>
-          <p className={`text-lg ${currentConfig.color} opacity-80`}>
+          <p className={`text-lg ${currentConfig.color} opacity-80 max-w-md`}>
             {currentConfig.message}
           </p>
         </div>
       </div>
 
       {/* Fun description */}
-      <div className="text-center mb-8">
-        <p className={`text-base ${currentConfig.color} opacity-70 italic`}>
+      <div className="relative z-10 text-center mb-8">
+        <p className={`text-base ${currentConfig.color} opacity-70 italic max-w-lg mx-auto`}>
           {currentConfig.description}
         </p>
       </div>
 
-      {/* Stage indicators */}
-      <div className="flex justify-center mb-8">
+      {/* Stage indicators - FIXED CONTRAST */}
+      <div className="relative z-10 flex justify-center mb-10">
         {Object.entries(stageConfig).map(([stageName, config], index) => {
           const StageIcon = config.icon;
-          const isCompleted = completedStages.includes(
-            stageName as GenerationStage
-          );
+          const isCompleted = completedStages.includes(stageName as GenerationStage);
           const isCurrent = stage === stageName;
 
           return (
             <div key={stageName} className="flex items-center">
               <div
                 className={`
-                rounded-full p-3 transition-all duration-300 border-2
-                ${isCompleted ? "bg-secondary-200 border-secondary-400" : ""}
-                ${
-                  isCurrent
-                    ? `${config.bgColor} ${config.color} border-secondary-400 scale-110`
-                    : ""
-                }
-                ${
-                  !isCompleted && !isCurrent
-                    ? "bg-primary-100 border-primary-200"
-                    : ""
-                }
-              `}
+                  relative rounded-full p-3 transition-all duration-500 border-2
+                  ${isCompleted ? "bg-success-500 border-success-500 shadow-md" : ""}
+                  ${isCurrent ? "bg-white border-success-500 scale-110 shadow-lg ring-4 ring-success-200" : ""}
+                  ${!isCompleted && !isCurrent ? "bg-primary-100 border-primary-300" : ""}
+                `}
               >
+                {isCompleted && (
+                  <div className="absolute inset-0 bg-success-200 rounded-full opacity-40 animate-pulse"></div>
+                )}
                 <StageIcon
-                  className={`h-5 w-5 ${
-                    isCompleted
-                      ? "text-primary-600"
-                      : isCurrent
-                      ? config.color
-                      : "text-secondary-400"
+                  className={`relative h-5 w-5 z-10 ${
+                    isCompleted ? "text-white" :
+                    isCurrent ? "text-success-600" :  // FIXED: Changed from config.color to success-600
+                    "text-primary-400"
                   }`}
                 />
               </div>
               {index < Object.keys(stageConfig).length - 1 && (
                 <div
-                  className={`w-8 h-1 mx-2 transition-all duration-300 ${
-                    isCompleted ? "bg-primary-400" : "bg-gray-300"
+                  className={`w-8 h-2 mx-3 rounded-full transition-all duration-500 ${
+                    isCompleted ? "bg-success-400" : "bg-primary-300"
                   }`}
                 />
               )}
@@ -213,82 +210,71 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
         })}
       </div>
 
-      {/* Enhanced progress bars */}
-      <div className="space-y-6">
+      {/* Enhanced progress bars with success colors */}
+      <div className="relative z-10 space-y-6 bg-primary-100 rounded-xl p-6 border border-primary-200 shadow-inner">
         {/* Overall progress bar */}
         <div>
-          <div className="flex justify-between mb-3">
+          <div className="flex justify-between items-center mb-4">
             <span className={`text-lg font-semibold ${currentConfig.color}`}>
               Overall Progress
             </span>
-            <span className={`text-lg font-bold ${currentConfig.color}`}>
+            <span className={`text-xl font-bold text-success-600`}>
               {Math.round(getOverallProgress())}%
             </span>
           </div>
-          <div className="w-full bg-white/50 rounded-full h-4 shadow-inner">
+          <div className="w-full bg-primary-200 rounded-full h-5 shadow-inner overflow-hidden">
             <div
-              className={`h-4 rounded-full transition-all duration-500 ease-out shadow-sm ${currentConfig.barColor}`}
+              className="h-5 rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-success-400 to-success-500 shadow-sm relative"
               style={{ width: `${getOverallProgress()}%` }}
             >
-              <div className="h-full w-full rounded-full bg-gradient-to-r from-transparent to-white/20"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/40"></div>
             </div>
           </div>
         </div>
 
         {/* Current stage progress */}
         <div>
-          <div className="flex justify-between mb-3">
-            <span
-              className={`text-sm font-medium ${currentConfig.color} opacity-80`}
-            >
+          <div className="flex justify-between items-center mb-4">
+            <span className={`text-sm font-medium ${currentConfig.color} opacity-80`}>
               Current Stage Progress
             </span>
-            <span className={`text-sm font-semibold ${currentConfig.color}`}>
+            <span className={`text-sm font-bold text-success-600`}>
               {Math.round(getStageProgress())}%
             </span>
           </div>
-          <div className="w-full bg-white/30 rounded-full h-3">
+          <div className="w-full bg-primary-200 rounded-full h-4 shadow-inner overflow-hidden">
             <div
-              className={`h-3 rounded-full transition-all duration-300 ease-in-out ${currentConfig.barColor} opacity-80`}
+              className="h-4 rounded-full transition-all duration-500 ease-in-out bg-gradient-to-r from-success-300 to-success-400 relative"
               style={{ width: `${getStageProgress()}%` }}
             >
-              <div className="h-full w-full rounded-full bg-gradient-to-r from-transparent to-white/30"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/50"></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Time and fun facts */}
-      <div className="flex justify-between items-center mt-6 pt-4 border-t border-secondary-300/30">
-        <div className={`text-sm ${currentConfig.color} opacity-70`}>
-          <span className="font-medium">Time elapsed:</span>{" "}
-          {formatTime(elapsedTime)}
+      {/* Time and stats - cleaner layout */}
+      <div className="relative z-10 flex justify-between items-center mt-8 pt-4 border-t border-primary-300">
+        <div className={`text-sm ${currentConfig.color} opacity-80 font-medium`}>
+          <span className="text-primary-500">Time elapsed:</span>{" "}
+          <span className="text-success-600 font-semibold">{formatTime(elapsedTime)}</span>
         </div>
-        <div className={`text-sm ${currentConfig.color} opacity-70`}>
-          <span className="font-medium">Est. remaining:</span>{" "}
-          {formatTime(Math.max(0, estimatedTotal - elapsedTime))}
+        <div className={`text-sm ${currentConfig.color} opacity-80 font-medium`}>
+          <span className="text-primary-500">Est. remaining:</span>{" "}
+          <span className="text-success-600 font-semibold">{formatTime(Math.max(0, estimatedTotal - elapsedTime))}</span>
         </div>
       </div>
 
-      {/* Fun loading messages */}
-      {stage === "generating" && (
-        <div className="mt-4 text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <Sparkles className="h-4 w-4 text-secondary-600 opacity-60 animate-pulse" />
-            <span className="text-sm text-secondary-600 opacity-60 italic animate-pulse">
-              The AI is putting pen to paper...
-            </span>
-          </div>
-        </div>
-      )}
 
       {stage === "analyzing" && (
-        <div className="mt-4 text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <BookOpen className="h-4 w-4 text-secondary-600 opacity-60 animate-pulse" />
-            <span className="text-sm text-secondary-600 opacity-60 italic animate-pulse">
+        <div className="relative z-10 mt-6 text-center">
+          <div className="flex items-center justify-center space-x-2 bg-white/80 rounded-lg p-3 border border-primary-200 shadow-sm">
+            <BookOpen className="h-4 w-4 text-success-500 opacity-80 animate-pulse" />
+            <span className="text-sm text-primary-700 opacity-80 italic animate-pulse font-medium">
               Reading through your style references...
             </span>
+            <BookOpen className="h-4 w-4 text-success-500 opacity-80 animate-pulse" />
           </div>
         </div>
       )}
