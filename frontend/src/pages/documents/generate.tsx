@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { categoriesAPI, documentsAPI } from "@/utils/api";
@@ -122,54 +123,61 @@ export default function GenerateDocument() {
   const renderSuccessMessage = () => {
     if (isFromOnboarding && formStage === "ready") {
       return (
-        <div className="bg-success-50 border border-success-200 rounded-lg p-4 mb-6">
+        <div className="bg-success-50 border border-success-200 rounded-lg p-6 mb-6">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <CheckCircle className="w-6 h-6 text-success-600 mt-1" />
             </div>
             <div className="ml-3">
-              <h3 className="text-lg font-medium text-success-800 mb-2 flex items-center">
-                <Sparkles className="w-5 h-5 mr-2" />
+              <h3 className="text-xl font-bold text-success-800 mb-4">
                 Your content is ready!
               </h3>
-              <div className="text-sm text-success-700 space-y-1">
-                <p className="flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-2 text-success-600" />
-                  We've generated content in your selected style
+
+              <div className="text-success-700 space-y-2 mb-6">
+                <p className="text-base">
+                  We've generated content in your selected demo style.
                 </p>
-                <p className="flex items-center">
-                  <FileText className="w-4 h-4 mr-2 text-success-600" />
-                  Check the boxes next to paragraphs you like
+                <p className="text-base">
+                  Check the boxes next to paragraphs you like, then click "Save
+                  as Document" below.
                 </p>
-                <p className="flex items-center">
-                  <FileText className="w-4 h-4 mr-2 text-success-600" />
-                  Click "Save as Document" below to create your draft
-                </p>
-                <p className="text-success-600 italic flex items-center mt-2">
-                  <Lightbulb className="w-4 h-4 mr-2" />
+                <p className="text-success-600 italic">
                   Don't worry - you can edit everything after saving!
                 </p>
+              </div>
+
+              {/* Clear Getting Started Section */}
+              <div className="pt-4 border-t border-success-200">
+                <p className="text-success-800 font-semibold text-lg mb-3">
+                  Ready to use your own writing style?
+                </p>
+                <Link
+                  href="/getting-started"
+                  className="inline-block px-6 py-3 bg-success-600 hover:bg-success-700 text-primary-50 rounded-lg font-semibold transition-colors"
+                >
+                  Learn how to add your own content →
+                </Link>
               </div>
             </div>
           </div>
         </div>
       );
     }
-    
-    // Return null for regular users - StatusAlerts handles normal success
+
     return null;
   };
 
   // NEW: Selection status feedback component
   const renderSelectionStatus = () => {
     if (selectedSuggestions.length > 0) {
-      const wordCount = selectedSuggestions.join(' ').split(' ').length;
+      const wordCount = selectedSuggestions.join(" ").split(" ").length;
       return (
         <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-3 mb-4">
           <div className="flex items-center justify-between">
             <span className="text-secondary-800 font-medium flex items-center">
               <CheckCircle className="w-4 h-4 mr-2 text-secondary-600" />
-              {selectedSuggestions.length} paragraphs selected ({wordCount} words)
+              {selectedSuggestions.length} paragraphs selected ({wordCount}{" "}
+              words)
             </span>
             <span className="text-secondary-600 text-sm flex items-center">
               Ready to save!
@@ -214,7 +222,7 @@ export default function GenerateDocument() {
 
     if (demo_style_slug) {
       setIsFromOnboarding(true);
-      
+
       const findDemoDocument = async () => {
         try {
           const response = await documentsAPI.getDocuments({
@@ -243,7 +251,11 @@ export default function GenerateDocument() {
 
   // NEW: Auto-trigger generation when demo document is selected from onboarding
   useEffect(() => {
-    if (selectedDocumentIds.length > 0 && formStage === "sources" && concept.trim()) {
+    if (
+      selectedDocumentIds.length > 0 &&
+      formStage === "sources" &&
+      concept.trim()
+    ) {
       const { demo_style_slug } = router.query;
       if (demo_style_slug) {
         setTimeout(() => {
@@ -348,18 +360,21 @@ export default function GenerateDocument() {
 
       if (data.suggestions) {
         setSuggestions(data.suggestions);
-        
+
         // Enhanced success message for different user types
         if (isFromOnboarding) {
           // Don't set success here - the enhanced component will handle it
           setSuccess(undefined);
         } else {
-          const styleMessage = selectedDocumentIds.length > 0
-            ? "Suggestions generated using your style references!"
-            : "Suggestions generated! (No specific style applied)";
-          setSuccess(`${styleMessage} Select one or more paragraphs to add to your new document.`);
+          const styleMessage =
+            selectedDocumentIds.length > 0
+              ? "Suggestions generated using your style references!"
+              : "Suggestions generated! (No specific style applied)";
+          setSuccess(
+            `${styleMessage} Select one or more paragraphs to add to your new document.`
+          );
         }
-        
+
         setFormStage("ready");
 
         // NEW: Refresh credit info after successful generation
@@ -482,9 +497,9 @@ export default function GenerateDocument() {
     }
     try {
       setIsSubmitting(true);
-      
+
       // Enhanced saving message for onboarding users
-      const savingMessage = isFromOnboarding 
+      const savingMessage = isFromOnboarding
         ? "Creating your document... You'll be able to edit it in the next step!"
         : "Saving document...";
       setSuccess(savingMessage);
@@ -513,7 +528,7 @@ export default function GenerateDocument() {
           ? "Perfect! Your document is saved. You'll be redirected to edit it in 2 seconds..."
           : "Document saved! Redirecting to editor...";
         setSuccess(successMessage);
-        
+
         setTimeout(() => {
           router.push(`/documents/${response.data.id}`);
         }, 1500);

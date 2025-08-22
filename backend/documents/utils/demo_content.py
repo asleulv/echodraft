@@ -74,12 +74,26 @@ def create_demo_documents_for_new_org(organization, creator_user):
         },
     ]
     
-    for demo_data in demo_documents:
-        TextDocument.objects.create(
+    # Check which demo types already exist for this organization
+    existing_demo_types = set(
+        TextDocument.objects.filter(
             organization=organization,
-            created_by=creator_user,
-            is_demo=True,
-            **demo_data
-        )
+            is_demo=True
+        ).values_list('demo_type', flat=True)
+    )
     
-    return f"Created {len(demo_documents)} demo documents and demo category for organization: {organization.name}"
+
+    created_count = 0
+    
+    for demo_data in demo_documents:
+        # Only create if this demo_type doesn't already exist
+        if demo_data['demo_type'] not in existing_demo_types:
+            TextDocument.objects.create(
+                organization=organization,
+                created_by=creator_user,
+                is_demo=True,
+                **demo_data
+            )
+            created_count += 1
+    
+    return f"Created {created_count} missing demo documents for organization: {organization.name}"

@@ -1,7 +1,7 @@
 // components/dashboard/LiveOnboardingSection.tsx
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { Briefcase, Coffee, Tv } from "lucide-react";
+import { Briefcase, Coffee, Tv, Zap, ArrowRight } from "lucide-react";
 
 interface LiveOnboardingSectionProps {
   onDismiss: () => void;
@@ -14,6 +14,9 @@ interface StyleGuide {
   icon: React.ReactNode;
   example: string;
   fullContent: string;
+  bgGradient: string;
+  accentColor: string;
+  platformStyle: string;
 }
 
 const LiveOnboardingSection: React.FC<LiveOnboardingSectionProps> = ({
@@ -25,16 +28,19 @@ const LiveOnboardingSection: React.FC<LiveOnboardingSectionProps> = ({
   const [previewingStyle, setPreviewingStyle] = useState<StyleGuide | null>(
     null
   );
+  const [hoveredStyle, setHoveredStyle] = useState<string | null>(null);
   const router = useRouter();
 
-  // Reduced to 3 most impressive and diverse styles
   const styleGuides: StyleGuide[] = [
     {
       id: "linkedin_productivity",
-      title: "LinkedIn Post",
-      description: "Professional, actionable advice",
-      icon: <Briefcase className="w-6 h-6 text-secondary-600" />,
+      title: "LinkedIn Pro",
+      description: "Professional wisdom that gets engagement",
+      icon: <Briefcase className="w-10 h-10 text-secondary-600" />,
       example: "Focus on what matters most...",
+      bgGradient: "from-secondary-500 via-secondary-600 to-secondary-700",
+      accentColor: "secondary-500",
+      platformStyle: "linkedin",
       fullContent: `In today's fast-moving world, productivity isn't about doing more, it's about focusing on doing the right things. Too many of us mix up being busy for being effective. The key is building systems that reduce decision fatigue. For me that means blocking mornings for deep work and pushing meetings to afternoons. It's simple, but the difference is huge.
 
 Here's a challenge... tomorrow, write down your top three priorities before checking email. Then reflect on how you feel at the end of the work day. Chances are you'll find yourself calmer and clearer about what truly matters. You might learn a lot!
@@ -43,10 +49,13 @@ Productivity hacks are everywhere, but lasting success comes from small and cons
     },
     {
       id: "satirical_toast",
-      title: "Satirical Humor",
-      description: "Witty, exaggerated, playful",
-      icon: <Coffee className="w-6 h-6 text-secondary-600" />,
+      title: "Sharp Wit",
+      description: "Comedy gold that makes people think",
+      icon: <Coffee className="w-10 h-10 text-secondary-600" />,
       example: "Toast. The culinary equivalent of a participation trophy...",
+      bgGradient: "from-success-400 via-success-500 to-success-600",
+      accentColor: "success-500",
+      platformStyle: "blog",
       fullContent: `Toast. The culinary equivalent of a participation trophy. A slice of bread that went to charm school and came back crunchy, smug, and somehow overpriced. People act like it's the pinnacle of human achievement (butter! jam! avocado!) as if we've discovered a way to turn cardboard into art. Spoiler alert: we haven't.
 
 Cafés now serve "artisanal toast" on wooden planks like it's the Mona Lisa of breakfast. They call it rustic. I call it financial terrorism. And sourdough? Right... sourdough. The bread that's aged like a fine wine but chews like a medieval boot. Seemingly, the older it is, the more "character" it has. Meanwhile, I'm getting grumpy... and even more hungry.
@@ -57,10 +66,13 @@ Toast isn't a lifestyle. It's a minor sunburn for bread. Stop pretending it's en
     },
     {
       id: "facebook_streaming_rant",
-      title: "Social Media Rant",
-      description: "Passionate, hashtag-heavy",
-      icon: <Tv className="w-6 h-6 text-secondary-600" />,
+      title: "Viral Rant",
+      description: "Passionate posts that get shared everywhere",
+      icon: <Tv className="w-10 h-10 text-secondary-600" />,
       example: "Can we PLEASE talk about streaming services? 📺💸",
+      bgGradient: "from-danger-400 via-danger-500 to-danger-600",
+      accentColor: "danger-500",
+      platformStyle: "social",
       fullContent: `Okay but can we PLEASE talk about how I need like 47 different streaming services just to watch my shows? 📺💸 #StreamingStruggles #ModernProblems
 
 Netflix has Stranger Things but then cancels everything else after one season 🙄 Disney+ has Marvel but costs extra for the good stuff 🦸‍♀️💰 HBO Max (sorry, "Max" 🤡) has the prestige dramas but changes its name every five minutes #ConfusionMaximized
@@ -90,20 +102,26 @@ Anyway, time to spend 45 minutes scrolling through all my apps to find something
     style: StyleGuide;
     onClose: () => void;
   }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-primary-50 rounded-lg max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div className="sticky top-0 bg-primary-100 border-b p-4 flex justify-between items-center">
-          <div className="flex flex-col items-center p-4 border rounded-lg hover:shadow-md cursor-pointer">
-            <div className="mb-2 flex justify-center">{style.icon}</div>
-            <h3 className="text-sm font-semibold text-center">{style.title}</h3>
-            <p className="text-xs text-secondary-600 text-center">
-              {style.description}
-            </p>
+    <div className="fixed inset-0 bg-primary-900 bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-primary-50 rounded-2xl max-w-2xl max-h-[80vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300">
+        <div
+          className={`sticky top-0 bg-gradient-to-r ${style.bgGradient} p-6 flex justify-between items-center rounded-t-2xl`}
+        >
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-primary-50 bg-opacity-20 backdrop-blur rounded-full">
+              {style.icon}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-primary-50">
+                {style.title}
+              </h3>
+              <p className="text-primary-100 text-sm">{style.description}</p>
+            </div>
           </div>
 
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-secondary-600 transition-colors"
+            className="text-primary-100 hover:text-primary-50 transition-colors p-2 hover:bg-primary-50 hover:bg-opacity-20 rounded-lg"
             aria-label="Close preview"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -115,27 +133,26 @@ Anyway, time to spend 45 minutes scrolling through all my apps to find something
             </svg>
           </button>
         </div>
+
         <div className="p-6">
-          <div className="prose prose-sm max-w-none">
+          <div className="prose prose-lg max-w-none">
             {style.fullContent.split("\n").map((paragraph, index) => (
-              <p
-                key={index}
-                className="mb-4 text-secondary-800 leading-relaxed"
-              >
+              <p key={index} className="mb-4 text-primary-700 leading-relaxed">
                 {paragraph}
               </p>
             ))}
           </div>
-          <div className="mt-6 pt-4 border-t">
+          <div className="mt-8 pt-6 border-t border-primary-200">
             <button
               onClick={() => {
                 setSelectedStyle(style);
                 setStep(2);
                 onClose();
               }}
-              className="w-full px-4 py-2 bg-secondary-600 text-primary-50 rounded-lg hover:bg-secondary-700 transition-colors"
+              className={`w-full px-6 py-4 bg-gradient-to-r ${style.bgGradient} text-primary-50 rounded-xl hover:shadow-lg hover:brightness-110 transition-all duration-200 font-semibold text-lg flex items-center justify-center space-x-2`}
             >
-              Choose This Style
+              <Zap className="w-5 h-5" />
+              <span>Choose This Voice</span>
             </button>
           </div>
         </div>
@@ -144,38 +161,32 @@ Anyway, time to spend 45 minutes scrolling through all my apps to find something
   );
 
   return (
-    <div className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-100 dark:to-primary-200 border border-primary-400 p-4 sm:p-6 mb-8">
-      {/* Header with dismiss button */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-        <div className="flex-1">
-          <div className="flex flex-col items-center mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-secondary-600 to-secondary-800 bg-clip-text text-transparent text-center">
-              Now let's try!
-            </h2>
-            <p className="text-primary-700 text-center mt-2">
-              See how echodraft mimics writing styles instantly
-            </p>
-          </div>
+    <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-primary-25 to-secondary-50 border-2 border-secondary-200 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
+      {/* Animated background elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-secondary-200 to-success-200 rounded-full opacity-20 -translate-y-32 translate-x-32 animate-pulse"></div>
+      <div
+        className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-secondary-200 to-secondary-300 rounded-full opacity-20 translate-y-24 -translate-x-24 animate-pulse"
+        style={{ animationDelay: "1s" }}
+      ></div>
 
-          {/* Progress indicators */}
-          <div className="flex items-center justify-center mb-6">
-            <div className="flex space-x-2">
-              {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    step >= i ? "bg-secondary-500" : "bg-primary-300"
-                  }`}
-                />
-              ))}
-            </div>
+      {/* Header with dismiss button */}
+      <div className="relative z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+        <div className="flex-1">
+          <div className="flex flex-col items-center mb-6 pb-2">
+            <h2 className="text-3xl sm:text-4xl font-bold leading-relaxed bg-gradient-to-r from-secondary-600 via-secondary-700 to-secondary-800 bg-clip-text text-transparent text-center relative pb-1">
+              Before we start... let us go for a test drive!
+            </h2>
+            <p className="text-primary-600 text-center mt-3 text-lg font-medium">
+              This is just a quick style showcase... once you start using
+              echodraft, YOUR texts will be the style inspiration!
+            </p>
           </div>
         </div>
 
         {/* Dismiss button */}
         <button
           onClick={onDismiss}
-          className="order-first md:order-last self-end md:self-start text-primary-400 hover:text-primary-600 transition-colors p-1"
+          className="order-first md:order-last self-end md:self-start text-primary-400 hover:text-primary-600 transition-colors p-2 hover:bg-primary-100 rounded-lg"
           aria-label="Dismiss live demo section"
         >
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -188,104 +199,212 @@ Anyway, time to spend 45 minutes scrolling through all my apps to find something
         </button>
       </div>
 
+      {/* Simple progress indicators - now full width centered */}
+      <div className="relative z-10 flex items-center justify-center mb-8">
+        <div className="flex space-x-2">
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                step >= i ? "bg-secondary-500 shadow-lg" : "bg-primary-300"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
       {/* Step Content */}
-      <div className="max-w-4xl mx-auto">
+      <div className="relative z-10 max-w-5xl mx-auto">
         {step === 1 && (
           <div>
-            <h3 className="text-lg font-semibold text-center mb-2 text-secondary-700">
-              Pick a Writing Style
+            <h3 className="text-2xl font-bold text-center mb-3 text-secondary-700">
+              Which voice speaks to you?
             </h3>
-            <p className="text-center text-primary-600 mb-6 text-sm">
-              Choose one to see how EchoDraft transforms your ideas
+            <p className="text-center text-primary-600 mb-8 text-lg">
+              Pick a style and see the transformation happen instantly
             </p>
 
-            {/* Simplified grid - 3 cards only */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
-              {styleGuides.map((style) => (
+            {/* Dynamic grid layout with new hover effects */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-8">
+              {styleGuides.map((style, index) => (
                 <div
                   key={style.id}
                   onClick={() => setPreviewingStyle(style)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md hover:border-secondary-400 ${
+                  onMouseEnter={() => setHoveredStyle(style.id)}
+                  onMouseLeave={() => setHoveredStyle(null)}
+                  className={`group relative overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-2xl hover:brightness-105 ${
                     selectedStyle?.id === style.id
-                      ? "border-secondary-500 bg-secondary-50 shadow-md"
-                      : "border-primary-300"
+                      ? "ring-4 ring-secondary-300 shadow-2xl"
+                      : "hover:shadow-xl"
                   }`}
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="text-center">
-                    <div className="flex justify-center mb-2">{style.icon}</div>
-                    <h4 className="font-semibold text-secondary-700 mb-1">
-                      {style.title}
-                    </h4>
-                    <p className="text-xs text-primary-600 mb-3">
-                      {style.description}
-                    </p>
-                    <p className="text-xs text-primary-500 italic leading-relaxed">
-                      "{style.example}"
-                    </p>
+                  {/* Card background with gradient */}
+                  <div
+                    className={`bg-gradient-to-br ${style.bgGradient} p-6 h-full min-h-[320px] flex flex-col relative overflow-hidden`}
+                  >
+                    {/* Animated background pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-primary-50 transform translate-x-16 -translate-y-16 group-hover:translate-x-12 group-hover:-translate-y-12 transition-transform duration-700"></div>
+                      <div
+                        className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-primary-50 transform -translate-x-12 translate-y-12 group-hover:-translate-x-6 group-hover:translate-y-6 transition-transform duration-700"
+                        style={{ animationDelay: "200ms" }}
+                      ></div>
+                    </div>
+
+                    {/* Icon and title */}
+                    <div className="relative z-10 text-center mb-4">
+                      <div className="inline-flex p-4 bg-primary-50 bg-opacity-20 backdrop-blur rounded-full mb-4 group-hover:bg-opacity-30 transition-all duration-300">
+                        {style.icon}
+                      </div>
+                      <h4 className="text-xl font-bold text-primary-50 mb-2">
+                        {style.title}
+                      </h4>
+                      <p className="text-primary-100 text-sm font-medium">
+                        {style.description}
+                      </p>
+                    </div>
+
+                    {/* Enhanced preview box */}
+                    <div className="relative z-10 flex-1 flex items-end">
+                      <div className="w-full bg-primary-50 bg-opacity-90 backdrop-blur p-4 border border-primary-50 border-opacity-30 group-hover:bg-opacity-100 transition-all duration-300">
+                        <div className="flex items-start space-x-2 mb-2">
+                          <div className="w-2 h-2 rounded-full bg-current opacity-60"></div>
+                          <div className="w-2 h-2 rounded-full bg-current opacity-40"></div>
+                          <div className="w-2 h-2 rounded-full bg-current opacity-20"></div>
+                        </div>
+                        <p className="text-primary-800 text-sm font-medium leading-relaxed line-clamp-3">
+                          "{style.example}"
+                        </p>
+
+                        {hoveredStyle === style.id && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-secondary-300 bg-opacity-40 backdrop-blur-lg animate-in fade-in duration-200 z-20 transition-all">
+                            <div className="flex flex-col items-center">
+                              <div className="mb-2"></div>
+                              <div className="bg-secondary-700 shadow-lg px-6 py-3 text-primary-50 text-lg font-bold tracking-wide border border-primary-100 border-opacity-30">
+                                Preview this style!
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Selection indicator */}
+                    {selectedStyle?.id === style.id && (
+                      <div className="absolute top-4 right-4 bg-success-500 text-primary-50 rounded-full p-2 animate-in zoom-in duration-200">
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="text-center mt-6">
-              <p className="text-xs text-primary-600 mb-4">
-                Click any style above to preview and select
-              </p>
+            <div className="text-center">
+
               <button
                 onClick={() => setStep(2)}
                 disabled={!selectedStyle}
-                className="px-6 py-3 bg-secondary-600 text-white rounded-lg disabled:bg-primary-300 disabled:cursor-not-allowed hover:bg-secondary-700 transition-colors"
+                className={`px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center space-x-3 mx-auto ${
+                  selectedStyle
+                    ? "bg-gradient-to-r from-secondary-600 to-secondary-700 text-primary-50 hover:from-secondary-700 hover:to-secondary-800 hover:shadow-xl hover:brightness-110"
+                    : "bg-primary-300 text-primary-500 cursor-not-allowed"
+                }`}
               >
-                {selectedStyle
-                  ? `Continue with ${selectedStyle.title}`
-                  : "Choose a style first"}
+                <Zap className="w-5 h-5" />
+                <span>
+                  {selectedStyle
+                    ? `Continue with ${selectedStyle.title}`
+                    : "Choose your voice first"}
+                </span>
+                {selectedStyle && <ArrowRight className="w-5 h-5" />}
               </button>
             </div>
           </div>
         )}
 
         {step === 2 && (
-          <div className="max-w-lg mx-auto">
-            <h3 className="text-lg font-semibold text-center mb-4 text-secondary-700">
-              What Should We Write About?
-            </h3>
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-1">
+              <h3 className="text-2xl font-bold mb-3 text-secondary-700">
+                What should we write about?
+              </h3>
+              <p className="text-primary-600 text-lg">
+                Type a topic below, and we will draft it in your chosen style:
+              </p>
+            </div>
 
-            {/* Selected style summary */}
-            <div className="mb-6 p-4 bg-secondary-50 rounded-lg border border-secondary-200">
-              <div className="flex items-center justify-center mb-2">
-                <span className="flex justify-center mr-2">{selectedStyle?.icon}</span>
-                <span className="font-semibold text-secondary-700">
-                  {selectedStyle?.title} Style
-                </span>
+            {/* Selected style summary - enhanced */}
+            <div
+              className={`mb-8 p-6 bg-gradient-to-r ${selectedStyle?.bgGradient} shadow-lg`}
+            >
+              <div className="flex items-center justify-center mb-4">
+                <div className="p-3 bg-primary-50 bg-opacity-20 backdrop-blur rounded-xl mr-4">
+                  {selectedStyle?.icon}
+                </div>
+                <div className="text-center">
+                  <span className="text-xl font-bold text-primary-50 block">
+                    {selectedStyle?.title} Style
+                  </span>
+                  <span className="text-primary-100 text-sm">
+                    {selectedStyle?.description}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setPreviewingStyle(selectedStyle)}
-                className="text-xs text-secondary-600 hover:text-secondary-800 underline block mx-auto"
+                className="text-primary-100 hover:text-primary-50 text-sm font-medium underline block mx-auto transition-colors flex items-center space-x-1"
               >
-                Review example
+                <span>Review full example</span>
+                <ArrowRight className="w-3 h-3" />
               </button>
             </div>
 
-            <textarea
-              value={userPrompt}
-              onChange={(e) => setUserPrompt(e.target.value)}
-              placeholder="Enter your topic... (e.g., 'morning routines for busy professionals')"
-              className="w-full p-4 border border-primary-300 rounded-lg h-24 resize-none focus:border-secondary-500 focus:ring-1 focus:ring-secondary-500 mb-6"
-            />
+            {/* Enhanced textarea */}
+            <div className="relative mb-8">
+              <textarea
+                value={userPrompt}
+                onChange={(e) => setUserPrompt(e.target.value)}
+                placeholder="Enter your topic... (e.g., 'morning routines for busy professionals', 'why pineapple on pizza is controversial', 'the future of remote work')"
+                className="w-full p-6 border-2 bg-whit dark:bg-primary-400 text-primary-700 border-primary-200 h-32 resize-none focus:border-secondary-400 focus:ring-4 focus:ring-secondary-100 transition-all duration-200 text-lg placeholder-primary-400"
+              />
+              <div className="absolute bottom-3 right-3 text-primary-400 text-sm">
+                {userPrompt.trim().length}/500
+              </div>
+            </div>
 
             <div className="flex space-x-4 justify-center">
               <button
                 onClick={() => setStep(1)}
-                className="px-4 py-2 border border-primary-300 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors"
+                className="px-6 py-3 border-2 border-primary-300 text-primary-700 hover:bg-primary-100 transition-all duration-200 font-semibold flex items-center space-x-2"
               >
-                Back
+                <ArrowRight className="w-4 h-4 rotate-180" />
+                <span>Back</span>
               </button>
+
               <button
                 onClick={handleGenerate}
                 disabled={!userPrompt.trim()}
-                className="px-6 py-2 bg-secondary-600 text-white rounded-lg disabled:bg-primary-300 disabled:cursor-not-allowed hover:bg-secondary-700 transition-colors"
+                className={`px-8 py-3 font-bold text-lg transition-all duration-300 flex items-center space-x-3 ${
+                  userPrompt.trim()
+                    ? "bg-gradient-to-r from-secondary-600 to-secondary-700 text-primary-50 hover:from-secondary-700 hover:to-secondary-800 hover:shadow-xl hover:brightness-110"
+                    : "bg-primary-300 text-primary-500 cursor-not-allowed"
+                }`}
               >
-                Generate Sample
+                <Zap className="w-5 h-5" />
+                <span>Generate text</span>
+                {userPrompt.trim() && <ArrowRight className="w-5 h-5" />}
               </button>
             </div>
           </div>
