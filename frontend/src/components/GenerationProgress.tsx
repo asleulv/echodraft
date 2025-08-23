@@ -193,7 +193,7 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
                 <StageIcon
                   className={`relative h-5 w-5 z-10 ${
                     isCompleted ? "text-white" :
-                    isCurrent ? "text-success-600" :  // FIXED: Changed from config.color to success-600
+                    isCurrent ? "text-success-600" :
                     "text-primary-400"
                   }`}
                 />
@@ -210,8 +210,8 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
         })}
       </div>
 
-      {/* Enhanced progress bars with success colors */}
-      <div className="relative z-10 space-y-6 bg-primary-100 rounded-xl p-6 border border-primary-200 shadow-inner">
+      {/* Enhanced progress bars with success colors - FIXED */}
+      <div className="relative z-10 space-y-6 bg-primary-100 rounded-xl p-6 border border-primary-200">
         {/* Overall progress bar */}
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -222,7 +222,7 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
               {Math.round(getOverallProgress())}%
             </span>
           </div>
-          <div className="w-full bg-primary-200 rounded-full h-5 shadow-inner overflow-hidden">
+          <div className="w-full bg-primary-300 rounded-full h-5 overflow-hidden">
             <div
               className="h-5 rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-success-400 to-success-500 shadow-sm relative"
               style={{ width: `${getOverallProgress()}%` }}
@@ -243,7 +243,7 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
               {Math.round(getStageProgress())}%
             </span>
           </div>
-          <div className="w-full bg-primary-200 rounded-full h-4 shadow-inner overflow-hidden">
+          <div className="w-full bg-primary-300 rounded-full h-4 overflow-hidden">
             <div
               className="h-4 rounded-full transition-all duration-500 ease-in-out bg-gradient-to-r from-success-300 to-success-400 relative"
               style={{ width: `${getStageProgress()}%` }}
@@ -266,6 +266,18 @@ const GenerationProgress: React.FC<GenerationProgressProps> = ({
         </div>
       </div>
 
+      {/* Fun loading messages */}
+      {stage === "generating" && (
+        <div className="relative z-10 mt-6 text-center">
+          <div className="flex items-center justify-center space-x-2 bg-white/80 rounded-lg p-3 border border-primary-200 shadow-sm">
+            <Sparkles className="h-4 w-4 text-success-500 opacity-80 animate-pulse" />
+            <span className="text-sm text-primary-700 opacity-80 italic animate-pulse font-medium">
+              The AI is putting pen to paper...
+            </span>
+            <Sparkles className="h-4 w-4 text-success-500 opacity-80 animate-pulse" />
+          </div>
+        </div>
+      )}
 
       {stage === "analyzing" && (
         <div className="relative z-10 mt-6 text-center">

@@ -176,7 +176,7 @@ export default function Home() {
                   className="inline-block px-12 py-4 bg-secondary-600 dark:bg-orange-800 hover:bg-secondary-700 dark:hover:bg-orange-700 text-primary-50 dark:text-white text-xl font-semibold shadow-lg transition-all duration-300 focus:ring-4 focus:ring-secondary-500 dark:focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-primary-100 dark:focus:ring-offset-gray-900"
 
                 >
-                  Try 5 Free Generations
+                  Try For Free!
                 </Link>
               </div>
 
