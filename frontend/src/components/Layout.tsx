@@ -469,7 +469,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                           <button
                             onClick={() => {
                               setIsNewDocMenuOpen(false);
-                              router.replace("/documents/generate");
+                              router.push("/documents/generate").then(() => router.reload());
                             }}
                             className="flex items-center w-full text-left px-4 py-2 text-sm text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-200"
                             role="menuitem"
@@ -607,7 +607,7 @@ export default function Layout({ children, title = "echodraft" }: LayoutProps) {
                             onClick={() => {
                               setIsMobileNewDocMenuOpen(false);
                               setIsMobileMenuOpen(false);
-                              router.replace("/documents/generate");
+                              router.push("/documents/generate").then(() => router.reload());
                             }}
                             className="flex items-center w-full text-left px-4 py-3 text-base font-medium text-primary-600 dark:text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-200"
                             role="menuitem"

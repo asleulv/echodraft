@@ -266,6 +266,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
                         </div>
                         <div className="flex space-x-2">
                           <button
+                            type="button"  
                             onClick={() => toggleExpand(doc.id)}
                             className="p-1 rounded-full hover:bg-primary-100 dark:hover:bg-primary-200 transition-colors"
                             aria-label={expandedDocs[doc.id] ? "Collapse" : "Expand"}
@@ -277,6 +278,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
                             )}
                           </button>
                           <button
+                            type="button"
                             onClick={() => viewDocument(doc.slug)}
                             className="p-1 rounded-full hover:bg-primary-100 dark:hover:bg-primary-200 transition-colors"
                             aria-label="View document"
@@ -358,6 +360,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
                     </div>
                     <div className="flex space-x-2">
                       <button
+                        type="button"  
                         onClick={() => toggleExpand(doc.id)}
                         className="p-1 rounded-full hover:bg-primary-100 dark:hover:bg-primary-200 transition-colors"
                         aria-label={expandedDocs[doc.id] ? "Collapse" : "Expand"}
@@ -369,6 +372,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
                         )}
                       </button>
                       <button
+                        type="button"
                         onClick={() => viewDocument(doc.slug)}
                         className="p-1 rounded-full hover:bg-primary-100 dark:hover:bg-primary-200 transition-colors"
                         aria-label="View document"
@@ -414,6 +418,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
           {totalPages > 1 && (
             <div className="flex justify-center items-center mt-6 space-x-2">
               <button
+                type="button"
                 onClick={() => changePage(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`p-2 rounded-full ${
@@ -429,6 +434,7 @@ const DocumentPreviewList: React.FC<DocumentPreviewListProps> = ({
                 Page {currentPage} of {totalPages}
               </span>
               <button
+                type="button"
                 onClick={() => changePage(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={`p-2 rounded-full ${
