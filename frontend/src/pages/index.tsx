@@ -198,9 +198,7 @@ export default function Home() {
                 <div className="text-sm text-primary-600 mb-4 flex">
                   <CornerLeftDown className="w-5 h-5 mt-1 mr-2 flex-shrink-0" />
                   <span>
-                    This video shows how a viral coffee shop post gets
-                    transformed into professional LinkedIn content using
-                    echodraft's style cloning
+                    Watch: echodraft learns from a viral coffee shop post and writes about a management app in that same engaging style
                   </span>
                 </div>
                 <div className="relative overflow-hidden shadow-2xl bg-primary-100 dark:bg-primary-900">
