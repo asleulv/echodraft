@@ -114,7 +114,7 @@ export default function Home() {
         {/* Hero Section - Streamlined and Focused */}
         <section
           aria-labelledby="hero-heading"
-          className="bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-100 py-16 md:py-24"
+          className="bg-gradient-to-br from-primary-200 via-primary-50 to-secondary-300 py-16 md:py-24"
         >
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto text-center">
@@ -129,7 +129,7 @@ export default function Home() {
                 pb-2 overflow-visible font-bold
                 ${animate ? "animate-fade-in" : "opacity-0"}`}
               >
-                Clone Your Best Content Style
+                Finally, AI That Writes in Your Voice
               </h1>
 
               <style jsx>{`
@@ -149,29 +149,35 @@ export default function Home() {
               `}</style>
 
               <p className="text-xl md:text-2xl text-primary-700 mb-12 leading-relaxed max-w-3xl mx-auto">
-                Turn your viral posts into endless content. AI analyzes what
-                makes your content successful and creates new posts that sound
-                exactly like you—for every platform.
+                Generic AI sounds robotic. Our engine learns your unique style and transforms your best texts into fresh content that sounds like you — on every platform.
               </p>
 
               {/* Move bullets outside the paragraph and fix mobile centering */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 mt-6 mb-6 text-base md:text-lg text-primary-600 justify-center items-center max-w-3xl mx-auto">
-                <span className="flex items-center">
-                  <X className="text-red-500 mr-2 w-5 h-5" />
-                  No more generic AI content
-                </span>
-                <span className="flex items-center">
-                  <X className="text-red-500 mr-2 w-5 h-5" />
-                  No more starting from scratch
-                </span>
-                <span className="flex items-center">
-                  <Check className="text-green-500 mr-2 w-5 h-5" />
-                  Just authentic writing
-                </span>
+              <div className="flex flex-col sm:flex-row gap-3 mt-6 mb-6 justify-center items-center max-w-4xl mx-auto">
+                <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 border-2 border-secondary-300 rounded-full px-5 py-3 flex items-center shadow-md hover:shadow-lg transition-all duration-200">
+                  <Check className="text-green-600 mr-3 w-5 h-5 flex-shrink-0" />
+                  <span className="text-primary-700 font-semibold whitespace-nowrap">
+                    Content that sounds like you
+                  </span>
+                </div>
+
+                <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 border-2 border-secondary-300 rounded-full px-5 py-3 flex items-center shadow-md hover:shadow-lg transition-all duration-200">
+                  <Check className="text-green-600 mr-3 w-5 h-5 flex-shrink-0" />
+                  <span className="text-primary-700 font-semibold whitespace-nowrap">
+                    Repurpose your best posts instantly
+                  </span>
+                </div>
+
+                <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 border-2 border-secondary-300 rounded-full px-5 py-3 flex items-center shadow-md hover:shadow-lg transition-all duration-200">
+                  <Check className="text-green-600 mr-3 w-5 h-5 flex-shrink-0" />
+                  <span className="text-primary-700 font-semibold whitespace-nowrap">
+                    Authentic writing, every time
+                  </span>
+                </div>
               </div>
 
               <p className="text-xl text-primary-700 mb-8 max-w-3xl mx-auto font-semibold">
-                Don't use generic AI voices. Use your own.
+               AI shouldn't erase your voice — it should amplify it
               </p>
 
               {/* Primary CTA - moved above the fold */}
@@ -185,7 +191,7 @@ export default function Home() {
               </div>
 
               <p className="text-sm text-primary-600 mb-8">
-                No credit card required • Takes 2 minutes to set up
+                No credit card required • Takes less than a minute
               </p>
 
               <div className="max-w-4xl mx-auto mb-12">
