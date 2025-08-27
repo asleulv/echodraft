@@ -70,7 +70,7 @@ export default function Home() {
   }, []);
 
   return (
-    <Layout title="AI Text Generator">
+    <Layout title="Style Cloning for Content Creators">
       <Head>
         {/* JSON-LD structured data for SaaS product */}
         <script
@@ -102,8 +102,12 @@ export default function Home() {
 
         {/* Additional SEO meta tags */}
         <meta
+          name="description"
+          content="Clone your best content style with echodraft. AI-powered tool that analyzes your viral posts and creates new content that sounds exactly like you. Scale your content across TikTok, Instagram, YouTube without losing your authentic voice."
+        />
+        <meta
           name="keywords"
-          content="AI text generator, content repurposing, AI writing assistant, content creation tool, brand consistency, AI writing tool"
+          content="style cloning, content creator tools, AI content generation, creator voice replication, social media content scaling, TikTok content creation, Instagram content tools, YouTube content generation, content creator AI, viral content replication"
         />
       </Head>
       <div className="min-h-screen">
@@ -125,7 +129,7 @@ export default function Home() {
                 pb-2 overflow-visible font-bold
                 ${animate ? "animate-fade-in" : "opacity-0"}`}
               >
-                Never Stare at a Blank Page Again
+                Clone Your Best Content Style
               </h1>
 
               <style jsx>{`
@@ -145,8 +149,9 @@ export default function Home() {
               `}</style>
 
               <p className="text-xl md:text-2xl text-primary-700 mb-12 leading-relaxed max-w-3xl mx-auto">
-                Create publishable drafts in seconds. Your AI learns your voice
-                so every piece sounds like you—consistently.
+                Turn your viral posts into endless content. AI analyzes what
+                makes your content successful and creates new posts that sound
+                exactly like you—for every platform.
               </p>
 
               {/* Move bullets outside the paragraph and fix mobile centering */}
@@ -174,7 +179,6 @@ export default function Home() {
                 <Link
                   href="/register"
                   className="inline-block px-12 py-4 bg-secondary-600 dark:bg-orange-800 hover:bg-secondary-700 dark:hover:bg-orange-700 text-primary-50 dark:text-white text-xl font-semibold shadow-lg transition-all duration-300 focus:ring-4 focus:ring-secondary-500 dark:focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-primary-100 dark:focus:ring-offset-gray-900"
-
                 >
                   Try For Free!
                 </Link>
@@ -188,14 +192,14 @@ export default function Home() {
                 <div className="text-sm text-primary-600 mb-4 flex">
                   <CornerLeftDown className="w-5 h-5 mt-1 mr-2 flex-shrink-0" />
                   <span>
-                    This video shows how the user uses AI to write about John
-                    Lennon using the style of a previous social media rant
+                    This video shows how a viral coffee shop post gets
+                    transformed into professional LinkedIn content using
+                    echodraft's style cloning
                   </span>
                 </div>
                 <div className="relative overflow-hidden shadow-2xl bg-primary-100 dark:bg-primary-900">
                   <video
                     ref={videoRef}
-                    poster="/videos/echodraft-poster.jpg"
                     className="w-full h-auto"
                     preload="metadata"
                     controls={!showOverlay}
@@ -216,7 +220,10 @@ export default function Home() {
                       }
                     }}
                   >
-                    <source src="/videos/echodraft.mp4" type="video/mp4" />
+                    <source
+                      src="/videos/echodraft_showcase.mp4"
+                      type="video/mp4"
+                    />
                     Your browser does not support the video tag.
                   </video>
 
@@ -254,10 +261,11 @@ export default function Home() {
                     <CheckCircle2 className="w-8 h-8 text-primary-50" />
                   </div>
                   <h3 className="font-semibold text-primary-800 mb-2">
-                    That viral LinkedIn post?
+                    That viral TikTok?
                   </h3>
                   <p className="text-primary-600 text-sm">
-                    Use its exact tone for your next campaign
+                    Turn its energy into Instagram captions and YouTube
+                    descriptions
                   </p>
                 </div>
 
@@ -266,10 +274,10 @@ export default function Home() {
                     <Newspaper className="w-8 h-8 text-primary-50" />
                   </div>
                   <h3 className="font-semibold text-primary-800 mb-2">
-                    That newsletter everyone loved?
+                    That newsletter everyone shared?
                   </h3>
                   <p className="text-primary-600 text-sm">
-                    Recreate its magic for your blog series
+                    Recreate its tone for Twitter threads and LinkedIn posts
                   </p>
                 </div>
 
@@ -278,10 +286,10 @@ export default function Home() {
                     <Users className="w-8 h-8 text-primary-50" />
                   </div>
                   <h3 className="font-semibold text-primary-800 mb-2">
-                    That email with 45% opens?
+                    That post with 10k likes?
                   </h3>
                   <p className="text-primary-600 text-sm">
-                    Scale that voice across all your content
+                    Scale that authentic voice across all your content platforms
                   </p>
                 </div>
               </div>
@@ -343,29 +351,29 @@ export default function Home() {
                   <li className="flex items-start">
                     <span className="w-2 h-2 bg-secondary-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                     <span>
-                      You regularly create{" "}
-                      <strong>blog posts, social media, newsletters</strong>
+                      You create content for{" "}
+                      <strong>TikTok, Instagram, YouTube, or Twitter</strong>
                     </span>
                   </li>
                   <li className="flex items-start">
                     <span className="w-2 h-2 bg-secondary-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                     <span>
-                      You write{" "}
-                      <strong>marketing copy, emails, articles</strong>
+                      You want to <strong>repurpose viral content</strong>{" "}
+                      across platforms
                     </span>
                   </li>
                   <li className="flex items-start">
                     <span className="w-2 h-2 bg-secondary-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                     <span>
-                      You want <strong>consistent brand voice</strong> across
-                      content
+                      You need to{" "}
+                      <strong>scale content without losing your voice</strong>
                     </span>
                   </li>
                   <li className="flex items-start">
                     <span className="w-2 h-2 bg-secondary-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                     <span>
-                      You've had posts that <strong>worked well</strong> and
-                      want more like them
+                      You've had posts <strong>go viral</strong> and want to
+                      recreate that magic
                     </span>
                   </li>
                 </ul>

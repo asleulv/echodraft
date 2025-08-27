@@ -2,16 +2,13 @@ import React, { useState, useEffect } from 'react';
 
 const TypingStruggle = () => {
   const strugglingPhrases = [
-  "",  // Start completely blank
-  "Um...",
-  "So I need to write about...",
-  "Actually, maybe I should...",
-  "Wait, what was I going to say?",
-  "This is harder than I thought...",
-  "I hate blank pages..."
+  "That TikTok went viral...",
+  "How do I scale this across platforms?", 
+  "Same energy, different audience?",
+  "My followers love this vibe...",
 ];
   
-  const finalPhrase = "";
+  const finalPhrase = "Time to clone that style!";
   
   const [displayText, setDisplayText] = useState('');
   const [currentPhrase, setCurrentPhrase] = useState(0);
